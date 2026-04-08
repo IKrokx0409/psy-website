@@ -45,7 +45,7 @@ class HiAgentClient:
         if not conv_id:
             return {"thought": "", "reply": "系统初始化失败"}
 
-        url = self.base_url + "chat_query"
+        url = self.base_url + "chat_query_v2"
         data = {
             "UserID": self.user_id,
             "AppConversationID": conv_id,
@@ -72,10 +72,10 @@ class HiAgentClient:
                 
                 decoded_line = line.decode('utf-8').strip()
                 
-                # HiAgent的 data:data:前缀
-                if "data:data:" in decoded_line:
+                # chat_query_v2 标准 SSE 格式：data: {...}
+                if decoded_line.startswith("data:"):
                     try:
-                        json_str = decoded_line.split("data:data:")[1].strip()
+                        json_str = decoded_line[len("data:"):].strip()
                         if json_str == "[DONE]":
                             break
                         
@@ -96,6 +96,7 @@ class HiAgentClient:
 
             # ✨ 返回字典结构，方便前端区分
             return {
+                "conversation_id": conv_id,
                 "thought": thought_acc.strip(),
                 "reply": reply_acc.strip() if reply_acc else "AI 响应解析异常"
             }

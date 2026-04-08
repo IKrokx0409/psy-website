@@ -1,29 +1,37 @@
 <template>
-  <div class="app-container">
-    <nav class="navbar">
-      <h1>HITSZ 心理中心</h1>
-      <div class="nav-links">
-        <router-link to="/">大厅首页</router-link>
-        <router-link to="/chat">AI 聊天</router-link>
-        <router-link to="/diary">情绪日记</router-link>
-      </div>
-    </nav>
-
-    <div class="content-area">
-      <router-view></router-view>
+  <div class="app-shell">
+    <NavBar />
+    <div :class="['page-content', { 'chat-mode': route.path === '/chat' }]">
+      <router-view />
     </div>
   </div>
 </template>
 
+<script setup>
+import { useRoute } from 'vue-router'
+import NavBar from '@/components/NavBar.vue'
+const route = useRoute()
+</script>
+
 <style scoped>
-.app-container { font-family: sans-serif; color: #333; }
-.navbar { 
-  display: flex; justify-content: space-between; align-items: center; 
-  background-color: #2c3e50; color: white; padding: 10px 30px; 
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
-.nav-links a {
-  color: white; text-decoration: none; margin-left: 20px; font-weight: bold;
+
+/* 普通页面：可滚动，内容由各页面自管理 */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
-.nav-links a:hover { color: #4CAF50; }
-.content-area { padding: 40px; text-align: center; }
+
+/* Chat 页面：不滚动，撑满，以 flex 向下传递高度 */
+.page-content.chat-mode {
+  overflow: hidden;
+  display: flex;
+}
 </style>

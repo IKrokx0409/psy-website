@@ -2,12 +2,13 @@
 
 本项目是一个基于 FastAPI (后端) 和 Vue 3 + Vite (前端) 开发的心理社交/疗愈平台，集成了 HITSZ HiAgent 2.0 智能体服务。
 
+请忽略.claudeignore中的文件。
+
 ## 🚀 常用指令
 
 ### 后端 (Python/FastAPI)
 - **启动开发服务器**: `cd backend && uvicorn main:app --reload`
 - **安装依赖**: `pip install -r requirements.txt`
-- **环境变量**: 确保 `.env` 包含 `HITSZ_API_KEY` 和 `HITSZ_APP_ID`。
 
 ### 前端 (Vue 3/Vite)
 - **进入开发模式**: `cd frontend && npm run dev`

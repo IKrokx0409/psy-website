@@ -1,18 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// 引入我们刚才建好的房间
-import Home from '../views/Home.vue'
-import Chat from '../views/Chat.vue'
-import Diary from '../views/Diary.vue'
+import Home        from '../views/Home.vue'
+import Chat        from '../views/Chat.vue'
+import Diary       from '../views/Diary.vue'
+import Science     from '../views/Science.vue'
+import Appointment from '../views/Appointment.vue'
+import About       from '../views/About.vue'
+import Treehouse   from '../views/Treehouse.vue'
 
 const routes = [
-  { path: '/', component: Home },          // 访问根目录，显示主页
-  { path: '/chat', component: Chat },      // 访问 /chat，显示 AI 聊天室
-  { path: '/diary', component: Diary }     // 访问 /diary，显示日记本
+  { path: '/',            component: Home },
+  { path: '/chat',        component: Chat },
+  { path: '/diary',       component: Diary },
+  { path: '/science',     component: Science },
+  { path: '/appointment', component: Appointment },
+  { path: '/about',       component: About },
+  { path: '/treehouse',   component: Treehouse },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior: () => ({ top: 0 }),
 })
 
 export default router

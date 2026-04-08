@@ -1,0 +1,92 @@
+<template>
+  <section class="quick-entry">
+    <div class="inner">
+      <router-link
+        v-for="item in entries"
+        :key="item.to"
+        :to="item.to"
+        class="entry-card"
+      >
+        <div class="entry-icon">{{ item.icon }}</div>
+        <div class="entry-body">
+          <div class="entry-title">{{ item.title }}</div>
+          <div class="entry-desc">{{ item.desc }}</div>
+        </div>
+        <div class="entry-arrow">→</div>
+      </router-link>
+    </div>
+  </section>
+</template>
+
+<script setup>
+const entries = [
+  { to: '/chat',        icon: '🤖', title: 'AI 智能疏导',  desc: '随时倾诉，智能陪伴' },
+  { to: '/diary',       icon: '📔', title: '情绪日记',     desc: '记录情绪，洞察自己' },
+  { to: '/treehouse',   icon: '🕳️',  title: '校园树洞',    desc: '匿名发声，你不孤单' },
+  { to: '/science',     icon: '📋',  title: '心理测评',    desc: '专业量表，了解自我' },
+]
+</script>
+
+<style scoped>
+.quick-entry {
+  background: white;
+  border-bottom: 1px solid #e8eef8;
+  box-shadow: 0 4px 16px rgba(0, 157, 224, 0.07);
+}
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.entry-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 20px;
+  text-decoration: none;
+  color: inherit;
+  border-right: 1px solid #eef2fa;
+  transition: background 0.15s, transform 0.15s;
+  position: relative;
+}
+.entry-card:last-child { border-right: none; }
+.entry-card:hover {
+  background: #f0f5ff;
+}
+.entry-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: #009DE0;
+  transform: scaleX(0);
+  transition: transform 0.2s;
+}
+.entry-card:hover::after { transform: scaleX(1); }
+
+.entry-icon { font-size: 32px; line-height: 1; flex-shrink: 0; }
+
+.entry-body { flex: 1; min-width: 0; }
+.entry-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 3px;
+}
+.entry-desc {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.entry-arrow {
+  color: #009DE0;
+  font-size: 18px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.entry-card:hover .entry-arrow { opacity: 1; transform: translateX(0); }
+</style>
