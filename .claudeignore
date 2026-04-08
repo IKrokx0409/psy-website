@@ -1,0 +1,40 @@
+.env
+*.env
+backend/.env
+local.properties
+.auth/
+secrets/
+
+node_modules/
+venv/
+.venv/
+env/
+lib/
+vendor/
+
+dist/
+dist-ssr/
+build/
+out/
+bin/
+obj/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ipynb_checkpoints/
+.gradle/
+app/build/
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.iml
+*.swp
+
+# data/
+# datasets/
+# *.mp4
+# *.wav
+# *.pkl
