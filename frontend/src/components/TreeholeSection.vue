@@ -3,7 +3,7 @@
     <div class="inner">
       <div class="section-head">
         <div class="head-left">
-          <h2 class="section-title">🕳️ 树洞 · 说出你的心声</h2>
+          <h2 class="section-title"><MessageCircle :size="22" :stroke-width="1.5" /> 树洞 · 说出你的心声</h2>
           <p class="section-sub">匿名发声，温暖同行。这里有人在听。</p>
         </div>
         <router-link to="/treehouse" class="enter-btn">进入树洞 →</router-link>
@@ -19,12 +19,14 @@
         </div>
       </div>
 
-      <p class="privacy-note">🔒 所有内容匿名发布，经审核后可见，中心老师会关注每一条留言。</p>
+      <p class="privacy-note"><Lock :size="12" :stroke-width="1.5" /> 所有内容匿名发布，经审核后可见，中心老师会关注每一条留言。</p>
     </div>
   </section>
 </template>
 
 <script setup>
+import { MessageCircle, Lock } from 'lucide-vue-next'
+
 const holes = [
   {
     id: 1,
@@ -67,6 +69,9 @@ const holes = [
 }
 .head-left { flex: 1; }
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 24px;
   font-weight: 700;
   color: white;
@@ -83,7 +88,7 @@ const holes = [
   background: white;
   color: #009DE0;
   padding: 10px 24px;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -104,7 +109,7 @@ const holes = [
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 20px;
   transition: background 0.15s, transform 0.15s;
 }
@@ -130,7 +135,7 @@ const holes = [
   background: rgba(255,255,255,0.2);
   color: rgba(255,255,255,0.88);
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: 0;
   font-size: 11.5px;
 }
 
@@ -141,6 +146,10 @@ const holes = [
 }
 
 .privacy-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   text-align: center;
   font-size: 12.5px;
   color: rgba(255,255,255,0.55);

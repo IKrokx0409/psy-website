@@ -16,7 +16,7 @@
                 <router-link to="/appointment" class="btn-outline">预约线下咨询</router-link>
               </div>
             </div>
-            <div class="slide-deco">{{ slides[current].emoji }}</div>
+            <component :is="slides[current].deco" class="slide-deco" :size="120" :stroke-width="0.8" />
           </div>
         </div>
       </transition>
@@ -40,6 +40,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { Leaf, Bot, BookOpen } from 'lucide-vue-next'
 
 const slides = [
   {
@@ -47,7 +48,7 @@ const slides = [
     tag: '哈工大（深圳）心理健康中心',
     title: '陪伴每一位同学\n守护你的心灵健康',
     desc: '专业、温暖、保密。无论你正在经历什么，我们都在这里。',
-    emoji: '🌿',
+    deco: Leaf,
     primaryBtn: '与 AI 倾诉',
     primaryLink: '/chat',
   },
@@ -56,7 +57,7 @@ const slides = [
     tag: 'AI 智能疏导',
     title: '随时倾诉\n不再一个人扛',
     desc: '基于先进大语言模型，提供 7×24 小时智能情绪支持与陪伴。',
-    emoji: '🤖',
+    deco: Bot,
     primaryBtn: '立即体验',
     primaryLink: '/chat',
   },
@@ -65,7 +66,7 @@ const slides = [
     tag: '丰富的心理资源',
     title: '科普 · 测评 · 日记\n全方位守护心理健康',
     desc: '心理科普文章、情绪打卡日记、专业量表自测，一站式心理健康平台。',
-    emoji: '📚',
+    deco: BookOpen,
     primaryBtn: '浏览资源',
     primaryLink: '/science',
   },
@@ -121,7 +122,7 @@ onUnmounted(() => clearInterval(timer))
   display: inline-block;
   background: rgba(255,255,255,0.18);
   border: 1px solid rgba(255,255,255,0.35);
-  border-radius: 20px;
+  border-radius: 2px;
   padding: 4px 14px;
   font-size: 12px;
   margin-bottom: 20px;
@@ -152,7 +153,7 @@ onUnmounted(() => clearInterval(timer))
   background: white;
   color: #009DE0;
   padding: 11px 28px;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -166,7 +167,7 @@ onUnmounted(() => clearInterval(timer))
   color: white;
   border: 1.5px solid rgba(255,255,255,0.7);
   padding: 10px 24px;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -174,7 +175,7 @@ onUnmounted(() => clearInterval(timer))
 }
 .btn-outline:hover { background: rgba(255,255,255,0.15); }
 
-.slide-deco { font-size: 120px; line-height: 1; opacity: 0.25; user-select: none; }
+.slide-deco { opacity: 0.25; user-select: none; color: white; flex-shrink: 0; }
 
 /* 控制点 */
 .dots {

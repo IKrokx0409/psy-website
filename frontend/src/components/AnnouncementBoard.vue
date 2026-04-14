@@ -66,7 +66,7 @@ const currentList = computed(() => data[activeTab.value])
 .announcement-board {
   background: white;
   border: 1px solid #e8eef8;
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 

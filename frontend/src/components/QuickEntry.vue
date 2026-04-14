@@ -7,7 +7,7 @@
         :to="item.to"
         class="entry-card"
       >
-        <div class="entry-icon">{{ item.icon }}</div>
+        <div class="entry-icon"><component :is="item.icon" :size="28" :stroke-width="1.5" /></div>
         <div class="entry-body">
           <div class="entry-title">{{ item.title }}</div>
           <div class="entry-desc">{{ item.desc }}</div>
@@ -19,11 +19,13 @@
 </template>
 
 <script setup>
+import { Bot, BookMarked, MessageCircle, ClipboardList } from 'lucide-vue-next'
+
 const entries = [
-  { to: '/chat',        icon: '🤖', title: 'AI 智能疏导',  desc: '随时倾诉，智能陪伴' },
-  { to: '/diary',       icon: '📔', title: '情绪日记',     desc: '记录情绪，洞察自己' },
-  { to: '/treehouse',   icon: '🕳️',  title: '校园树洞',    desc: '匿名发声，你不孤单' },
-  { to: '/science',     icon: '📋',  title: '心理测评',    desc: '专业量表，了解自我' },
+  { to: '/chat',        icon: Bot,           title: 'AI 智能疏导', desc: '随时倾诉，智能陪伴' },
+  { to: '/diary',       icon: BookMarked,    title: '情绪日记',    desc: '记录情绪，洞察自己' },
+  { to: '/treehouse',   icon: MessageCircle, title: '校园树洞',    desc: '匿名发声，你不孤单' },
+  { to: '/science',     icon: ClipboardList, title: '心理测评',    desc: '专业量表，了解自我' },
 ]
 </script>
 
@@ -67,7 +69,7 @@ const entries = [
 }
 .entry-card:hover::after { transform: scaleX(1); }
 
-.entry-icon { font-size: 32px; line-height: 1; flex-shrink: 0; }
+.entry-icon { display: flex; align-items: center; justify-content: center; width: 36px; flex-shrink: 0; color: #009DE0; }
 
 .entry-body { flex: 1; min-width: 0; }
 .entry-title {

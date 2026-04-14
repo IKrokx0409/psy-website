@@ -4,7 +4,7 @@
       <div class="inner">
         <!-- 品牌列 -->
         <div class="footer-col brand-col">
-          <div class="footer-brand">🧠 心理健康中心</div>
+          <div class="footer-brand"><BrainCircuit :size="18" :stroke-width="1.5" /> 心理健康中心</div>
           <p class="footer-intro">
             哈尔滨工业大学（深圳）心理健康教育与咨询中心，
             致力于为全校师生提供专业、温暖的心理健康服务。
@@ -45,7 +45,7 @@
           <div class="col-title">关注我们</div>
           <div class="qr-placeholder">
             <div class="qr-box">
-              <span class="qr-icon">📱</span>
+              <Smartphone :size="32" :stroke-width="1.5" class="qr-icon" />
               <div class="qr-label">微信公众号<br>HITSZ心理中心</div>
             </div>
           </div>
@@ -66,6 +66,10 @@
   </footer>
 </template>
 
+<script setup>
+import { BrainCircuit, Smartphone } from 'lucide-vue-next'
+</script>
+
 <style scoped>
 .site-footer { background: #007ab0; color: rgba(255,255,255,0.75); }
 
@@ -80,6 +84,9 @@
 }
 
 .footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 17px;
   font-weight: 700;
   color: white;
@@ -100,7 +107,7 @@
   color: rgba(255,255,255,0.7);
   font-size: 11.5px;
   padding: 3px 12px;
-  border-radius: 12px;
+  border-radius: 0;
   border: 1px solid rgba(255,255,255,0.2);
 }
 
@@ -137,10 +144,10 @@
   gap: 8px;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 14px 20px;
 }
-.qr-icon { font-size: 32px; }
+.qr-icon { color: rgba(255,255,255,0.7); }
 .qr-label { font-size: 11.5px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.5; }
 
 .hotline-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }

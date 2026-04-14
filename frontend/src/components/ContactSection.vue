@@ -8,7 +8,7 @@
 
       <div class="contact-grid">
         <div class="contact-card" v-for="item in contacts" :key="item.title">
-          <div class="contact-icon">{{ item.icon }}</div>
+          <div class="contact-icon"><component :is="item.icon" :size="28" :stroke-width="1.5" /></div>
           <div class="contact-title">{{ item.title }}</div>
           <div class="contact-body">
             <div v-for="line in item.lines" :key="line" class="contact-line">{{ line }}</div>
@@ -28,24 +28,26 @@
 </template>
 
 <script setup>
+import { MapPin, Phone, Clock, Mail } from 'lucide-vue-next'
+
 const contacts = [
   {
-    icon: '📍',
+    icon: MapPin,
     title: '中心地址',
     lines: ['深圳市南山区学苑大道 1688 号', '哈工大深圳校区 学生服务中心 3 楼 301 室'],
   },
   {
-    icon: '📞',
+    icon: Phone,
     title: '联系电话',
     lines: ['预约咨询：0755-2603-3001', '危机援助（24h）：0755-2603-3002'],
   },
   {
-    icon: '🕐',
+    icon: Clock,
     title: '工作时间',
     lines: ['周一 ~ 周五 09:00–12:00', '周一 ~ 周五 14:00–17:00', '（节假日除外）'],
   },
   {
-    icon: '📧',
+    icon: Mail,
     title: '联系邮箱',
     lines: ['mhc@hitsz.edu.cn', '微信公众号：HITSZ心理中心'],
   },
@@ -90,7 +92,7 @@ const contacts = [
 .contact-card {
   background: white;
   border: 1px solid #d0f0fb;
-  border-radius: 10px;
+  border-radius: 0;
   padding: 24px 20px;
   text-align: center;
   transition: transform 0.15s, box-shadow 0.15s;
@@ -100,7 +102,7 @@ const contacts = [
   box-shadow: 0 6px 20px rgba(0, 157, 224,0.1);
 }
 
-.contact-icon { font-size: 30px; margin-bottom: 10px; }
+.contact-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; color: #009DE0; }
 .contact-title {
   font-size: 14px;
   font-weight: 600;
@@ -116,7 +118,7 @@ const contacts = [
 /* 预约横幅 */
 .appointment-banner {
   background: #009DE0;
-  border-radius: 10px;
+  border-radius: 0;
   padding: 22px 32px;
   display: flex;
   align-items: center;
@@ -137,7 +139,7 @@ const contacts = [
   background: white;
   color: #009DE0;
   padding: 10px 26px;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;

@@ -7,7 +7,7 @@
         每日心理小贴士
       </div>
       <div class="tip-content">
-        <div class="tip-icon">💡</div>
+        <div class="tip-icon"><Lightbulb :size="22" :stroke-width="1.5" /></div>
         <p class="tip-text">{{ currentTip }}</p>
       </div>
       <button class="refresh-btn" @click="refreshTip">换一条 ↻</button>
@@ -21,7 +21,7 @@
       </div>
       <ul class="resource-list">
         <li v-for="r in resources" :key="r.name" class="resource-item">
-          <span class="resource-icon">{{ r.icon }}</span>
+          <span class="resource-icon"><component :is="r.icon" :size="16" :stroke-width="1.5" /></span>
           <div class="resource-body">
             <a href="#" class="resource-name">{{ r.name }}</a>
             <span class="resource-tag">{{ r.tag }}</span>
@@ -32,7 +32,7 @@
 
     <!-- 危机援助 -->
     <div class="panel-card crisis-card">
-      <div class="crisis-header">🆘 心理援助热线</div>
+      <div class="crisis-header"><PhoneCall :size="14" :stroke-width="1.5" /> 心理援助热线</div>
       <div class="crisis-lines">
         <div class="crisis-line">
           <span class="line-label">学校热线</span>
@@ -54,6 +54,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { Lightbulb, ClipboardList, Activity, Leaf, BookOpen, Headphones, PhoneCall } from 'lucide-vue-next'
 
 const tips = [
   '深呼吸练习：吸气 4 秒，屏息 4 秒，呼气 6 秒。每天练习 3 次，有效缓解焦虑。',
@@ -77,11 +78,11 @@ const refreshTip = () => {
 }
 
 const resources = [
-  { icon: '📝', name: 'PHQ-9 抑郁自测量表', tag: '情绪评估' },
-  { icon: '📊', name: 'GAD-7 焦虑自测量表', tag: '情绪评估' },
-  { icon: '🧘', name: '正念冥想引导音频', tag: '放松减压' },
-  { icon: '📖', name: '心理健康科普文章库', tag: '知识学习' },
-  { icon: '🎧', name: '睡眠放松白噪声', tag: '睡眠辅助' },
+  { icon: ClipboardList, name: 'PHQ-9 抑郁自测量表', tag: '情绪评估' },
+  { icon: Activity,      name: 'GAD-7 焦虑自测量表', tag: '情绪评估' },
+  { icon: Leaf,          name: '正念冥想引导音频',    tag: '放松减压' },
+  { icon: BookOpen,      name: '心理健康科普文章库',  tag: '知识学习' },
+  { icon: Headphones,    name: '睡眠放松白噪声',      tag: '睡眠辅助' },
 ]
 </script>
 
@@ -91,7 +92,7 @@ const resources = [
 .panel-card {
   background: white;
   border: 1px solid #e8eef8;
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -121,7 +122,7 @@ const resources = [
   gap: 12px;
   padding: 14px 16px 10px;
 }
-.tip-icon { font-size: 22px; flex-shrink: 0; }
+.tip-icon { display: flex; flex-shrink: 0; color: #f59e0b; }
 .tip-text {
   font-size: 13.5px;
   line-height: 1.7;
@@ -137,7 +138,7 @@ const resources = [
   color: #009DE0;
   font-size: 12px;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 2px;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -159,7 +160,7 @@ const resources = [
 }
 .resource-item:last-child { border-bottom: none; }
 .resource-item:hover { background: #f5f8ff; }
-.resource-icon { font-size: 16px; flex-shrink: 0; }
+.resource-icon { display: flex; flex-shrink: 0; color: #009DE0; }
 .resource-body { display: flex; flex-direction: column; gap: 1px; }
 .resource-name {
   font-size: 13px;
@@ -184,6 +185,9 @@ const resources = [
   font-weight: 600;
   color: #c0392b;
   border-bottom: 1px solid #fde8e8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .crisis-lines { padding: 10px 16px; display: flex; flex-direction: column; gap: 8px; }
 .crisis-line { display: flex; justify-content: space-between; align-items: center; }

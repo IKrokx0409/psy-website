@@ -1,34 +1,53 @@
-# HiAgent 心理疗愈智能体项目准则
+# CLAUDE.md
 
-本项目是一个基于 FastAPI (后端) 和 Vue 3 + Vite (前端) 开发的心理社交/疗愈平台，集成了 HITSZ HiAgent 2.0 智能体服务。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-请忽略.claudeignore中的文件。
+Please ignore files listed in `.claudeignore`.
 
-## 🚀 常用指令
+## Project Overview
 
-### 后端 (Python/FastAPI)
-- **启动开发服务器**: `cd backend && uvicorn main:app --reload`
-- **安装依赖**: `pip install -r requirements.txt`
+A mental health / psychological healing social platform for university students, built with FastAPI (backend) and Vue 3 + Vite (frontend), integrated with HITSZ HiAgent 2.0 AI agent service.
 
-### 前端 (Vue 3/Vite)
-- **进入开发模式**: `cd frontend && npm run dev`
-- **安装依赖**: `npm install`
-- **构建生产版本**: `npm run build`
+## Commands
 
-## 🛠 项目架构与关键逻辑
+### Backend (Python/FastAPI)
+- **Start dev server**: `cd backend && uvicorn main:app --reload`
+- **Install deps**: `cd backend && pip install -r requirements.txt`
 
-### 1. 智能体集成 (HiAgentClient)
-- **API 通道**: 必须使用 `/api/proxy/api/v1/` 路径以绕过 CSRF 限制。
-- **身份验证**: 
-    - `UserID`: 严格限制在 1-20 字符以内（例如：`ikrokx_001`）。
-    - `Header`: 必须包含 `Apikey`。
-- **流数据处理**: 
-    - 响应行前缀为 `data:data: `。
-    - 需区分 `event: think_message` (思考过程) 和 `event: message` (正式回答)。
+### Frontend (Vue 3/Vite)
+- **Start dev server**: `cd frontend && npm run dev`
+- **Install deps**: `cd frontend && npm install`
+- **Build production**: `cd frontend && npm run build`
 
-### 2. 代码风格规范
-- **后端**: 遵循 PEP8，使用 `HiAgentClient` 类进行模块化封装。接口返回格式统一为 `{"thought": "...", "reply": "..."}`。
-- **前端**: Vue 3 组合式 API (Script Setup)。使用 `markdown-it` 解析 AI 回复。
+> The frontend dev server proxies nothing — the Chat page hardcodes `http://127.0.0.1:8000/api/chat`. Both servers must be running simultaneously for full functionality.
 
-## 🧪 核心开发重点
-- **会话持久化**: 优先从 `localStorage` 获取 `AppConversationID` 以维持对话上下文。
+## Architecture
+
+### Backend (`backend/`)
+- `main.py` — FastAPI app with a single POST `/api/chat` endpoint. Accepts `{message, conversation_id}`, returns `{status, conversation_id, thought, reply}`.
+- `hiagent_client.py` — `HiAgentClient` class wrapping the HITSZ HiAgent 2.0 API. Two-step flow:
+  1. `create_conversation()` — POST to `create_conversation` to get an `AppConversationID`.
+  2. `ask_ai(prompt, conversation_id)` — POST to `chat_query_v2` with `ResponseMode: streaming`, parse SSE lines.
+- `backend/.env` — must contain `HITSZ_API_KEY`.
+
+### Frontend (`frontend/src/`)
+- `main.js` + `App.vue` — root mount; `App.vue` wraps all pages with `<NavBar>` and a `<router-view>`. The `/chat` route gets `overflow: hidden` + full-height flex layout; all other routes scroll normally.
+- `router/index.js` — routes: `/`, `/chat`, `/diary`, `/science`, `/appointment`, `/about`, `/treehouse`.
+- **Views**: `Home.vue` composes multiple section components. `Chat.vue` is the full AI chat interface (self-contained, ~700 lines). Other views (`Diary`, `Science`, `Appointment`, `About`, `Treehouse`) are independent pages.
+- **Components**: Section-level UI blocks used by `Home.vue` (`HeroBanner`, `QuickEntry`, `AnnouncementBoard`, `SidePanel`, `TreeholeSection`, `DiaryPreview`, `ContactSection`, `SiteFooter`) and `NavBar`.
+
+### HiAgent API Integration (critical details)
+- **Proxy path**: Must use `/api/proxy/api/v1/` prefix on `zhiwen.hitsz.edu.cn:10211` to bypass CSRF.
+- **Auth**: Header `Apikey: <key>`. `UserID` must be 1–20 characters (e.g. `ikrokx_001`).
+- **SSE stream parsing**: Each line is prefixed `data: `. JSON payload has `event` field:
+  - `event: think_message` → accumulate into `thought`
+  - `event: message` → accumulate into `reply`
+  - Line `[DONE]` signals end of stream.
+
+### Conversation Persistence (Chat.vue)
+- `hiagentConvId` (the `AppConversationID` from HiAgent) is passed back on every request to continue context server-side.
+- Local conversation history (messages + `hiagentConvId`) is stored in `localStorage` under key `wellbeing_conversations` as a JSON array.
+
+## Code Style
+- **Backend**: PEP8. All AI calls go through `HiAgentClient`. Endpoint response shape is always `{"thought": "...", "reply": "..."}`.
+- **Frontend**: Vue 3 Composition API (`<script setup>`). Use `markdown-it` to render AI replies (via `v-html` with `renderMd()`). No linting configured — follow existing style.

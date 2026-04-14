@@ -35,10 +35,10 @@
           找到压力的来源，学会与自己的内心对话。
         </p>
         <ul class="feature-points">
-          <li>📊 可视化周/月情绪趋势图</li>
-          <li>🔒 数据本地存储，完全私密</li>
-          <li>✍️ 支持自由文字记录与情绪打标</li>
-          <li>🔔 每日提醒，养成记录习惯</li>
+          <li><BarChart2 :size="15" :stroke-width="1.5" /> 可视化周/月情绪趋势图</li>
+          <li><Lock :size="15" :stroke-width="1.5" /> 数据本地存储，完全私密</li>
+          <li><PenLine :size="15" :stroke-width="1.5" /> 支持自由文字记录与情绪打标</li>
+          <li><Bell :size="15" :stroke-width="1.5" /> 每日提醒，养成记录习惯</li>
         </ul>
         <router-link to="/diary" class="diary-btn">开始记录情绪 →</router-link>
       </div>
@@ -47,6 +47,8 @@
 </template>
 
 <script setup>
+import { BarChart2, Lock, PenLine, Bell } from 'lucide-vue-next'
+
 const weekData = [
   { label: '周一', val: 60, emoji: '😐', color: '#f59e0b' },
   { label: '周二', val: 45, emoji: '😔', color: '#ef4444' },
@@ -86,7 +88,7 @@ const legend = [
 .chart-side {
   background: white;
   border: 1px solid #e8eef8;
-  border-radius: 12px;
+  border-radius: 0;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 157, 224,0.06);
 }
@@ -125,7 +127,7 @@ const legend = [
 }
 .bar-fill {
   width: 100%;
-  border-radius: 4px 4px 0 0;
+  border-radius: 0;
   transition: height 0.4s ease;
   opacity: 0.85;
 }
@@ -155,7 +157,7 @@ const legend = [
   font-size: 12px;
   font-weight: 600;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 2px;
   margin-bottom: 16px;
 }
 .feature-title {
@@ -179,14 +181,15 @@ const legend = [
   flex-direction: column;
   gap: 10px;
 }
-.feature-points li { font-size: 14px; color: #374151; }
+.feature-points li { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #374151; }
+.feature-points li svg { color: #009DE0; flex-shrink: 0; }
 
 .diary-btn {
   display: inline-block;
   background: #009DE0;
   color: white;
   padding: 12px 28px;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;

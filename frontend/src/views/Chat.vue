@@ -40,7 +40,7 @@
       <div class="messages-area" ref="messagesEl">
         <!-- 欢迎屏（无消息时） -->
         <div v-if="messages.length === 0" class="welcome-screen">
-          <div class="welcome-icon">🌿</div>
+          <div class="welcome-icon"><Leaf :size="52" :stroke-width="1" /></div>
           <h2 class="welcome-title">你好，我在这里</h2>
           <p class="welcome-sub">无论学业压力还是生活烦恼，都可以跟我倾诉</p>
           <div class="welcome-hints">
@@ -54,7 +54,7 @@
         <div v-for="(msg, index) in messages" :key="index" :class="['message-row', msg.role]">
           <!-- AI 消息 -->
           <template v-if="msg.role === 'assistant'">
-            <div class="avatar ai-avatar">🤖</div>
+            <div class="avatar ai-avatar"><Bot :size="16" :stroke-width="1.5" /></div>
             <div class="message-content">
               <!-- 加载中 -->
               <div v-if="msg.isLoading" class="reply-bubble loading-bubble">
@@ -117,6 +117,7 @@
 import { ref, nextTick, watch, onMounted } from 'vue'
 import axios from 'axios'
 import MarkdownIt from 'markdown-it'
+import { Bot, Leaf } from 'lucide-vue-next'
 
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
 
@@ -421,7 +422,7 @@ const sendMessage = async () => {
   text-align: center;
   padding: 0 40px;
 }
-.welcome-icon { font-size: 52px; margin-bottom: 20px; }
+.welcome-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #009DE0; }
 .welcome-title { font-size: 26px; font-weight: 600; color: #1a1b26; margin: 0 0 10px; }
 .welcome-sub { font-size: 15px; color: #6b7280; margin: 0 0 32px; }
 
@@ -468,7 +469,7 @@ const sendMessage = async () => {
 }
 .ai-avatar {
   background: #d0f0fb;
-  font-size: 18px;
+  color: #007ab0;
 }
 .user-avatar {
   background: #009DE0;
