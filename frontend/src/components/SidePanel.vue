@@ -91,7 +91,7 @@ const resources = [
 
 .panel-card {
   background: white;
-  border: 1px solid #e8eef8;
+  border: 1px solid #cfe8da;
   border-radius: 0;
   overflow: hidden;
 }
@@ -105,12 +105,12 @@ const resources = [
   font-weight: 600;
   color: #1e293b;
   border-bottom: 1px solid #f0f4fb;
-  background: #fafbfe;
+  background: #f5fbf7;
 }
 .title-dot {
   width: 3px;
   height: 16px;
-  background: #009DE0;
+  background: #5f9e75;
   border-radius: 2px;
   flex-shrink: 0;
 }
@@ -135,14 +135,14 @@ const resources = [
   margin: 0 16px 14px auto;
   background: none;
   border: 1px solid #d0dcf0;
-  color: #009DE0;
+  color: #5f9e75;
   font-size: 12px;
   padding: 4px 12px;
   border-radius: 2px;
   cursor: pointer;
   transition: background 0.15s;
 }
-.refresh-btn:hover { background: #f0f5ff; }
+.refresh-btn:hover { background: #edf7f2; }
 
 /* 资源列表 */
 .resource-list {
@@ -159,8 +159,8 @@ const resources = [
   transition: background 0.12s;
 }
 .resource-item:last-child { border-bottom: none; }
-.resource-item:hover { background: #f5f8ff; }
-.resource-icon { display: flex; flex-shrink: 0; color: #009DE0; }
+.resource-item:hover { background: #edf7f2; }
+.resource-icon { display: flex; flex-shrink: 0; color: #5f9e75; }
 .resource-body { display: flex; flex-direction: column; gap: 1px; }
 .resource-name {
   font-size: 13px;
@@ -168,7 +168,7 @@ const resources = [
   text-decoration: none;
   transition: color 0.12s;
 }
-.resource-name:hover { color: #009DE0; }
+.resource-name:hover { color: #5f9e75; }
 .resource-tag {
   font-size: 11px;
   color: #94a3b8;

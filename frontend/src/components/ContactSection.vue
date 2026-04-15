@@ -56,9 +56,9 @@ const contacts = [
 
 <style scoped>
 .contact-section {
-  background: #e8f8ff;
+  background: #dff2e8;
   padding: 64px 0;
-  border-top: 1px solid #d0f0fb;
+  border-top: 1px solid #c4e2d0;
 }
 .inner {
   max-width: 1200px;
@@ -91,7 +91,7 @@ const contacts = [
 
 .contact-card {
   background: white;
-  border: 1px solid #d0f0fb;
+  border: 1px solid #c4e2d0;
   border-radius: 0;
   padding: 24px 20px;
   text-align: center;
@@ -102,11 +102,11 @@ const contacts = [
   box-shadow: 0 6px 20px rgba(0, 157, 224,0.1);
 }
 
-.contact-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; color: #009DE0; }
+.contact-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; color: #5f9e75; }
 .contact-title {
   font-size: 14px;
   font-weight: 600;
-  color: #009DE0;
+  color: #5f9e75;
   margin-bottom: 10px;
 }
 .contact-line {
@@ -117,7 +117,7 @@ const contacts = [
 
 /* 预约横幅 */
 .appointment-banner {
-  background: #009DE0;
+  background: #5f9e75;
   border-radius: 0;
   padding: 22px 32px;
   display: flex;
@@ -137,7 +137,7 @@ const contacts = [
 .appt-btn {
   display: inline-block;
   background: white;
-  color: #009DE0;
+  color: #5f9e75;
   padding: 10px 26px;
   border-radius: 2px;
   font-size: 14px;

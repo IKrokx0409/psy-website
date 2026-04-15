@@ -44,7 +44,7 @@ import { Leaf, Bot, BookOpen } from 'lucide-vue-next'
 
 const slides = [
   {
-    bg: 'linear-gradient(135deg, #009DE0 0%, #007ab0 100%)',
+    bg: 'linear-gradient(135deg, #5f9e75 0%, #4d8764 100%)',
     tag: '哈工大（深圳）心理健康中心',
     title: '陪伴每一位同学\n守护你的心灵健康',
     desc: '专业、温暖、保密。无论你正在经历什么，我们都在这里。',
@@ -53,7 +53,7 @@ const slides = [
     primaryLink: '/chat',
   },
   {
-    bg: 'linear-gradient(135deg, #00aee8 0%, #009DE0 60%, #007ab0 100%)',
+    bg: 'linear-gradient(135deg, #6aad82 0%, #5f9e75 60%, #4d8764 100%)',
     tag: 'AI 智能疏导',
     title: '随时倾诉\n不再一个人扛',
     desc: '基于先进大语言模型，提供 7×24 小时智能情绪支持与陪伴。',
@@ -62,7 +62,7 @@ const slides = [
     primaryLink: '/chat',
   },
   {
-    bg: 'linear-gradient(135deg, #007ab0 0%, #009DE0 100%)',
+    bg: 'linear-gradient(135deg, #4d8764 0%, #5f9e75 100%)',
     tag: '丰富的心理资源',
     title: '科普 · 测评 · 日记\n全方位守护心理健康',
     desc: '心理科普文章、情绪打卡日记、专业量表自测，一站式心理健康平台。',
@@ -151,7 +151,7 @@ onUnmounted(() => clearInterval(timer))
 .btn-primary {
   display: inline-block;
   background: white;
-  color: #009DE0;
+  color: #5f9e75;
   padding: 11px 28px;
   border-radius: 2px;
   font-size: 14px;

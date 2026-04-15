@@ -1,14 +1,29 @@
 import os
+from contextlib import asynccontextmanager
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
 from pydantic import BaseModel
-from hiagent_client import HiAgentClient
 from dotenv import load_dotenv
+
+from hiagent_client import HiAgentClient
+from database import engine
+from models import Base
+from routers import announcements, treehole, admin, diary
 
 load_dotenv()
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """启动时自动建表（表已存在则跳过）"""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,23 +32,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(announcements.router)
+app.include_router(treehole.router)
+app.include_router(admin.router)
+app.include_router(diary.router)
+
 client = HiAgentClient()
+
 
 class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
 
+
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
         result = client.ask_ai(request.message, request.conversation_id)
-        
-        # 直接把整个字典返回给 Vue 前端
         return {
             "status": "success",
             "conversation_id": result["conversation_id"],
             "thought": result["thought"],
-            "reply": result["reply"]
+            "reply": result["reply"],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

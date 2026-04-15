@@ -1,7 +1,7 @@
 <template>
   <header class="site-header">
     <!-- 顶部工具条 -->
-    <div class="top-bar">
+    <div class="top-bar" :class="{ 'top-bar--dark': isTreehouse }">
       <div class="top-bar-inner">
         <span>哈尔滨工业大学（深圳）· 心理健康教育与咨询中心</span>
         <div class="top-links">
@@ -15,7 +15,7 @@
     </div>
 
     <!-- 主导航栏 -->
-    <nav class="navbar">
+    <nav class="navbar" :class="isTreehouse ? 'navbar--treehouse' : 'navbar--default'">
       <div class="nav-inner">
         <!-- 左侧：学校 Logo + 中心名称 -->
         <router-link to="/" class="nav-brand">
@@ -28,13 +28,27 @@
         </router-link>
 
         <!-- 右侧：导航链接 -->
-        <div class="nav-links">
+        <div class="nav-links" :class="{ 'nav-links--dark': isTreehouse }">
           <router-link to="/">首页</router-link>
           <router-link to="/science">心理科普</router-link>
           <router-link to="/chat">AI 智能疏导</router-link>
+          <router-link to="/diary">情绪日记</router-link>
           <router-link to="/treehouse">校园树洞</router-link>
           <router-link to="/appointment">预约咨询</router-link>
           <router-link to="/about">关于我们</router-link>
+          <router-link v-if="isTeacher" to="/teacher" class="nav-admin-link">
+            <ShieldCheck :size="13" :stroke-width="1.5" />
+            管理后台
+          </router-link>
+
+          <!-- 身份标识 -->
+          <div class="nav-role">
+            <component :is="isTeacher ? UserCog : GraduationCap" :size="14" :stroke-width="1.5" />
+            <span>{{ isTeacher ? '教师' : '学生' }}</span>
+            <button class="switch-btn" @click="switchRole" title="切换身份">
+              <ArrowLeftRight :size="12" :stroke-width="1.5" />
+            </button>
+          </div>
         </div>
       </div>
     </nav>
@@ -42,9 +56,25 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { GraduationCap, UserCog, ArrowLeftRight, ShieldCheck } from 'lucide-vue-next'
+import { useAuth } from '@/composables/useAuth'
+
 const currentDate = new Date().toLocaleDateString('zh-CN', {
   year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
 })
+
+const router = useRouter()
+const route  = useRoute()
+const { isTeacher, clearRole } = useAuth()
+
+const isTreehouse = computed(() => route.path === '/treehouse')
+
+const switchRole = () => {
+  clearRole()
+  router.push('/login')
+}
 </script>
 
 <style scoped>
@@ -52,11 +82,21 @@ const currentDate = new Date().toLocaleDateString('zh-CN', {
 
 /* 顶部工具条 */
 .top-bar {
-  background: #f0f4fb;
-  border-bottom: 1px solid #d0dcf0;
+  background: #f2f7f4;
+  border-bottom: 1px solid #bdd4c8;
   font-size: 12px;
-  color: #5a7099;
+  color: #4d6b56;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
+.top-bar--dark {
+  background: #0e1e35;
+  border-bottom-color: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+}
+.top-bar--dark .top-links a { color: rgba(255,255,255,0.65) !important; }
+.top-bar--dark .divider { color: rgba(255,255,255,0.18) !important; }
+.top-bar--dark span { color: rgba(255,255,255,0.45); }
+
 .top-bar-inner {
   max-width: 1280px;
   margin: 0 auto;
@@ -71,7 +111,7 @@ const currentDate = new Date().toLocaleDateString('zh-CN', {
   gap: 10px;
 }
 .top-links a {
-  color: #009DE0;
+  color: #5f9e75;
   text-decoration: none;
   font-size: 12px;
 }
@@ -80,9 +120,11 @@ const currentDate = new Date().toLocaleDateString('zh-CN', {
 
 /* 主导航 */
 .navbar {
-  background: #009DE0;
-  box-shadow: 0 2px 6px rgba(0, 120, 180, 0.3);
+  box-shadow: 0 2px 6px rgba(30, 100, 60, 0.3);
+  transition: background 0.3s;
 }
+.navbar--default   { background: #5f9e75; }
+.navbar--treehouse { background: #1c3358; }
 .nav-inner {
   max-width: 1280px;
   margin: 0 auto;
@@ -161,5 +203,44 @@ const currentDate = new Date().toLocaleDateString('zh-CN', {
   color: white;
   border-bottom-color: white;
   font-weight: 600;
+}
+
+/* 身份标识 */
+.nav-role {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px 0 18px;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+}
+
+.switch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  padding: 3px 5px;
+  transition: background 0.15s;
+  margin-left: 2px;
+}
+.switch-btn:hover { background: rgba(255, 255, 255, 0.28); }
+
+/* 管理后台链接 */
+.nav-admin-link {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 </style>

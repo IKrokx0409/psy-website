@@ -55,12 +55,12 @@ const weekData = [
   { label: '周三', val: 70, emoji: '🙂', color: '#10b981' },
   { label: '周四', val: 80, emoji: '😊', color: '#10b981' },
   { label: '周五', val: 55, emoji: '😐', color: '#f59e0b' },
-  { label: '周六', val: 90, emoji: '😄', color: '#009DE0' },
+  { label: '周六', val: 90, emoji: '😄', color: '#5f9e75' },
   { label: '周日', val: 75, emoji: '🙂', color: '#10b981' },
 ]
 
 const legend = [
-  { name: '愉悦', color: '#009DE0' },
+  { name: '愉悦', color: '#5f9e75' },
   { name: '平静', color: '#10b981' },
   { name: '一般', color: '#f59e0b' },
   { name: '低落', color: '#ef4444' },
@@ -71,8 +71,8 @@ const legend = [
 .diary-preview {
   background: #f8fafc;
   padding: 64px 0;
-  border-top: 1px solid #e8eef8;
-  border-bottom: 1px solid #e8eef8;
+  border-top: 1px solid #cfe8da;
+  border-bottom: 1px solid #cfe8da;
 }
 .inner {
   max-width: 1200px;
@@ -87,7 +87,7 @@ const legend = [
 /* 图表侧 */
 .chart-side {
   background: white;
-  border: 1px solid #e8eef8;
+  border: 1px solid #cfe8da;
   border-radius: 0;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 157, 224,0.06);
@@ -152,8 +152,8 @@ const legend = [
 /* 文案侧 */
 .feature-tag {
   display: inline-block;
-  background: #d0f0fb;
-  color: #009DE0;
+  background: #c4e2d0;
+  color: #5f9e75;
   font-size: 12px;
   font-weight: 600;
   padding: 4px 12px;
@@ -182,11 +182,11 @@ const legend = [
   gap: 10px;
 }
 .feature-points li { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #374151; }
-.feature-points li svg { color: #009DE0; flex-shrink: 0; }
+.feature-points li svg { color: #5f9e75; flex-shrink: 0; }
 
 .diary-btn {
   display: inline-block;
-  background: #009DE0;
+  background: #5f9e75;
   color: white;
   padding: 12px 28px;
   border-radius: 2px;
@@ -195,5 +195,5 @@ const legend = [
   text-decoration: none;
   transition: background 0.15s, transform 0.15s;
 }
-.diary-btn:hover { background: #007ab0; transform: translateY(-1px); }
+.diary-btn:hover { background: #4d8764; transform: translateY(-1px); }
 </style>

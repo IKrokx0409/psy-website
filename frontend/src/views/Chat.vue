@@ -305,7 +305,7 @@ const sendMessage = async () => {
 .sidebar {
   width: 260px;
   min-width: 260px;
-  background: #006a99;
+  background: #4d8764;
   color: #c9d8f0;
   display: flex;
   flex-direction: column;
@@ -323,7 +323,7 @@ const sendMessage = async () => {
   gap: 8px;
   width: 100%;
   padding: 9px 14px;
-  background: #009DE0;
+  background: #5f9e75;
   color: white;
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 8px;
@@ -332,7 +332,7 @@ const sendMessage = async () => {
   cursor: pointer;
   transition: background 0.2s;
 }
-.new-chat-btn:hover { background: #00aee8; }
+.new-chat-btn:hover { background: #6aad82; }
 
 .history-label {
   padding: 14px 16px 6px;
@@ -363,7 +363,7 @@ const sendMessage = async () => {
   font-size: 13.5px;
 }
 .history-item:hover { background: rgba(255,255,255,0.1); color: white; }
-.history-item.active { background: #009DE0; color: white; }
+.history-item.active { background: #5f9e75; color: white; }
 
 .history-icon { flex-shrink: 0; opacity: 0.7; }
 .history-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -422,7 +422,7 @@ const sendMessage = async () => {
   text-align: center;
   padding: 0 40px;
 }
-.welcome-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #009DE0; }
+.welcome-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #5f9e75; }
 .welcome-title { font-size: 26px; font-weight: 600; color: #1a1b26; margin: 0 0 10px; }
 .welcome-sub { font-size: 15px; color: #6b7280; margin: 0 0 32px; }
 
@@ -438,9 +438,9 @@ const sendMessage = async () => {
   transition: all 0.15s;
 }
 .hint-chip:hover {
-  background: #d0f0fb;
+  background: #c4e2d0;
   border-color: #93c5fd;
-  color: #009DE0;
+  color: #5f9e75;
 }
 
 /* ========== 消息行 ========== */
@@ -468,11 +468,11 @@ const sendMessage = async () => {
   font-weight: 600;
 }
 .ai-avatar {
-  background: #d0f0fb;
-  color: #007ab0;
+  background: #c4e2d0;
+  color: #4d8764;
 }
 .user-avatar {
-  background: #009DE0;
+  background: #5f9e75;
   color: white;
   font-size: 12px;
   letter-spacing: 0;
@@ -537,7 +537,7 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
 }
 
 .user-bubble {
-  background: #009DE0;
+  background: #5f9e75;
   color: white;
   border-radius: 18px 18px 4px 18px;
   padding: 12px 18px;
@@ -590,7 +590,7 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   max-width: 900px;
   margin: 0 auto;
 }
-.input-box:focus-within { border-color: #009DE0; }
+.input-box:focus-within { border-color: #5f9e75; }
 
 .input-box textarea {
   flex: 1;
@@ -613,7 +613,7 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   height: 36px;
   border-radius: 10px;
   border: none;
-  background: #009DE0;
+  background: #5f9e75;
   color: white;
   cursor: pointer;
   display: flex;
@@ -622,7 +622,7 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   flex-shrink: 0;
   transition: background 0.2s, opacity 0.2s;
 }
-.send-btn:hover:not(:disabled) { background: #007ab0; }
+.send-btn:hover:not(:disabled) { background: #4d8764; }
 .send-btn:disabled { background: #d1d5db; cursor: not-allowed; }
 
 .input-hint {
@@ -658,7 +658,7 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   padding: 1px 6px;
   font-size: 13px;
   font-family: ui-monospace, Consolas, monospace;
-  color: #009DE0;
+  color: #5f9e75;
 }
 .markdown-body pre {
   background: #1a1b26;
@@ -675,7 +675,7 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   font-size: 13px;
 }
 .markdown-body blockquote {
-  border-left: 3px solid #009DE0;
+  border-left: 3px solid #5f9e75;
   margin: 10px 0;
   padding: 6px 16px;
   color: #6b7280;

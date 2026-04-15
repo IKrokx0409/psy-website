@@ -71,7 +71,7 @@ import { BrainCircuit, Smartphone } from 'lucide-vue-next'
 </script>
 
 <style scoped>
-.site-footer { background: #007ab0; color: rgba(255,255,255,0.75); }
+.site-footer { background: #4a7e62; color: rgba(255,255,255,0.75); }
 
 .footer-main { padding: 52px 0 40px; }
 .inner {

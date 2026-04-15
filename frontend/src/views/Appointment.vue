@@ -17,11 +17,11 @@ import { CalendarDays } from 'lucide-vue-next'
 <style scoped>
 .shell-page { display: flex; align-items: center; justify-content: center; min-height: 60vh; background: #f8fafc; }
 .shell-inner { text-align: center; padding: 60px 40px; }
-.shell-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #009DE0; }
+.shell-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #5f9e75; }
 .shell-title { font-size: 26px; font-weight: 700; color: #1e293b; margin: 0 0 12px; }
 .shell-desc { font-size: 15px; color: #64748b; margin: 0 0 10px; }
 .contact-hint { font-size: 14px; color: #374151; margin: 0 0 28px; }
-.contact-hint strong { color: #009DE0; }
-.back-btn { display: inline-block; background: #009DE0; color: white; padding: 10px 24px; border-radius: 2px; text-decoration: none; font-size: 14px; font-weight: 500; }
-.back-btn:hover { background: #007ab0; }
+.contact-hint strong { color: #5f9e75; }
+.back-btn { display: inline-block; background: #5f9e75; color: white; padding: 10px 24px; border-radius: 2px; text-decoration: none; font-size: 14px; font-weight: 500; }
+.back-btn:hover { background: #4d8764; }
 </style>

@@ -32,7 +32,7 @@ const entries = [
 <style scoped>
 .quick-entry {
   background: white;
-  border-bottom: 1px solid #e8eef8;
+  border-bottom: 1px solid #cfe8da;
   box-shadow: 0 4px 16px rgba(0, 157, 224, 0.07);
 }
 .inner {
@@ -56,20 +56,20 @@ const entries = [
 }
 .entry-card:last-child { border-right: none; }
 .entry-card:hover {
-  background: #f0f5ff;
+  background: #edf7f2;
 }
 .entry-card::after {
   content: '';
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 3px;
-  background: #009DE0;
+  background: #5f9e75;
   transform: scaleX(0);
   transition: transform 0.2s;
 }
 .entry-card:hover::after { transform: scaleX(1); }
 
-.entry-icon { display: flex; align-items: center; justify-content: center; width: 36px; flex-shrink: 0; color: #009DE0; }
+.entry-icon { display: flex; align-items: center; justify-content: center; width: 36px; flex-shrink: 0; color: #5f9e75; }
 
 .entry-body { flex: 1; min-width: 0; }
 .entry-title {
@@ -84,7 +84,7 @@ const entries = [
 }
 
 .entry-arrow {
-  color: #009DE0;
+  color: #5f9e75;
   font-size: 18px;
   opacity: 0;
   transform: translateX(-4px);
