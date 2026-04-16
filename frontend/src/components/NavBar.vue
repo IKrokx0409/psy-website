@@ -33,7 +33,6 @@
           <router-link to="/science">心理科普</router-link>
           <router-link to="/chat">AI 智能疏导</router-link>
           <router-link to="/diary">情绪日记</router-link>
-          <router-link to="/treehouse">校园树洞</router-link>
           <router-link to="/appointment">预约咨询</router-link>
           <router-link to="/about">关于我们</router-link>
           <router-link v-if="isTeacher" to="/teacher" class="nav-admin-link">

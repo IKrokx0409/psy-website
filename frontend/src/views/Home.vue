@@ -15,8 +15,8 @@
       </div>
     </section>
 
-    <TreeholeSection />
     <DiaryPreview />
+    <OnlineResources />
     <ContactSection />
     <SiteFooter />
   </div>
@@ -27,7 +27,7 @@ import HeroBanner       from '@/components/HeroBanner.vue'
 import QuickEntry       from '@/components/QuickEntry.vue'
 import AnnouncementBoard from '@/components/AnnouncementBoard.vue'
 import SidePanel        from '@/components/SidePanel.vue'
-import TreeholeSection  from '@/components/TreeholeSection.vue'
+import OnlineResources  from '@/components/OnlineResources.vue'
 import DiaryPreview     from '@/components/DiaryPreview.vue'
 import ContactSection   from '@/components/ContactSection.vue'
 import SiteFooter       from '@/components/SiteFooter.vue'

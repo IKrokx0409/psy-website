@@ -10,58 +10,62 @@
             情绪记录
           </div>
 
-          <!-- 日期 -->
-          <div class="field-row">
-            <label class="field-label">日期</label>
-            <input type="date" v-model="form.date" class="date-input" :max="today" />
-          </div>
+          <!-- 可滚动字段区 -->
+          <div class="fields-scroll">
 
-          <!-- 情绪评分滑轮 -->
-          <div class="field-row">
-            <label class="field-label">
-              今日心情
-              <span class="score-badge" :style="{ background: scoreBg }">{{ form.mood_score }}</span>
-              <span class="score-label-text">{{ moodLabel }}</span>
-            </label>
-            <div class="slider-wrap">
-              <span class="slider-min">😔</span>
-              <input
-                type="range" min="1" max="10"
-                v-model.number="form.mood_score"
-                class="mood-slider"
-                :style="sliderStyle"
-              />
-              <span class="slider-max">😊</span>
+            <!-- 日期 -->
+            <div class="field-row">
+              <label class="field-label">日期</label>
+              <input type="date" v-model="form.date" class="date-input" :max="today" />
             </div>
-            <div class="slider-ticks">
-              <span v-for="n in 10" :key="n" :class="['tick', { active: n <= form.mood_score }]">{{ n }}</span>
+
+            <!-- 情绪评分滑轮 -->
+            <div class="field-row">
+              <label class="field-label">
+                今日心情
+                <span class="score-badge" :style="{ background: scoreBg }">{{ form.mood_score }}</span>
+                <span class="score-label-text">{{ moodLabel }}</span>
+              </label>
+              <div class="slider-wrap">
+                <span class="slider-min">😔</span>
+                <input
+                  type="range" min="1" max="10"
+                  v-model.number="form.mood_score"
+                  class="mood-slider"
+                  :style="sliderStyle"
+                />
+                <span class="slider-max">😊</span>
+              </div>
+              <div class="slider-ticks">
+                <span v-for="n in 10" :key="n" :class="['tick', { active: n <= form.mood_score }]">{{ n }}</span>
+              </div>
             </div>
-          </div>
 
-          <!-- 情绪标签 -->
-          <div class="field-row">
-            <label class="field-label">情绪标签</label>
-            <div class="tag-grid">
-              <button
-                v-for="tag in emotionOptions" :key="tag.label"
-                :class="['tag-btn', { selected: form.emotions.includes(tag.label) }]"
-                @click="toggleTag(tag.label)"
-              >{{ tag.emoji }} {{ tag.label }}</button>
+            <!-- 情绪标签 -->
+            <div class="field-row">
+              <label class="field-label">情绪标签</label>
+              <div class="tag-grid">
+                <button
+                  v-for="tag in emotionOptions" :key="tag.label"
+                  :class="['tag-btn', { selected: form.emotions.includes(tag.label) }]"
+                  @click="toggleTag(tag.label)"
+                >{{ tag.emoji }} {{ tag.label }}</button>
+              </div>
             </div>
+
+            <!-- 自由书写 -->
+            <div class="field-row field-row--grow">
+              <label class="field-label">今日记录</label>
+              <textarea
+                v-model="form.content"
+                class="diary-textarea"
+                placeholder="写下今天的心情……"
+              ></textarea>
+            </div>
+
           </div>
 
-          <!-- 自由书写 -->
-          <div class="field-row">
-            <label class="field-label">今日记录</label>
-            <textarea
-              v-model="form.content"
-              class="diary-textarea"
-              placeholder="写下今天的心情……"
-              rows="4"
-            ></textarea>
-          </div>
-
-          <!-- 操作 -->
+          <!-- 操作栏固定在卡片底部 -->
           <div class="editor-actions">
             <button class="btn-delete" v-if="currentEntryId" @click="handleDelete">
               <Trash2 :size="12" :stroke-width="1.5" /> 删除
@@ -409,7 +413,26 @@ onMounted(async () => {
 
 /* ── Editor ── */
 .editor-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* 字段区可独立滚动，保存栏始终固定在卡片底部 */
+.fields-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+}
+.fields-scroll::-webkit-scrollbar { width: 4px; }
+.fields-scroll::-webkit-scrollbar-thumb { background: #cfe8da; border-radius: 2px; }
+
 .field-row { padding: 10px 14px 0; }
+/* 今日记录区撑满剩余高度 */
+.field-row--grow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
+}
 .field-label {
   display: flex;
   align-items: center;
@@ -497,6 +520,7 @@ onMounted(async () => {
 /* Textarea */
 .diary-textarea {
   width: 100%;
+  flex: 1;
   resize: none;
   padding: 8px 10px;
   border: 1px solid #d0dce8;
@@ -506,6 +530,7 @@ onMounted(async () => {
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
+  min-height: 80px;
 }
 .diary-textarea:focus { border-color: #5f9e75; }
 
@@ -515,7 +540,8 @@ onMounted(async () => {
   justify-content: flex-end;
   gap: 8px;
   padding: 10px 14px 12px;
-  margin-top: auto;
+  border-top: 1px solid #e4f0e8;
+  flex-shrink: 0;
 }
 .btn-save, .btn-delete {
   display: flex;

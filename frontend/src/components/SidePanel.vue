@@ -13,23 +13,6 @@
       <button class="refresh-btn" @click="refreshTip">换一条 ↻</button>
     </div>
 
-    <!-- 线上心理资源 -->
-    <div class="panel-card resource-card">
-      <div class="panel-title">
-        <span class="title-dot"></span>
-        线上心理资源
-      </div>
-      <ul class="resource-list">
-        <li v-for="r in resources" :key="r.name" class="resource-item">
-          <span class="resource-icon"><component :is="r.icon" :size="16" :stroke-width="1.5" /></span>
-          <div class="resource-body">
-            <a href="#" class="resource-name">{{ r.name }}</a>
-            <span class="resource-tag">{{ r.tag }}</span>
-          </div>
-        </li>
-      </ul>
-    </div>
-
     <!-- 危机援助 -->
     <div class="panel-card crisis-card">
       <div class="crisis-header"><PhoneCall :size="14" :stroke-width="1.5" /> 心理援助热线</div>
@@ -54,7 +37,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Lightbulb, ClipboardList, Activity, Leaf, BookOpen, Headphones, PhoneCall } from 'lucide-vue-next'
+import { Lightbulb, PhoneCall } from 'lucide-vue-next'
 
 const tips = [
   '深呼吸练习：吸气 4 秒，屏息 4 秒，呼气 6 秒。每天练习 3 次，有效缓解焦虑。',
@@ -77,13 +60,6 @@ const refreshTip = () => {
   currentTip.value = tips[next]
 }
 
-const resources = [
-  { icon: ClipboardList, name: 'PHQ-9 抑郁自测量表', tag: '情绪评估' },
-  { icon: Activity,      name: 'GAD-7 焦虑自测量表', tag: '情绪评估' },
-  { icon: Leaf,          name: '正念冥想引导音频',    tag: '放松减压' },
-  { icon: BookOpen,      name: '心理健康科普文章库',  tag: '知识学习' },
-  { icon: Headphones,    name: '睡眠放松白噪声',      tag: '睡眠辅助' },
-]
 </script>
 
 <style scoped>
@@ -143,36 +119,6 @@ const resources = [
   transition: background 0.15s;
 }
 .refresh-btn:hover { background: #edf7f2; }
-
-/* 资源列表 */
-.resource-list {
-  list-style: none;
-  margin: 0;
-  padding: 6px 0;
-}
-.resource-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 16px;
-  border-bottom: 1px solid #f4f7fb;
-  transition: background 0.12s;
-}
-.resource-item:last-child { border-bottom: none; }
-.resource-item:hover { background: #edf7f2; }
-.resource-icon { display: flex; flex-shrink: 0; color: #5f9e75; }
-.resource-body { display: flex; flex-direction: column; gap: 1px; }
-.resource-name {
-  font-size: 13px;
-  color: #1e293b;
-  text-decoration: none;
-  transition: color 0.12s;
-}
-.resource-name:hover { color: #5f9e75; }
-.resource-tag {
-  font-size: 11px;
-  color: #94a3b8;
-}
 
 /* 危机热线 */
 .crisis-card {

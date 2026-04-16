@@ -4,13 +4,32 @@
     <div :class="['page-content', { 'chat-mode': route.path === '/chat' }]">
       <router-view />
     </div>
+
+    <!-- 树洞浮标：隐秘入口，仅在非树洞页显示 -->
+    <Transition name="float-fade">
+      <router-link
+        v-if="route.path !== '/treehouse'"
+        to="/treehouse"
+        class="treehouse-float"
+        :title="floatHovered ? '有什么想说的…' : ''"
+        @mouseenter="floatHovered = true"
+        @mouseleave="floatHovered = false"
+      >
+        <TreePine :size="20" :stroke-width="1.5" />
+        <span class="float-label" :class="{ visible: floatHovered }">树洞</span>
+      </router-link>
+    </Transition>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { TreePine } from 'lucide-vue-next'
 import NavBar from '@/components/NavBar.vue'
+
 const route = useRoute()
+const floatHovered = ref(false)
 </script>
 
 <style scoped>
@@ -33,5 +52,57 @@ const route = useRoute()
 .page-content.chat-mode {
   overflow: hidden;
   display: flex;
+}
+
+/* 树洞隐秘浮标 */
+.treehouse-float {
+  position: fixed;
+  bottom: 36px;
+  right: 28px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(120, 170, 140, 0.35);
+  color: #4a8a60;
+  border-radius: 40px;
+  padding: 10px 14px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 18px rgba(60, 120, 80, 0.12);
+  transition: background 0.2s, box-shadow 0.2s, border-color 0.2s, padding 0.2s;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.treehouse-float:hover {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 24px rgba(60, 120, 80, 0.18);
+  border-color: rgba(95, 158, 117, 0.5);
+}
+
+.float-label {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width 0.25s ease, opacity 0.2s ease;
+}
+.float-label.visible {
+  max-width: 60px;
+  opacity: 1;
+}
+
+/* 进场/离场动画 */
+.float-fade-enter-active,
+.float-fade-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.float-fade-enter-from,
+.float-fade-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
 }
 </style>

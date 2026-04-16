@@ -69,10 +69,8 @@ const legend = [
 
 <style scoped>
 .diary-preview {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #d4ede0 0%, #e4f4ec 60%, #eef8f3 100%);
   padding: 64px 0;
-  border-top: 1px solid #cfe8da;
-  border-bottom: 1px solid #cfe8da;
 }
 .inner {
   max-width: 1200px;
@@ -90,7 +88,7 @@ const legend = [
   border: 1px solid #cfe8da;
   border-radius: 0;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 157, 224,0.06);
+  box-shadow: 0 4px 20px rgba(60, 120, 80, 0.08);
 }
 .chart-header {
   display: flex;
@@ -153,7 +151,7 @@ const legend = [
 .feature-tag {
   display: inline-block;
   background: #c4e2d0;
-  color: #5f9e75;
+  color: #4d8764;
   font-size: 12px;
   font-weight: 600;
   padding: 4px 12px;
