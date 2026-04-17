@@ -167,6 +167,203 @@
       </div>
     </div>
 
+    <!-- ══ 知识库管理 ════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'resources'" class="tp-body">
+      <div class="ann-toolbar">
+        <span class="ann-count">共 {{ resList.length }} 篇文章</span>
+        <button class="ann-new-btn" @click="openResForm(null)">
+          <Plus :size="15" :stroke-width="2" /> 新建文章
+        </button>
+      </div>
+      <div v-if="resLoading" class="tp-state"><Loader2 :size="24" :stroke-width="1.5" class="spin" /><span>加载中…</span></div>
+      <div v-else-if="resError" class="tp-state tp-state-error"><AlertCircle :size="20" /><span>加载失败</span></div>
+      <div v-else-if="resList.length === 0" class="tp-state"><Library :size="36" :stroke-width="1" style="opacity:.3" /><span>暂无文章</span></div>
+      <div v-else class="tp-table-wrap">
+        <table class="tp-table">
+          <thead><tr>
+            <th style="width:60px">ID</th><th>标题</th>
+            <th style="width:100px">分类</th><th style="width:90px">状态</th>
+            <th style="width:130px">创建时间</th><th style="width:160px">操作</th>
+          </tr></thead>
+          <tbody>
+            <tr v-for="r in resList" :key="r.id">
+              <td class="td-id">#{{ r.id }}</td>
+              <td><span class="td-ann-title">{{ r.title }}</span></td>
+              <td><span class="td-cat">{{ r.category }}</span></td>
+              <td><span :class="['td-status', r.is_published ? 'status-approved' : 'status-rejected']">{{ r.is_published ? '已发布' : '未发布' }}</span></td>
+              <td class="td-time">{{ fmtDate(r.created_at) }}</td>
+              <td><div class="td-actions">
+                <button class="act-btn act-neutral" @click="openResForm(r)">编辑</button>
+                <button :class="['act-btn', r.is_published ? 'act-reject' : 'act-approve']" @click="toggleResPublish(r)">{{ r.is_published ? '下线' : '发布' }}</button>
+                <button class="act-btn act-reject" @click="doDeleteRes(r)">删除</button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 问卷管理 ════════════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'quizzes'" class="tp-body">
+      <div class="ann-toolbar">
+        <span class="ann-count">共 {{ quizList.length }} 份问卷</span>
+        <button class="ann-new-btn" @click="openQuizForm(null)">
+          <Plus :size="15" :stroke-width="2" /> 新建问卷
+        </button>
+      </div>
+      <div v-if="quizLoading" class="tp-state"><Loader2 :size="24" :stroke-width="1.5" class="spin" /><span>加载中…</span></div>
+      <div v-else-if="quizError" class="tp-state tp-state-error"><AlertCircle :size="20" /><span>加载失败</span></div>
+      <div v-else-if="quizList.length === 0" class="tp-state"><ClipboardList :size="36" :stroke-width="1" style="opacity:.3" /><span>暂无问卷</span></div>
+      <div v-else class="tp-table-wrap">
+        <table class="tp-table">
+          <thead><tr>
+            <th style="width:60px">ID</th><th>标题</th>
+            <th style="width:90px">状态</th><th style="width:130px">创建时间</th><th style="width:160px">操作</th>
+          </tr></thead>
+          <tbody>
+            <tr v-for="q in quizList" :key="q.id">
+              <td class="td-id">#{{ q.id }}</td>
+              <td><span class="td-ann-title">{{ q.title }}</span></td>
+              <td><span :class="['td-status', q.is_published ? 'status-approved' : 'status-rejected']">{{ q.is_published ? '已发布' : '未发布' }}</span></td>
+              <td class="td-time">{{ fmtDate(q.created_at) }}</td>
+              <td><div class="td-actions">
+                <button class="act-btn act-neutral" @click="openQuizForm(q)">编辑</button>
+                <button :class="['act-btn', q.is_published ? 'act-reject' : 'act-approve']" @click="toggleQuizPublish(q)">{{ q.is_published ? '下线' : '发布' }}</button>
+                <button class="act-btn act-reject" @click="doDeleteQuiz(q)">删除</button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 知识库文章弹窗 ════════════════════════════════════════════════════ -->
+    <Transition name="tp-modal">
+      <div v-if="resFormVisible" class="tp-overlay" @click.self="resFormVisible = false">
+        <div class="tp-modal tp-modal--wide">
+          <div class="tp-modal-head">
+            <span>{{ resFormData.id ? '编辑文章' : '新建文章' }}</span>
+            <button class="tp-close-btn" @click="resFormVisible = false"><X :size="18" /></button>
+          </div>
+          <div class="tp-form-group">
+            <label class="tp-label">标题</label>
+            <input v-model="resFormData.title" class="tp-input" placeholder="文章标题" maxlength="200" />
+          </div>
+          <div class="tp-form-row">
+            <div class="tp-form-group" style="flex:1">
+              <label class="tp-label">分类</label>
+              <select v-model="resFormData.category" class="tp-select">
+                <option v-for="c in RES_CATEGORIES" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+            <div class="tp-form-group tp-form-group--inline" style="flex-shrink:0;align-self:flex-end;padding-bottom:18px">
+              <label class="tp-label" style="margin:0">立即发布</label>
+              <label class="tp-toggle">
+                <input type="checkbox" v-model="resFormData.is_published" />
+                <span class="tp-toggle-track"></span>
+              </label>
+            </div>
+          </div>
+          <div class="tp-form-group">
+            <label class="tp-label">摘要 <span class="tp-optional">（选填，显示在卡片上）</span></label>
+            <textarea v-model="resFormData.summary" class="tp-textarea" rows="2" maxlength="500" placeholder="简短描述文章内容…"></textarea>
+          </div>
+          <div class="tp-form-group">
+            <div class="tp-body-label-row">
+              <label class="tp-label">正文 <span class="tp-optional">（Markdown 格式）</span></label>
+              <button class="tp-preview-toggle" type="button" @click="resBodyPreview = !resBodyPreview">{{ resBodyPreview ? '编辑' : '预览' }}</button>
+            </div>
+            <div v-if="resBodyPreview" class="tp-body-preview" v-html="renderResPreview"></div>
+            <textarea v-else v-model="resFormData.content" class="tp-textarea" rows="12" placeholder="Markdown 正文…"></textarea>
+          </div>
+          <p v-if="resFormError" class="tp-form-error">{{ resFormError }}</p>
+          <div class="tp-modal-foot">
+            <button class="tp-cancel-btn" @click="resFormVisible = false">取消</button>
+            <button class="tp-save-btn" :disabled="resFormSaving || !resFormData.title.trim()" @click="saveRes">
+              <Loader2 v-if="resFormSaving" :size="14" :stroke-width="1.5" class="spin" />
+              <Save v-else :size="14" :stroke-width="1.5" />
+              {{ resFormSaving ? '保存中…' : '保存' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- ══ 问卷编辑弹窗 ════════════════════════════════════════════════════ -->
+    <Transition name="tp-modal">
+      <div v-if="quizFormVisible" class="tp-overlay" @click.self="quizFormVisible = false">
+        <div class="tp-modal tp-modal--wide">
+          <div class="tp-modal-head">
+            <span>{{ quizFormData.id ? '编辑问卷' : '新建问卷' }}</span>
+            <button class="tp-close-btn" @click="quizFormVisible = false"><X :size="18" /></button>
+          </div>
+
+          <div class="tp-form-group">
+            <label class="tp-label">问卷标题</label>
+            <input v-model="quizFormData.title" class="tp-input" placeholder="例：PHQ-9 抑郁自测量表" maxlength="200" />
+          </div>
+          <div class="tp-form-group">
+            <label class="tp-label">说明 <span class="tp-optional">（选填）</span></label>
+            <textarea v-model="quizFormData.description" class="tp-textarea" rows="2" placeholder="向用户说明问卷用途…"></textarea>
+          </div>
+
+          <!-- 题目编辑器 -->
+          <div class="quiz-section-label">
+            题目
+            <button class="quiz-add-btn" @click="addQuestion"><Plus :size="12" /> 添加题目</button>
+          </div>
+          <div v-for="(q, qi) in quizQuestions" :key="qi" class="quiz-q-block">
+            <div class="quiz-q-header">
+              <span class="quiz-q-num">第 {{ qi + 1 }} 题</span>
+              <button class="quiz-rm-btn" @click="removeQuestion(qi)" v-if="quizQuestions.length > 1"><Trash2 :size="13" /></button>
+            </div>
+            <input v-model="q.text" class="tp-input" placeholder="题目内容" style="margin-bottom:10px" />
+            <div v-for="(opt, oi) in q.options" :key="oi" class="quiz-opt-row">
+              <input v-model="opt.text" class="tp-input quiz-opt-text" placeholder="选项文字" />
+              <input v-model.number="opt.score" type="number" class="tp-input quiz-opt-score" placeholder="分值" min="0" />
+              <button class="quiz-rm-btn" @click="removeOption(qi, oi)" v-if="q.options.length > 1"><Trash2 :size="13" /></button>
+            </div>
+            <button class="quiz-add-btn quiz-add-opt-btn" @click="addOption(qi)"><Plus :size="12" /> 添加选项</button>
+          </div>
+
+          <!-- 计分规则 -->
+          <div class="quiz-section-label" style="margin-top:20px">
+            计分区间
+            <button class="quiz-add-btn" @click="addScoring"><Plus :size="12" /> 添加区间</button>
+          </div>
+          <div v-for="(s, si) in quizScoring" :key="si" class="quiz-score-row">
+            <input v-model.number="s.min" type="number" class="tp-input quiz-score-num" placeholder="最低分" min="0" />
+            <span class="quiz-score-sep">—</span>
+            <input v-model.number="s.max" type="number" class="tp-input quiz-score-num" placeholder="最高分" min="0" />
+            <input v-model="s.label" class="tp-input quiz-score-label" placeholder="结果标签" />
+            <select v-model="s.level" class="tp-select quiz-score-level">
+              <option v-for="lv in LEVEL_OPTIONS" :key="lv" :value="lv">{{ lv }}</option>
+            </select>
+            <input v-model="s.desc" class="tp-input quiz-score-desc" placeholder="结果描述" />
+            <button class="quiz-rm-btn" @click="removeScoring(si)" v-if="quizScoring.length > 1"><Trash2 :size="13" /></button>
+          </div>
+
+          <div class="tp-form-group tp-form-group--inline" style="margin-top:16px">
+            <label class="tp-label" style="margin:0">立即发布</label>
+            <label class="tp-toggle">
+              <input type="checkbox" v-model="quizFormData.is_published" />
+              <span class="tp-toggle-track"></span>
+            </label>
+          </div>
+
+          <p v-if="quizFormError" class="tp-form-error">{{ quizFormError }}</p>
+          <div class="tp-modal-foot">
+            <button class="tp-cancel-btn" @click="quizFormVisible = false">取消</button>
+            <button class="tp-save-btn" :disabled="quizFormSaving || !quizFormData.title.trim()" @click="saveQuiz">
+              <Loader2 v-if="quizFormSaving" :size="14" class="spin" />
+              <Save v-else :size="14" />
+              {{ quizFormSaving ? '保存中…' : '保存' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- ══ 公告编辑弹窗 ═══════════════════════════════════════════════════ -->
     <Transition name="tp-modal">
       <div v-if="annFormVisible" class="tp-overlay" @click.self="annFormVisible = false">
@@ -255,20 +452,28 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import {
   ShieldCheck, TreePine, Megaphone, Loader2, AlertCircle,
-  MessageSquare, Plus, X, Save,
+  MessageSquare, Plus, X, Save, Library, ClipboardList, Trash2,
 } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import {
   adminGetPosts, reviewPost, adminDeletePost,
   adminGetAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement,
 } from '@/api/admin'
+import {
+  getAdminResources, createResource, updateResource, deleteResource,
+} from '@/api/resources'
+import {
+  getAdminQuestionnaires, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire,
+} from '@/api/questionnaires'
 
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
 
 // ── 主 Tab ────────────────────────────────────────────────────────────────────
 const MAIN_TABS = [
-  { key: 'treehole',      label: '树洞审核',  icon: TreePine   },
-  { key: 'announcements', label: '公告管理',  icon: Megaphone  },
+  { key: 'treehole',      label: '树洞审核',  icon: TreePine      },
+  { key: 'announcements', label: '公告管理',  icon: Megaphone     },
+  { key: 'resources',     label: '知识库管理', icon: Library       },
+  { key: 'quizzes',       label: '问卷管理',  icon: ClipboardList },
 ]
 const activeTab = ref('treehole')
 
@@ -452,9 +657,141 @@ const fmtDate = (isoStr) => {
   })
 }
 
+// ── 知识库 ────────────────────────────────────────────────────────────────────
+const resList    = ref([])
+const resLoading = ref(true)
+const resError   = ref(false)
+
+const loadResources = async () => {
+  resLoading.value = true; resError.value = false
+  try { resList.value = await getAdminResources() }
+  catch { resError.value = true }
+  finally { resLoading.value = false }
+}
+
+const resFormVisible = ref(false)
+const resFormSaving  = ref(false)
+const resFormError   = ref('')
+const resBodyPreview = ref(false)
+const resFormData    = reactive({ id: null, title: '', category: '情绪管理', summary: '', content: '', is_published: true })
+const RES_CATEGORIES = ['情绪管理', '压力应对', '人际关系', '睡眠健康', '危机干预']
+const renderResPreview = computed(() => md.render(resFormData.content || ''))
+
+const openResForm = (r) => {
+  resFormError.value = ''; resBodyPreview.value = false
+  Object.assign(resFormData, r
+    ? { id: r.id, title: r.title, category: r.category, summary: r.summary || '', content: r.content || '', is_published: r.is_published }
+    : { id: null, title: '', category: '情绪管理', summary: '', content: '', is_published: true })
+  resFormVisible.value = true
+}
+
+const saveRes = async () => {
+  resFormError.value = ''; resFormSaving.value = true
+  const payload = { title: resFormData.title.trim(), category: resFormData.category, summary: resFormData.summary || null, content: resFormData.content || null, is_published: resFormData.is_published }
+  try {
+    if (resFormData.id) {
+      const u = await updateResource(resFormData.id, payload)
+      const i = resList.value.findIndex(r => r.id === resFormData.id)
+      if (i !== -1) resList.value[i] = u
+    } else {
+      resList.value.unshift(await createResource(payload))
+    }
+    resFormVisible.value = false
+  } catch (e) { resFormError.value = e?.response?.data?.detail || '保存失败' }
+  finally { resFormSaving.value = false }
+}
+
+const doDeleteRes = async (r) => {
+  if (!confirm(`确认删除文章「${r.title}」？`)) return
+  try { await deleteResource(r.id); resList.value = resList.value.filter(x => x.id !== r.id) }
+  catch (e) { alert(e?.response?.data?.detail || '删除失败') }
+}
+
+const toggleResPublish = async (r) => {
+  try { const u = await updateResource(r.id, { is_published: !r.is_published }); Object.assign(r, u) }
+  catch (e) { alert(e?.response?.data?.detail || '操作失败') }
+}
+
+// ── 问卷管理 ──────────────────────────────────────────────────────────────────
+const quizList    = ref([])
+const quizLoading = ref(true)
+const quizError   = ref(false)
+
+const loadQuizzes = async () => {
+  quizLoading.value = true; quizError.value = false
+  try { quizList.value = await getAdminQuestionnaires() }
+  catch { quizError.value = true }
+  finally { quizLoading.value = false }
+}
+
+const quizFormVisible = ref(false)
+const quizFormSaving  = ref(false)
+const quizFormError   = ref('')
+const quizFormData    = reactive({ id: null, title: '', description: '', is_published: true })
+const quizQuestions   = ref([])   // [{ text, options: [{ text, score }] }]
+const quizScoring     = ref([])   // [{ min, max, label, desc, level }]
+const LEVEL_OPTIONS   = ['good', 'mild', 'moderate', 'severe']
+
+const openQuizForm = (q) => {
+  quizFormError.value = ''
+  if (q) {
+    Object.assign(quizFormData, { id: q.id, title: q.title, description: q.description || '', is_published: q.is_published })
+    try { quizQuestions.value = JSON.parse(q.questions_json || '[]') } catch { quizQuestions.value = [] }
+    try { quizScoring.value   = JSON.parse(q.scoring_json   || '[]') } catch { quizScoring.value   = [] }
+  } else {
+    Object.assign(quizFormData, { id: null, title: '', description: '', is_published: true })
+    quizQuestions.value = [{ text: '', options: [{ text: '', score: 0 }, { text: '', score: 1 }] }]
+    quizScoring.value   = [{ min: 0, max: 10, label: '正常', desc: '', level: 'good' }]
+  }
+  quizFormVisible.value = true
+}
+
+const addQuestion  = () => quizQuestions.value.push({ text: '', options: [{ text: '', score: 0 }] })
+const removeQuestion = (i) => quizQuestions.value.splice(i, 1)
+const addOption    = (qi) => quizQuestions.value[qi].options.push({ text: '', score: 0 })
+const removeOption = (qi, oi) => quizQuestions.value[qi].options.splice(oi, 1)
+const addScoring   = () => quizScoring.value.push({ min: 0, max: 0, label: '', desc: '', level: 'good' })
+const removeScoring = (i) => quizScoring.value.splice(i, 1)
+
+const saveQuiz = async () => {
+  quizFormError.value = ''; quizFormSaving.value = true
+  const payload = {
+    title: quizFormData.title.trim(),
+    description: quizFormData.description || null,
+    questions_json: JSON.stringify(quizQuestions.value),
+    scoring_json:   JSON.stringify(quizScoring.value),
+    is_published: quizFormData.is_published,
+  }
+  try {
+    if (quizFormData.id) {
+      const u = await updateQuestionnaire(quizFormData.id, payload)
+      const i = quizList.value.findIndex(q => q.id === quizFormData.id)
+      if (i !== -1) quizList.value[i] = u
+    } else {
+      quizList.value.unshift(await createQuestionnaire(payload))
+    }
+    quizFormVisible.value = false
+  } catch (e) { quizFormError.value = e?.response?.data?.detail || '保存失败' }
+  finally { quizFormSaving.value = false }
+}
+
+const doDeleteQuiz = async (q) => {
+  if (!confirm(`确认删除问卷「${q.title}」？`)) return
+  try { await deleteQuestionnaire(q.id); quizList.value = quizList.value.filter(x => x.id !== q.id) }
+  catch (e) { alert(e?.response?.data?.detail || '删除失败') }
+}
+
+const toggleQuizPublish = async (q) => {
+  try { const u = await updateQuestionnaire(q.id, { is_published: !q.is_published }); Object.assign(q, u) }
+  catch (e) { alert(e?.response?.data?.detail || '操作失败') }
+}
+
+// ── 初始化 ────────────────────────────────────────────────────────────────────
 onMounted(() => {
   loadPosts()
   loadAnnouncements()
+  loadResources()
+  loadQuizzes()
 })
 </script>
 
@@ -845,6 +1182,41 @@ onMounted(() => {
 }
 .tp-save-btn:hover:not(:disabled) { background: #4d8764; }
 .tp-save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── 宽弹窗 */
+.tp-modal--wide { max-width: 760px; max-height: 85vh; overflow-y: auto; }
+
+/* ── 表单行 */
+.tp-form-row { display: flex; gap: 16px; align-items: flex-start; }
+
+/* ── 问卷编辑器 */
+.quiz-section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 600; color: #4d7a62;
+  margin-bottom: 12px;
+}
+.quiz-add-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: none; border: 1.5px solid #bdd4c8; color: #5f9e75;
+  padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  transition: background 0.15s;
+}
+.quiz-add-btn:hover { background: #edf7f2; }
+.quiz-add-opt-btn { margin-top: 8px; }
+.quiz-q-block { background: #f5fbf7; border: 1px solid #cfe8da; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.quiz-q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.quiz-q-num { font-size: 12.5px; font-weight: 600; color: #4d8764; }
+.quiz-rm-btn { background: none; border: none; color: #e53e3e; cursor: pointer; padding: 2px; display: flex; opacity: 0.7; }
+.quiz-rm-btn:hover { opacity: 1; }
+.quiz-opt-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.quiz-opt-text { flex: 1; }
+.quiz-opt-score { width: 70px; }
+.quiz-score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.quiz-score-num   { width: 80px; }
+.quiz-score-sep   { color: #94a3b8; flex-shrink: 0; }
+.quiz-score-label { width: 90px; }
+.quiz-score-level { width: 100px; }
+.quiz-score-desc  { flex: 1; min-width: 120px; }
 
 /* 弹窗过渡 */
 .tp-modal-enter-active,

@@ -103,6 +103,81 @@ class AnnouncementAdminOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# ── Resource ──────────────────────────────────────────────────────────────────
+
+RESOURCE_CATEGORIES = {"情绪管理", "压力应对", "人际关系", "睡眠健康", "危机干预"}
+
+class ResourceCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    category: str
+    summary: Optional[str] = Field(None, max_length=500)
+    content: Optional[str] = None
+    is_published: bool = True
+
+class ResourceUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    category: Optional[str] = None
+    summary: Optional[str] = Field(None, max_length=500)
+    content: Optional[str] = None
+    is_published: Optional[bool] = None
+
+class ResourceListItem(BaseModel):
+    id: int
+    title: str
+    category: str
+    summary: Optional[str] = None
+    is_published: bool
+    created_at: datetime
+    model_config = {"from_attributes": True}
+
+class ResourceOut(BaseModel):
+    id: int
+    title: str
+    category: str
+    summary: Optional[str] = None
+    content: Optional[str] = None
+    is_published: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    model_config = {"from_attributes": True}
+
+
+# ── Questionnaire ──────────────────────────────────────────────────────────────
+
+class QuestionnaireCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = None
+    questions_json: str = "[]"
+    scoring_json: str = "[]"
+    is_published: bool = True
+
+class QuestionnaireUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = None
+    questions_json: Optional[str] = None
+    scoring_json: Optional[str] = None
+    is_published: Optional[bool] = None
+
+class QuestionnaireListItem(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    is_published: bool
+    created_at: datetime
+    model_config = {"from_attributes": True}
+
+class QuestionnaireOut(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    questions_json: str
+    scoring_json: str
+    is_published: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    model_config = {"from_attributes": True}
+
+
 # ── Diary ─────────────────────────────────────────────────────────────────────
 
 class DiaryEntryCreate(BaseModel):

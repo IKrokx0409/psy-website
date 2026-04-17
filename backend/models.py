@@ -31,6 +31,32 @@ class TreeholePost(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class Resource(Base):
+    __tablename__ = "resources"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    category = Column(String(30), nullable=False)   # 情绪管理/压力应对/人际关系/睡眠健康/危机干预
+    summary = Column(String(500), nullable=True)
+    content = Column(Text, nullable=True)            # Markdown 正文
+    is_published = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class Questionnaire(Base):
+    __tablename__ = "questionnaires"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    questions_json = Column(Text, nullable=False, default="[]")  # JSON array
+    scoring_json = Column(Text, nullable=False, default="[]")    # JSON array
+    is_published = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
 class DiaryEntry(Base):
     __tablename__ = "diary_entries"
 

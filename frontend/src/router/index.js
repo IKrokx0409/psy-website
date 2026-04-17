@@ -10,6 +10,7 @@ import Login               from '../views/Login.vue'
 import TeacherPanel        from '../views/TeacherPanel.vue'
 import AnnouncementList    from '../views/AnnouncementList.vue'
 import AnnouncementDetail  from '../views/AnnouncementDetail.vue'
+import ResourceDetail       from '../views/ResourceDetail.vue'
 
 const routes = [
   { path: '/login',                component: Login,             meta: { public: true } },
@@ -18,6 +19,7 @@ const routes = [
   { path: '/science',              component: Science,           meta: { public: true } },
   { path: '/announcements',        component: AnnouncementList,  meta: { public: true } },
   { path: '/announcements/:id',    component: AnnouncementDetail, meta: { public: true } },
+  { path: '/resources/:id',        component: ResourceDetail,     meta: { public: true } },
   { path: '/chat',                 component: Chat },
   { path: '/diary',                component: Diary },
   { path: '/appointment',          component: Appointment },

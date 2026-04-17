@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from hiagent_client import HiAgentClient
 from database import engine
 from models import Base
-from routers import announcements, treehole, admin, diary
+from routers import announcements, treehole, admin, diary, resources, questionnaires
 
 load_dotenv()
 
@@ -36,6 +36,8 @@ app.include_router(announcements.router)
 app.include_router(treehole.router)
 app.include_router(admin.router)
 app.include_router(diary.router)
+app.include_router(resources.router)
+app.include_router(questionnaires.router)
 
 client = HiAgentClient()
 

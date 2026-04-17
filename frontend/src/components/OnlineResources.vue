@@ -12,17 +12,24 @@
       </div>
 
       <div class="resources-grid">
-        <!-- 自测量表 -->
-        <div class="resource-card" v-for="r in resources" :key="r.name">
+        <router-link
+          v-for="r in resources" :key="r.name"
+          to="/science"
+          class="resource-card"
+        >
           <div class="card-icon" :style="{ background: r.bg }">
             <component :is="r.icon" :size="24" :stroke-width="1.5" :style="{ color: r.color }" />
           </div>
           <div class="card-body">
-            <a href="#" class="card-name">{{ r.name }}</a>
+            <span class="card-name">{{ r.name }}</span>
             <p class="card-desc">{{ r.desc }}</p>
           </div>
           <span class="card-tag" :style="{ background: r.tagBg, color: r.color }">{{ r.tag }}</span>
-        </div>
+        </router-link>
+      </div>
+
+      <div class="more-wrap">
+        <router-link to="/science" class="more-btn">查看全部心理资源 →</router-link>
       </div>
     </div>
   </section>
@@ -193,6 +200,22 @@ const resources = [
   font-weight: 500;
   align-self: flex-start;
 }
+
+.more-wrap { margin-top: 28px; text-align: center; }
+.more-btn {
+  display: inline-block;
+  background: #5f9e75;
+  color: white;
+  padding: 10px 28px;
+  border-radius: 2px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.more-btn:hover { background: #4d8764; }
+
+.resource-card { text-decoration: none; }
 
 @media (max-width: 1024px) {
   .resources-grid { grid-template-columns: repeat(2, 1fr); }
