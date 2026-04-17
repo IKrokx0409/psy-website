@@ -9,7 +9,7 @@
           @click="activeTab = tab"
         >{{ tab }}</button>
       </div>
-      <a href="#" class="more-link">查看全部 →</a>
+      <router-link to="/announcements" class="more-link">查看全部 →</router-link>
     </div>
 
     <div v-if="loading" class="state-row">
@@ -21,7 +21,7 @@
     <ul v-else class="news-list">
       <li v-for="item in currentList" :key="item.id" class="news-item">
         <span class="news-dot"></span>
-        <a href="#" class="news-title">{{ item.title }}</a>
+        <router-link :to="`/announcements/${item.id}`" class="news-title">{{ item.title }}</router-link>
         <span class="news-date">{{ item.published_at }}</span>
       </li>
       <li v-if="currentList.length === 0" class="news-empty">暂无相关公告</li>

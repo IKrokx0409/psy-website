@@ -197,6 +197,31 @@
             <input v-model="annFormData.published_at" type="date" class="tp-input" />
           </div>
 
+          <div class="tp-form-group">
+            <label class="tp-label">封面图 URL <span class="tp-optional">（选填）</span></label>
+            <input v-model="annFormData.cover_image" class="tp-input" placeholder="https://example.com/image.jpg" />
+          </div>
+
+          <div class="tp-form-group">
+            <div class="tp-body-label-row">
+              <label class="tp-label">正文 <span class="tp-optional">（Markdown 格式）</span></label>
+              <button
+                class="tp-preview-toggle"
+                type="button"
+                @click="bodyPreview = !bodyPreview"
+              >{{ bodyPreview ? '编辑' : '预览' }}</button>
+            </div>
+            <div v-if="bodyPreview" class="tp-body-preview" v-html="renderBodyPreview"></div>
+            <textarea
+              v-else
+              v-model="annFormData.body"
+              class="tp-textarea"
+              rows="10"
+              placeholder="支持 Markdown：**加粗**、## 标题、- 列表、| 表格 |、![图片](url)……"
+            ></textarea>
+            <div class="tp-char-count">{{ annFormData.body?.length || 0 }} 字</div>
+          </div>
+
           <div class="tp-form-group tp-form-group--inline">
             <label class="tp-label">立即发布</label>
             <label class="tp-toggle">
@@ -227,15 +252,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import {
   ShieldCheck, TreePine, Megaphone, Loader2, AlertCircle,
   MessageSquare, Plus, X, Save,
 } from 'lucide-vue-next'
+import MarkdownIt from 'markdown-it'
 import {
   adminGetPosts, reviewPost, adminDeletePost,
   adminGetAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement,
 } from '@/api/admin'
+
+const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
 
 // ── 主 Tab ────────────────────────────────────────────────────────────────────
 const MAIN_TABS = [
@@ -347,16 +375,22 @@ const doDeleteAnn = async (ann) => {
 const annFormVisible = ref(false)
 const annFormSaving  = ref(false)
 const annFormError   = ref('')
+const bodyPreview    = ref(false)
 const annFormData    = reactive({
   id: null,
   title: '',
   category: '中心公告',
   published_at: '',
   is_published: true,
+  body: '',
+  cover_image: '',
 })
+
+const renderBodyPreview = computed(() => md.render(annFormData.body || ''))
 
 const openAnnForm = (ann) => {
   annFormError.value = ''
+  bodyPreview.value = false
   if (ann) {
     Object.assign(annFormData, {
       id: ann.id,
@@ -364,6 +398,8 @@ const openAnnForm = (ann) => {
       category: ann.category,
       published_at: ann.published_at || '',
       is_published: ann.is_published,
+      body: ann.body || '',
+      cover_image: ann.cover_image || '',
     })
   } else {
     Object.assign(annFormData, {
@@ -372,6 +408,8 @@ const openAnnForm = (ann) => {
       category: '中心公告',
       published_at: new Date().toISOString().slice(0, 10),
       is_published: true,
+      body: '',
+      cover_image: '',
     })
   }
   annFormVisible.value = true
@@ -385,6 +423,8 @@ const saveAnn = async () => {
     category:     annFormData.category,
     published_at: annFormData.published_at || null,
     is_published: annFormData.is_published,
+    body:         annFormData.body || null,
+    cover_image:  annFormData.cover_image || null,
   }
   try {
     if (annFormData.id) {
@@ -716,6 +756,59 @@ onMounted(() => {
 .tp-toggle input:checked + .tp-toggle-track { background: #5f9e75; }
 .tp-toggle input:checked + .tp-toggle-track::before { transform: translateX(18px); }
 
+.tp-optional { color: #94a3b8; font-weight: 400; }
+.tp-body-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.tp-preview-toggle {
+  font-size: 12px;
+  color: #5f9e75;
+  background: none;
+  border: 1px solid #bdd4c8;
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tp-preview-toggle:hover { background: #edf7f2; }
+.tp-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #bdd4c8;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #1e3a2e;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+.tp-textarea:focus { outline: none; border-color: #5f9e75; }
+.tp-textarea::placeholder { color: #94a3b8; font-family: -apple-system, sans-serif; }
+.tp-char-count { font-size: 11.5px; color: #94a3b8; text-align: right; margin-top: 4px; }
+.tp-body-preview {
+  border: 1.5px solid #bdd4c8;
+  border-radius: 8px;
+  padding: 14px 16px;
+  min-height: 160px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #1e3a2e;
+  background: #f5fbf7;
+  overflow-y: auto;
+  max-height: 360px;
+}
+.tp-body-preview :deep(h1),
+.tp-body-preview :deep(h2),
+.tp-body-preview :deep(h3) { font-weight: 700; margin: 1em 0 0.4em; color: #1e3a2e; }
+.tp-body-preview :deep(h2) { font-size: 16px; border-bottom: 1px solid #cfe8da; padding-bottom: 4px; }
+.tp-body-preview :deep(p)  { margin: 0 0 0.8em; }
+.tp-body-preview :deep(ul),
+.tp-body-preview :deep(ol) { padding-left: 1.4em; margin: 0 0 0.8em; }
+.tp-body-preview :deep(strong) { color: #1e3a2e; }
+.tp-body-preview :deep(table) { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 0.8em; }
+.tp-body-preview :deep(th) { background: #edf7f2; padding: 7px 10px; border: 1px solid #cfe8da; text-align: left; }
+.tp-body-preview :deep(td) { padding: 7px 10px; border: 1px solid #e0f0e8; }
+.tp-body-preview :deep(blockquote) { border-left: 3px solid #5f9e75; padding: 8px 12px; background: #f0f9f4; color: #4d8764; margin: 0 0 0.8em; border-radius: 0 6px 6px 0; }
 .tp-form-error { font-size: 12.5px; color: #e53e3e; margin: 0 0 12px; }
 
 .tp-modal-foot {

@@ -5,11 +5,25 @@ from datetime import datetime
 
 # ── Announcement ──────────────────────────────────────────────────────────────
 
-class AnnouncementOut(BaseModel):
+class AnnouncementListItem(BaseModel):
+    """列表页使用，不含正文以节省带宽"""
     id: int
     title: str
     category: str
     published_at: Optional[str] = None
+    cover_image: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class AnnouncementOut(BaseModel):
+    """详情页使用，含完整正文"""
+    id: int
+    title: str
+    category: str
+    published_at: Optional[str] = None
+    body: Optional[str] = None
+    cover_image: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -63,6 +77,8 @@ class AnnouncementCreate(BaseModel):
     category: str = Field(..., pattern="^(中心公告|活动预告|心理讲座)$")
     published_at: Optional[str] = None
     is_published: bool = True
+    body: Optional[str] = None
+    cover_image: Optional[str] = None
 
 
 class AnnouncementUpdate(BaseModel):
@@ -70,6 +86,8 @@ class AnnouncementUpdate(BaseModel):
     category: Optional[str] = Field(None, pattern="^(中心公告|活动预告|心理讲座)$")
     published_at: Optional[str] = None
     is_published: Optional[bool] = None
+    body: Optional[str] = None
+    cover_image: Optional[str] = None
 
 
 class AnnouncementAdminOut(BaseModel):
@@ -78,6 +96,8 @@ class AnnouncementAdminOut(BaseModel):
     category: str
     published_at: Optional[str] = None
     is_published: bool
+    body: Optional[str] = None
+    cover_image: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

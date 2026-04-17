@@ -40,14 +40,20 @@
             管理后台
           </router-link>
 
-          <!-- 身份标识 -->
-          <div class="nav-role">
+          <!-- 已登录：身份标识 + 退出 -->
+          <div v-if="isLoggedIn" class="nav-role">
             <component :is="isTeacher ? UserCog : GraduationCap" :size="14" :stroke-width="1.5" />
             <span>{{ isTeacher ? '教师' : '学生' }}</span>
-            <button class="switch-btn" @click="switchRole" title="切换身份">
-              <ArrowLeftRight :size="12" :stroke-width="1.5" />
+            <button class="switch-btn" @click="switchRole" title="退出登录">
+              <LogOut :size="12" :stroke-width="1.5" />
             </button>
           </div>
+
+          <!-- 未登录：登录按钮 -->
+          <router-link v-else to="/login" class="nav-login-btn">
+            <LogIn :size="13" :stroke-width="1.5" />
+            登录
+          </router-link>
         </div>
       </div>
     </nav>
@@ -57,7 +63,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { GraduationCap, UserCog, ArrowLeftRight, ShieldCheck } from 'lucide-vue-next'
+import { GraduationCap, UserCog, LogOut, LogIn, ShieldCheck } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
 
 const currentDate = new Date().toLocaleDateString('zh-CN', {
@@ -66,7 +72,7 @@ const currentDate = new Date().toLocaleDateString('zh-CN', {
 
 const router = useRouter()
 const route  = useRoute()
-const { isTeacher, clearRole } = useAuth()
+const { isTeacher, isLoggedIn, clearRole } = useAuth()
 
 const isTreehouse = computed(() => route.path === '/treehouse')
 
@@ -232,6 +238,29 @@ const switchRole = () => {
   margin-left: 2px;
 }
 .switch-btn:hover { background: rgba(255, 255, 255, 0.28); }
+
+/* 未登录时的登录按钮 */
+.nav-login-btn {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 0 18px !important;
+  height: 36px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+  border-radius: 3px;
+  color: white !important;
+  font-size: 13.5px !important;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.12) !important;
+  transition: background 0.15s, border-color 0.15s !important;
+  align-self: center;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+}
+.nav-login-btn:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: white !important;
+}
 
 /* 管理后台链接 */
 .nav-admin-link {

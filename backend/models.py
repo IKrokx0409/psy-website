@@ -13,6 +13,8 @@ class Announcement(Base):
     category = Column(String(20), nullable=False)   # 中心公告 / 活动预告 / 心理讲座
     published_at = Column(String(20))               # "2026-04-07" 字符串，便于排序显示
     is_published = Column(Boolean, default=True)
+    body = Column(Text, nullable=True)              # Markdown 正文
+    cover_image = Column(String(500), nullable=True) # 封面图 URL（可选）
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

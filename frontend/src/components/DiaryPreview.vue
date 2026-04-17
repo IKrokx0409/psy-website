@@ -1,28 +1,55 @@
 <template>
   <section class="diary-preview">
     <div class="inner">
+
       <!-- 左：图表预览 -->
       <div class="chart-side">
         <div class="chart-header">
           <span class="chart-label">本周情绪追踪</span>
-          <span class="chart-sub">示例数据</span>
+          <span v-if="!isLoggedIn" class="chart-sub">示例数据</span>
+          <span v-else-if="loadingDiary" class="chart-sub">加载中…</span>
+          <span v-else class="chart-sub chart-sub--real">最近 7 天 · 你的记录</span>
         </div>
-        <div class="chart-bars">
-          <div v-for="day in weekData" :key="day.label" class="bar-col">
-            <div class="bar-wrap">
-              <div
-                class="bar-fill"
-                :style="{ height: day.val + '%', background: day.color }"
-              ></div>
+
+        <!-- 骨架屏 -->
+        <div v-if="isLoggedIn && loadingDiary" class="chart-skeleton">
+          <div v-for="i in 7" :key="i" class="skeleton-bar"></div>
+        </div>
+
+        <!-- 无记录提示 -->
+        <div v-else-if="isLoggedIn && !loadingDiary && hasNoEntries" class="no-entries">
+          <PenLine :size="32" :stroke-width="1" style="opacity:.35" />
+          <p>{{ fetchError ? '数据加载失败' : '还没有情绪记录' }}</p>
+          <router-link v-if="!fetchError" to="/diary" class="no-entries-link">去写第一篇日记 →</router-link>
+        </div>
+
+        <!-- 柱状图 -->
+        <template v-else>
+          <div class="chart-bars">
+            <div v-for="day in displayData" :key="day.label" class="bar-col">
+              <div class="bar-wrap">
+                <div
+                  class="bar-fill"
+                  :style="{ height: day.val + '%', background: day.color, opacity: day.empty ? 0.18 : 0.85 }"
+                ></div>
+              </div>
+              <div class="bar-emoji">{{ day.empty ? '·' : day.emoji }}</div>
+              <div class="bar-label">{{ day.label }}</div>
             </div>
-            <div class="bar-emoji">{{ day.emoji }}</div>
-            <div class="bar-label">{{ day.label }}</div>
           </div>
-        </div>
-        <div class="legend">
-          <span v-for="l in legend" :key="l.name" class="legend-item">
-            <span class="legend-dot" :style="{ background: l.color }"></span>{{ l.name }}
-          </span>
+          <div class="legend">
+            <span v-for="l in legend" :key="l.name" class="legend-item">
+              <span class="legend-dot" :style="{ background: l.color }"></span>{{ l.name }}
+            </span>
+          </div>
+        </template>
+
+        <!-- 未登录蒙层 -->
+        <div v-if="!isLoggedIn" class="chart-overlay">
+          <router-link to="/login" class="overlay-cta">
+            <LogIn :size="14" :stroke-width="1.5" />
+            登录后查看你的真实记录
+          </router-link>
         </div>
       </div>
 
@@ -40,24 +67,91 @@
           <li><PenLine :size="15" :stroke-width="1.5" /> 支持自由文字记录与情绪打标</li>
           <li><Bell :size="15" :stroke-width="1.5" /> 每日提醒，养成记录习惯</li>
         </ul>
-        <router-link to="/diary" class="diary-btn">开始记录情绪 →</router-link>
+        <router-link to="/diary" class="diary-btn">
+          {{ isLoggedIn ? '继续记录情绪 →' : '开始记录情绪 →' }}
+        </router-link>
       </div>
+
     </div>
   </section>
 </template>
 
 <script setup>
-import { BarChart2, Lock, PenLine, Bell } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { BarChart2, Lock, PenLine, Bell, LogIn } from 'lucide-vue-next'
+import { useAuth } from '@/composables/useAuth'
+import { useUserId } from '@/composables/useUserId'
+import { getDiaries } from '@/api/diary'
 
-const weekData = [
-  { label: '周一', val: 60, emoji: '😐', color: '#f59e0b' },
-  { label: '周二', val: 45, emoji: '😔', color: '#ef4444' },
-  { label: '周三', val: 70, emoji: '🙂', color: '#10b981' },
-  { label: '周四', val: 80, emoji: '😊', color: '#10b981' },
-  { label: '周五', val: 55, emoji: '😐', color: '#f59e0b' },
-  { label: '周六', val: 90, emoji: '😄', color: '#5f9e75' },
-  { label: '周日', val: 75, emoji: '🙂', color: '#10b981' },
+const { isLoggedIn } = useAuth()
+
+/* ── 示例数据（未登录时显示） ──────────────────────────────────────── */
+const mockData = [
+  { label: '周一', val: 60, emoji: '😐', color: '#f59e0b', empty: false },
+  { label: '周二', val: 45, emoji: '😔', color: '#ef4444', empty: false },
+  { label: '周三', val: 70, emoji: '🙂', color: '#10b981', empty: false },
+  { label: '周四', val: 80, emoji: '😊', color: '#10b981', empty: false },
+  { label: '周五', val: 55, emoji: '😐', color: '#f59e0b', empty: false },
+  { label: '周六', val: 90, emoji: '😄', color: '#5f9e75', empty: false },
+  { label: '周日', val: 75, emoji: '🙂', color: '#10b981', empty: false },
 ]
+
+/* ── 真实数据 ─────────────────────────────────────────────────────── */
+const realData     = ref([])
+const loadingDiary = ref(isLoggedIn.value)  // 已登录则直接从骨架屏开始
+const fetchError   = ref(false)
+
+const scoreToColor = (s) => {
+  if (s <= 3) return '#ef4444'
+  if (s <= 6) return '#f59e0b'
+  if (s <= 8) return '#10b981'
+  return '#5f9e75'
+}
+const scoreToEmoji = (s) => {
+  if (s <= 3) return '😔'
+  if (s <= 5) return '😐'
+  if (s <= 7) return '🙂'
+  if (s <= 9) return '😊'
+  return '😄'
+}
+const fmtDate = (d) => {
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+const dayLabel = (d) => ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()]
+
+onMounted(async () => {
+  if (!isLoggedIn.value) return
+  loadingDiary.value = true
+  try {
+    const today   = new Date()
+    const start   = new Date(today); start.setDate(today.getDate() - 6)
+    const entries = await getDiaries(useUserId(), fmtDate(start), fmtDate(today))
+    const map     = Object.fromEntries(entries.map(e => [e.date, e]))
+
+    realData.value = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(start); d.setDate(start.getDate() + i)
+      const key = fmtDate(d)
+      const entry = map[key]
+      if (entry) {
+        const s = entry.mood_score
+        return { label: dayLabel(d), val: s * 10, emoji: scoreToEmoji(s), color: scoreToColor(s), empty: false }
+      }
+      return { label: dayLabel(d), val: 100, emoji: '', color: '#e2e8f0', empty: true }
+    })
+  } catch {
+    fetchError.value = true
+  } finally {
+    loadingDiary.value = false
+  }
+})
+
+// 加载完成且全部为空占位（或 API 出错）
+const hasNoEntries = computed(() =>
+  !loadingDiary.value && (fetchError.value || realData.value.every(d => d.empty))
+)
+const displayData  = computed(() => isLoggedIn.value ? realData.value : mockData)
 
 const legend = [
   { name: '愉悦', color: '#5f9e75' },
@@ -82,13 +176,15 @@ const legend = [
   align-items: center;
 }
 
-/* 图表侧 */
+/* ── 图表侧 ──────────────────────────────────────────────────────── */
 .chart-side {
   background: white;
   border: 1px solid #cfe8da;
   border-radius: 0;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(60, 120, 80, 0.08);
+  position: relative;
+  overflow: hidden;
 }
 .chart-header {
   display: flex;
@@ -97,8 +193,47 @@ const legend = [
   margin-bottom: 20px;
 }
 .chart-label { font-size: 15px; font-weight: 600; color: #1e293b; }
-.chart-sub { font-size: 11.5px; color: #94a3b8; }
+.chart-sub   { font-size: 11.5px; color: #94a3b8; }
+.chart-sub--real { color: #5f9e75; }
 
+/* 骨架屏 */
+.chart-skeleton {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  height: 140px;
+  margin-bottom: 10px;
+}
+.skeleton-bar {
+  flex: 1;
+  height: 60%;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* 无记录 */
+.no-entries {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+.no-entries p { margin: 0; }
+.no-entries-link {
+  color: #5f9e75;
+  font-size: 13px;
+  text-decoration: none;
+  font-weight: 500;
+}
+.no-entries-link:hover { text-decoration: underline; }
+
+/* 柱状图 */
 .chart-bars {
   display: flex;
   gap: 10px;
@@ -114,22 +249,20 @@ const legend = [
   gap: 4px;
 }
 .bar-wrap {
-  flex: 1;
   width: 100%;
   background: #f1f5f9;
   border-radius: 4px;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
-  min-height: 100px;
+  height: 100px;
 }
 .bar-fill {
   width: 100%;
   border-radius: 0;
-  transition: height 0.4s ease;
-  opacity: 0.85;
+  transition: height 0.5s ease;
 }
-.bar-emoji { font-size: 14px; }
+.bar-emoji { font-size: 14px; min-height: 18px; }
 .bar-label { font-size: 11px; color: #94a3b8; }
 
 .legend {
@@ -147,7 +280,34 @@ const legend = [
 }
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-/* 文案侧 */
+/* 未登录蒙层 */
+.chart-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.overlay-cta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #5f9e75;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(60, 120, 80, 0.25);
+  transition: background 0.15s, transform 0.15s;
+}
+.overlay-cta:hover { background: #4d8764; transform: translateY(-1px); }
+
+/* ── 文案侧 ──────────────────────────────────────────────────────── */
+.text-side { }
 .feature-tag {
   display: inline-block;
   background: #c4e2d0;

@@ -90,6 +90,8 @@ async def admin_create_announcement(
         category=data.category,
         published_at=data.published_at,
         is_published=data.is_published,
+        body=data.body,
+        cover_image=data.cover_image,
     )
     db.add(ann)
     await db.commit()
