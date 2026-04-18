@@ -10,7 +10,6 @@
             情绪记录
           </div>
 
-          <!-- 可滚动字段区 -->
           <div class="fields-scroll">
 
             <!-- 日期 -->
@@ -19,7 +18,9 @@
               <input type="date" v-model="form.date" class="date-input" :max="today" />
             </div>
 
-            <!-- 情绪评分滑轮 -->
+            <div class="field-divider"></div>
+
+            <!-- 情绪评分 -->
             <div class="field-row">
               <label class="field-label">
                 今日心情
@@ -27,19 +28,21 @@
                 <span class="score-label-text">{{ moodLabel }}</span>
               </label>
               <div class="slider-wrap">
-                <span class="slider-min">😔</span>
+                <span class="slider-end">低落</span>
                 <input
                   type="range" min="1" max="10"
                   v-model.number="form.mood_score"
                   class="mood-slider"
                   :style="sliderStyle"
                 />
-                <span class="slider-max">😊</span>
+                <span class="slider-end">愉悦</span>
               </div>
               <div class="slider-ticks">
                 <span v-for="n in 10" :key="n" :class="['tick', { active: n <= form.mood_score }]">{{ n }}</span>
               </div>
             </div>
+
+            <div class="field-divider"></div>
 
             <!-- 情绪标签 -->
             <div class="field-row">
@@ -47,13 +50,15 @@
               <div class="tag-grid">
                 <button
                   v-for="tag in emotionOptions" :key="tag.label"
-                  :class="['tag-btn', { selected: form.emotions.includes(tag.label) }]"
+                  :class="['tag-btn', `tag-${tag.type}`, { selected: form.emotions.includes(tag.label) }]"
                   @click="toggleTag(tag.label)"
-                >{{ tag.emoji }} {{ tag.label }}</button>
+                >{{ tag.label }}</button>
               </div>
             </div>
 
-            <!-- 自由书写 -->
+            <div class="field-divider"></div>
+
+            <!-- 今日记录 -->
             <div class="field-row field-row--grow">
               <label class="field-label">今日记录</label>
               <textarea
@@ -65,7 +70,6 @@
 
           </div>
 
-          <!-- 操作栏固定在卡片底部 -->
           <div class="editor-actions">
             <button class="btn-delete" v-if="currentEntryId" @click="handleDelete">
               <Trash2 :size="12" :stroke-width="1.5" /> 删除
@@ -82,7 +86,6 @@
       <!-- ── 右列 ── -->
       <div class="right-col">
 
-        <!-- 上半：日历 + AI 并排 -->
         <div class="right-top">
 
           <!-- 日历 -->
@@ -110,7 +113,6 @@
               </div>
             </div>
 
-            <!-- 图例 -->
             <div class="cal-legend">
               <span v-for="l in scoreLegend" :key="l.label" class="legend-item">
                 <span class="legend-dot" :style="{ background: l.color }"></span>{{ l.label }}
@@ -118,7 +120,7 @@
             </div>
           </div>
 
-          <!-- AI 反馈占位 -->
+          <!-- AI 反馈 -->
           <div class="card ai-card">
             <div class="card-title">
               <Sparkles :size="15" :stroke-width="1.5" />
@@ -136,7 +138,7 @@
 
         </div>
 
-        <!-- 下半：情绪曲线 -->
+        <!-- 情绪曲线 -->
         <div class="card chart-card">
           <div class="card-title">
             <TrendingUp :size="15" :stroke-width="1.5" />
@@ -150,33 +152,83 @@
             </div>
           </div>
 
-          <div class="chart-wrap">
-            <svg v-if="chartPoints.length >= 2" :viewBox="`0 0 ${SVG_W} ${SVG_H}`" class="chart-svg" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#5f9e75" stop-opacity="0.3" />
-                  <stop offset="100%" stop-color="#5f9e75" stop-opacity="0.02" />
-                </linearGradient>
-              </defs>
-              <line v-for="v in [2,4,6,8,10]" :key="v"
-                :x1="PAD_L" :y1="scoreToY(v)" :x2="SVG_W - PAD_R" :y2="scoreToY(v)"
-                stroke="#e8f0ec" stroke-width="1"
-              />
-              <text v-for="v in [2,4,6,8,10]" :key="'l'+v"
-                :x="PAD_L - 6" :y="scoreToY(v) + 4"
-                font-size="10" fill="#94a3b8" text-anchor="end"
-              >{{ v }}</text>
-              <polygon :points="areaPoints" fill="url(#areaGrad)" />
-              <polyline :points="linePoints" fill="none" stroke="#5f9e75" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
-              <circle v-for="p in chartPoints" :key="p.date" :cx="p.x" :cy="p.y" r="3.5" fill="white" stroke="#5f9e75" stroke-width="2" />
-              <text v-for="p in xLabels" :key="'xl'+p.date" :x="p.x" :y="SVG_H - 3" font-size="10" fill="#94a3b8" text-anchor="middle">{{ p.label }}</text>
-            </svg>
+          <div class="chart-wrap" ref="chartWrapRef">
+            <template v-if="chartPoints.length >= 2">
+              <svg
+                :viewBox="`0 0 ${chartSvgW} ${SVG_H}`"
+                class="chart-svg"
+                preserveAspectRatio="none"
+                @mouseleave="tooltip.visible = false"
+              >
+                <defs>
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#5f9e75" stop-opacity="0.18" />
+                    <stop offset="100%" stop-color="#5f9e75" stop-opacity="0.01" />
+                  </linearGradient>
+                  <filter id="lineShadow" x="-5%" y="-80%" width="110%" height="260%">
+                    <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#5f9e75" flood-opacity="0.18" />
+                  </filter>
+                </defs>
+
+                <!-- 网格线 -->
+                <line v-for="v in GRID_VALUES" :key="v"
+                  :x1="PAD_L" :y1="scoreToY(v)" :x2="chartSvgW - PAD_R" :y2="scoreToY(v)"
+                  :stroke="v === 5 ? '#c4d8cc' : '#e8f0ec'"
+                  :stroke-width="v === 5 ? 1.5 : 1"
+                  stroke-dasharray="4 3"
+                />
+
+                <!-- Y 轴标签 -->
+                <text v-for="v in GRID_VALUES" :key="'l'+v"
+                  :x="PAD_L - 8" :y="scoreToY(v) + 4"
+                  font-size="10" fill="#b0bec5" text-anchor="end"
+                >{{ v }}</text>
+
+                <!-- 面积填充 -->
+                <polygon :points="areaPoints" fill="url(#areaGrad)" />
+
+                <!-- 折线 -->
+                <polyline :points="linePoints" fill="none" stroke="#5f9e75" stroke-width="2"
+                  stroke-linejoin="round" stroke-linecap="round"
+                  filter="url(#lineShadow)"
+                />
+
+                <!-- 数据点 -->
+                <circle
+                  v-for="p in chartPoints" :key="p.date"
+                  :cx="p.x" :cy="p.y" r="5"
+                  fill="white" stroke="#5f9e75" stroke-width="2.5"
+                  class="chart-dot"
+                  @mouseenter="showTooltip(p, $event)"
+                />
+
+                <!-- X 轴标签 -->
+                <text v-for="p in xLabels" :key="'xl'+p.date"
+                  :x="p.x" :y="SVG_H - 4"
+                  font-size="10" fill="#b0bec5" text-anchor="middle"
+                >{{ p.label }}</text>
+              </svg>
+
+              <!-- 悬浮提示 -->
+              <div
+                v-if="tooltip.visible"
+                class="chart-tooltip"
+                :style="{ left: tooltip.cssX, top: tooltip.cssY }"
+              >
+                <span class="tt-date">{{ tooltip.date }}</span>
+                <span class="tt-score" :style="{ color: SCORE_COLORS[tooltip.score - 1] }">{{ tooltip.score }} 分</span>
+                <span class="tt-label">{{ MOOD_LABELS[tooltip.score - 1] }}</span>
+              </div>
+            </template>
+
             <div v-else-if="chartLoading" class="chart-empty">
-              <Loader2 :size="16" :stroke-width="1.5" class="spin" /> 加载中…
+              <Loader2 :size="18" :stroke-width="1.5" class="spin" />
+              <span>加载中…</span>
             </div>
             <div v-else class="chart-empty">
-              <BarChart2 :size="24" :stroke-width="1" style="color:#c8d8cc" />
-              <p>近 {{ chartRange }} 天暂无记录</p>
+              <BarChart2 :size="32" :stroke-width="1" style="color:#c8d8cc" />
+              <p class="empty-title">近 {{ chartRange }} 天暂无记录</p>
+              <p class="empty-sub">开始记录，您的情绪变化将在这里呈现</p>
             </div>
           </div>
         </div>
@@ -187,7 +239,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
   BookHeart, CalendarDays, TrendingUp, Sparkles,
   BrainCircuit, Save, Trash2, ChevronLeft, ChevronRight,
@@ -197,19 +249,28 @@ import { getDiaries, saveDiary, deleteDiary } from '@/api/diary'
 import { useUserId } from '@/composables/useUserId'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
-const SVG_W = 560, SVG_H = 160
-const PAD_L = 36, PAD_R = 20, PAD_T = 12, PAD_B = 28
+const SVG_H = 200
+const PAD_L = 36, PAD_R = 20, PAD_T = 14, PAD_B = 28
 const CH = SVG_H - PAD_T - PAD_B
+const GRID_VALUES = [2, 4, 6, 8, 10]
+
+// 动态宽度：ResizeObserver 测量 chart-wrap 实际宽度，使 viewBox 精确匹配渲染尺寸，避免文字变形
+const chartSvgW = ref(560)
 
 const userId = useUserId()
 const today  = new Date().toISOString().slice(0, 10)
 
 const emotionOptions = [
-  { emoji: '😊', label: '开心' }, { emoji: '😌', label: '平静' },
-  { emoji: '😰', label: '焦虑' }, { emoji: '😔', label: '悲伤' },
-  { emoji: '😤', label: '烦躁' }, { emoji: '😴', label: '疲惫' },
-  { emoji: '🤩', label: '兴奋' }, { emoji: '😶', label: '空白' },
-  { emoji: '🥺', label: '委屈' }, { emoji: '💪', label: '充实' },
+  { label: '开心', type: 'pos' },
+  { label: '平静', type: 'pos' },
+  { label: '兴奋', type: 'pos' },
+  { label: '充实', type: 'pos' },
+  { label: '焦虑', type: 'neg' },
+  { label: '悲伤', type: 'neg' },
+  { label: '烦躁', type: 'neg' },
+  { label: '疲惫', type: 'neg' },
+  { label: '委屈', type: 'neg' },
+  { label: '空白', type: 'neu' },
 ]
 
 const MOOD_LABELS = ['很难受','难受','有些低落','有点低落','一般','还不错','较好','很好','非常好','极佳']
@@ -257,7 +318,7 @@ const handleSave = async () => {
     const jsonData = JSON.stringify({ date: form.value.date, mood_score: form.value.mood_score, mood_label: moodLabel.value, emotions: form.value.emotions, content: form.value.content, timestamp: new Date().toISOString() })
     const saved = await saveDiary({ user_id: userId, date: form.value.date, mood_score: form.value.mood_score, mood_label: moodLabel.value, emotions: form.value.emotions, content: form.value.content, json_data: jsonData })
     currentEntryId.value = saved.id
-    saveMsg.value = '记录已保存 ✓'; saveMsgType.value = 'ok'
+    saveMsg.value = '记录已保存'; saveMsgType.value = 'ok'
     await loadAllData()
   } catch { saveMsg.value = '保存失败，请检查后端连接'; saveMsgType.value = 'err' }
   finally { saving.value = false; setTimeout(() => { saveMsg.value = '' }, 3000) }
@@ -290,8 +351,8 @@ const scoreToColor = (score) => {
   return '#34d399'
 }
 const scoreLegend = [
-  { label: '1-2', color: '#fca5a5' }, { label: '3-4', color: '#fdba74' },
-  { label: '5-6', color: '#fde68a' }, { label: '7-8', color: '#86efac' }, { label: '9-10', color: '#34d399' },
+  { label: '1–2', color: '#fca5a5' }, { label: '3–4', color: '#fdba74' },
+  { label: '5–6', color: '#fde68a' }, { label: '7–8', color: '#86efac' }, { label: '9–10', color: '#34d399' },
 ]
 
 const calCells = computed(() => {
@@ -316,6 +377,8 @@ const loadEntry = (date) => {
 
 // ── Chart ──────────────────────────────────────────────────────────────────────
 const chartRange = ref(30), chartEntries = ref([]), chartLoading = ref(false)
+const chartWrapRef = ref(null)
+const tooltip = ref({ visible: false, cssX: '0px', cssY: '0px', date: '', score: 0 })
 
 const setRange = async (r) => { chartRange.value = r; await loadChartData() }
 const scoreToY = (score) => PAD_T + CH - ((score - 1) / 9) * CH
@@ -325,23 +388,53 @@ const chartPoints = computed(() => {
   if (data.length < 1) return []
   const minDate = data[0].date, maxDate = data[data.length - 1].date
   const spanMs = Math.max(new Date(maxDate) - new Date(minDate), 1)
-  const W = SVG_W - PAD_L - PAD_R
-  return data.map(e => ({ date: e.date, x: PAD_L + ((new Date(e.date) - new Date(minDate)) / spanMs) * W, y: scoreToY(e.mood_score) }))
+  const W = chartSvgW.value - PAD_L - PAD_R
+  return data.map(e => ({
+    date: e.date,
+    score: e.mood_score,
+    x: PAD_L + ((new Date(e.date) - new Date(minDate)) / spanMs) * W,
+    y: scoreToY(e.mood_score),
+  }))
 })
 
 const linePoints = computed(() => chartPoints.value.map(p => `${p.x},${p.y}`).join(' '))
+
 const areaPoints = computed(() => {
-  if (!chartPoints.value.length) return ''
-  const first = chartPoints.value[0], last = chartPoints.value[chartPoints.value.length - 1]
+  const pts = chartPoints.value
+  if (!pts.length) return ''
   const base = SVG_H - PAD_B
-  return [`${first.x},${base}`, ...chartPoints.value.map(p => `${p.x},${p.y}`), `${last.x},${base}`].join(' ')
+  return [`${pts[0].x},${base}`, ...pts.map(p => `${p.x},${p.y}`), `${pts[pts.length-1].x},${base}`].join(' ')
 })
+
 const xLabels = computed(() => {
   const pts = chartPoints.value
   if (pts.length < 2) return []
   const step = Math.max(1, Math.floor(pts.length / 6))
-  return pts.filter((_, i) => i === 0 || i === pts.length - 1 || i % step === 0).map(p => ({ date: p.date, x: p.x, label: p.date.slice(5) }))
+  return pts.filter((_, i) => i === 0 || i === pts.length - 1 || i % step === 0)
+    .map(p => ({ date: p.date, x: p.x, label: p.date.slice(5) }))
 })
+
+const showTooltip = (p, event) => {
+  const svg = event.target.closest('svg')
+  const wrap = chartWrapRef.value
+  if (!svg || !wrap) return
+  const svgRect = svg.getBoundingClientRect()
+  const wrapRect = wrap.getBoundingClientRect()
+  // viewBox 与实际宽度匹配，scaleX ≈ 1；保留精确计算以防 padding 偏差
+  const scaleX = svgRect.width / chartSvgW.value
+  const scaleY = svgRect.height / SVG_H
+  const dotX = p.x * scaleX + (svgRect.left - wrapRect.left)
+  const dotY = p.y * scaleY + (svgRect.top - wrapRect.top)
+  tooltip.value = {
+    visible: true,
+    cssX: `${dotX}px`,
+    cssY: `${dotY - 64}px`,
+    date: p.date.slice(5),
+    score: p.score,
+  }
+}
+
+let resizeObserver = null
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 const loadAllData = async () => {
@@ -370,15 +463,30 @@ onMounted(async () => {
   await loadAllData()
   const entries = await getDiaries(userId, today, today).catch(() => [])
   if (entries.length) loadFormFromEntry(entries[0])
+
+  // 测量 chart-wrap 宽度，使 viewBox 精确匹配，消除文字拉伸
+  if (chartWrapRef.value) {
+    const measure = () => {
+      const w = chartWrapRef.value?.clientWidth
+      if (w) chartSvgW.value = Math.max(200, w - 28)
+    }
+    measure()
+    resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(chartWrapRef.value)
+  }
 })
+onUnmounted(() => { resizeObserver?.disconnect() })
 </script>
 
 <style scoped>
+/* ── 基础 ── */
 .diary-page {
-  background: #f4f8f5;
-  height: calc(100vh - 108px);
+  background: #f2f6f4;
+  height: 100%;
   overflow: hidden;
   padding: 16px 0 0;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  box-sizing: border-box;
 }
 .diary-inner {
   max-width: 1280px;
@@ -394,8 +502,10 @@ onMounted(async () => {
 
 /* ── Cards ── */
 .card {
-  background: white;
-  border: 1px solid #cfe8da;
+  background: #ffffff;
+  border: 1px solid #d8ece2;
+  border-radius: 6px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -403,18 +513,18 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 10px 14px;
+  padding: 11px 16px;
   font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.02em;
   color: #1e293b;
-  background: #f5fbf7;
-  border-bottom: 1px solid #e4f0e8;
+  background: #f7fbf8;
+  border-bottom: 1px solid #e2ede7;
 }
 
-/* ── Editor ── */
+/* ── 编辑器 ── */
 .editor-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-/* 字段区可独立滚动，保存栏始终固定在卡片底部 */
 .fields-scroll {
   flex: 1;
   overflow-y: auto;
@@ -425,35 +535,44 @@ onMounted(async () => {
 .fields-scroll::-webkit-scrollbar { width: 4px; }
 .fields-scroll::-webkit-scrollbar-thumb { background: #cfe8da; border-radius: 2px; }
 
-.field-row { padding: 10px 14px 0; }
-/* 今日记录区撑满剩余高度 */
+.field-row { padding: 12px 16px 0; }
 .field-row--grow {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
 }
+.field-divider {
+  margin: 10px 16px 0;
+  border-top: 1px solid #edf3ef;
+}
+
 .field-label {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: #374151;
-  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  color: #4b5563;
+  margin-bottom: 7px;
+  text-transform: uppercase;
 }
+
 .date-input {
   width: 100%;
-  padding: 6px 9px;
+  padding: 7px 10px;
   border: 1px solid #d0dce8;
-  font-size: 12.5px;
+  border-radius: 4px;
+  font-size: 13px;
   color: #1e293b;
   outline: none;
   box-sizing: border-box;
+  font-family: inherit;
 }
-.date-input:focus { border-color: #5f9e75; }
+.date-input:focus { border-color: #5f9e75; box-shadow: 0 0 0 2px rgba(95,158,117,0.12); }
 
-/* Slider */
+/* 滑轨 */
 .score-badge {
   display: inline-flex;
   align-items: center;
@@ -466,9 +585,24 @@ onMounted(async () => {
   transition: background 0.2s;
   flex-shrink: 0;
 }
-.score-label-text { font-size: 11.5px; color: #64748b; font-weight: 400; }
-.slider-wrap { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
-.slider-min, .slider-max { font-size: 14px; flex-shrink: 0; }
+.score-label-text {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.slider-wrap { display: flex; align-items: center; gap: 10px; padding: 2px 0; }
+.slider-end {
+  font-size: 11px;
+  color: #94a3b8;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 26px;
+}
+.slider-end:last-child { text-align: right; }
 .mood-slider {
   flex: 1;
   -webkit-appearance: none;
@@ -497,86 +631,98 @@ onMounted(async () => {
   border: 2.5px solid #5f9e75;
   cursor: pointer;
 }
-.mood-slider:hover::-webkit-slider-thumb { box-shadow: 0 2px 7px rgba(95,158,117,0.45); }
-.slider-ticks { display: flex; justify-content: space-between; padding: 1px 0 0; }
-.tick { font-size: 9.5px; color: #cbd5e1; width: 10%; text-align: center; transition: color 0.15s; }
+.mood-slider:hover::-webkit-slider-thumb { box-shadow: 0 2px 8px rgba(95,158,117,0.4); }
+.slider-ticks { display: flex; justify-content: space-between; padding: 2px 0 0; }
+.tick { font-size: 9.5px; color: #d1dbe4; width: 10%; text-align: center; transition: color 0.15s; }
 .tick.active { color: #5f9e75; font-weight: 600; }
 
-/* Tags */
+/* 情绪标签 */
 .tag-grid { display: flex; flex-wrap: wrap; gap: 5px; }
 .tag-btn {
-  padding: 3px 9px;
-  border: 1px solid #d0dce8;
+  padding: 4px 11px;
+  border: 1px solid #dde6ea;
   background: none;
   font-size: 12px;
-  color: #475569;
+  color: #64748b;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 3px;
   transition: all 0.12s;
+  font-family: inherit;
+  letter-spacing: 0.01em;
 }
-.tag-btn:hover { border-color: #5f9e75; color: #5f9e75; }
-.tag-btn.selected { background: #edf7f2; border-color: #5f9e75; color: #3a7d5a; font-weight: 600; }
+.tag-btn:hover { border-color: #5f9e75; color: #3d7a58; background: #f5fbf7; }
 
-/* Textarea */
+/* 积极：绿色 */
+.tag-btn.tag-pos.selected { background: #edf7f2; border-color: #5f9e75; color: #2e6649; font-weight: 600; }
+/* 消极：玫红 */
+.tag-btn.tag-neg.selected { background: #fdf2f4; border-color: #e88ca0; color: #b84563; font-weight: 600; }
+/* 中性：灰蓝 */
+.tag-btn.tag-neu.selected { background: #f1f4f8; border-color: #8ba3b8; color: #4b6478; font-weight: 600; }
+
+/* 文本域 */
 .diary-textarea {
   width: 100%;
   flex: 1;
   resize: none;
-  padding: 8px 10px;
+  padding: 9px 11px;
   border: 1px solid #d0dce8;
-  font-size: 13px;
-  line-height: 1.65;
+  border-radius: 4px;
+  font-size: 13.5px;
+  line-height: 1.7;
   color: #1e293b;
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
   min-height: 80px;
 }
-.diary-textarea:focus { border-color: #5f9e75; }
+.diary-textarea::placeholder { color: #b0bec5; }
+.diary-textarea:focus { border-color: #5f9e75; box-shadow: 0 0 0 2px rgba(95,158,117,0.1); }
 
-/* Actions */
+/* 操作栏 */
 .editor-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 10px 14px 12px;
+  padding: 11px 16px 13px;
   border-top: 1px solid #e4f0e8;
   flex-shrink: 0;
 }
 .btn-save, .btn-delete {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 7px 18px;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  border-radius: 2px;
-  transition: background 0.15s;
+  border-radius: 4px;
+  transition: all 0.15s;
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 .btn-save { background: #5f9e75; color: white; }
-.btn-save:hover { background: #4e8a63; }
-.btn-save:disabled { background: #9fceaf; cursor: default; }
+.btn-save:hover { background: #4d8c63; }
+.btn-save:disabled { background: #a0c8b0; cursor: default; }
 .btn-delete { background: none; border: 1px solid #fca5a5; color: #dc2626; }
 .btn-delete:hover { background: #fef2f2; }
-.save-msg { padding: 0 14px 8px; font-size: 12px; text-align: right; margin: 0; }
+.save-msg { padding: 0 16px 8px; font-size: 12px; text-align: right; margin: 0; }
 .save-msg.ok { color: #16a34a; }
 .save-msg.err { color: #dc2626; }
 
-/* ── Right col layout ── */
+/* ── 右列 ── */
 .right-col { gap: 14px; }
 .right-top { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-/* ── Calendar ── */
+/* ── 日历 ── */
 .calendar-card .card-title { justify-content: flex-start; }
 .cal-nav { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-.cal-month { font-size: 12px; font-weight: 600; color: #374151; }
+.cal-month { font-size: 12px; font-weight: 600; color: #374151; letter-spacing: 0.02em; }
 .cal-arrow {
   display: flex;
   background: none;
   border: 1px solid #d0dce8;
-  border-radius: 2px;
+  border-radius: 3px;
   padding: 1px 3px;
   cursor: pointer;
   color: #5f9e75;
@@ -595,6 +741,7 @@ onMounted(async () => {
   color: #94a3b8;
   padding: 2px 0 4px;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 .cal-cell-wrap {
   display: flex;
@@ -617,75 +764,118 @@ onMounted(async () => {
   transition: all 0.12s;
   flex-shrink: 0;
   font-weight: 500;
-  position: relative;
+  font-family: inherit;
 }
 .cal-circle:hover { background: #edf7f2 !important; }
 .cal-circle.has-entry { color: rgba(0,0,0,0.55); font-weight: 700; }
 .cal-circle.is-today { box-shadow: 0 0 0 2px #5f9e75; }
-.cal-circle.is-selected { box-shadow: 0 0 0 2px #3a7d5a, 0 0 0 4px rgba(58,125,90,0.2); }
+.cal-circle.is-selected { box-shadow: 0 0 0 2px #3a7d5a, 0 0 0 4px rgba(58,125,90,0.18); }
 
 .cal-legend {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   padding: 4px 10px 10px;
 }
-.legend-item { display: flex; align-items: center; gap: 3px; font-size: 10.5px; color: #64748b; }
-.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: #64748b; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
 
-/* ── AI Card ── */
+/* ── AI 卡片 ── */
 .coming-soon {
   margin-left: auto;
   font-size: 10.5px;
-  font-weight: 400;
-  background: #fff3cd;
+  font-weight: 500;
+  background: #fff8e6;
   color: #92400e;
-  padding: 1px 7px;
-  border-radius: 2px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
 }
 .ai-body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 18px 16px 20px;
-  gap: 7px;
+  padding: 20px 16px 22px;
+  gap: 8px;
   text-align: center;
 }
 .ai-avatar {
   width: 52px; height: 52px;
   border-radius: 50%;
   background: #f0f9f4;
-  border: 1px dashed #5f9e75;
+  border: 1px dashed #7bb896;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #5f9e75;
   margin-bottom: 2px;
 }
-.ai-tip { font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5; }
+.ai-tip { font-size: 12.5px; color: #475569; margin: 0; line-height: 1.6; }
 .ai-sub { font-size: 11.5px; color: #94a3b8; margin: 0; }
 
-/* ── Chart ── */
+/* ── 情绪曲线 ── */
 .chart-card { flex: 1; display: flex; flex-direction: column; }
 .range-tabs { margin-left: auto; display: flex; gap: 4px; }
 .range-tab {
-  padding: 2px 9px;
+  padding: 2px 10px;
   font-size: 11.5px;
   border: 1px solid #d0dce8;
   background: none;
   color: #64748b;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 3px;
   transition: all 0.12s;
+  font-family: inherit;
 }
 .range-tab:hover { border-color: #5f9e75; color: #5f9e75; }
 .range-tab.active { background: #5f9e75; color: white; border-color: #5f9e75; }
-.chart-wrap { flex: 1; padding: 10px 14px 12px; display: flex; align-items: center; }
-.chart-svg { width: 100%; height: 160px; display: block; }
-.chart-empty {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 100%; height: 120px; gap: 6px; color: #94a3b8; font-size: 12.5px;
+
+.chart-wrap {
+  flex: 1;
+  padding: 12px 14px 10px;
+  display: flex;
+  align-items: center;
+  position: relative;
 }
+.chart-svg { width: 100%; height: 200px; display: block; overflow: visible; }
+.chart-dot { cursor: pointer; transition: r 0.12s; }
+.chart-dot:hover { r: 7; }
+
+/* 悬浮提示 */
+.chart-tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: white;
+  border: 1px solid #d8ece2;
+  border-radius: 5px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  pointer-events: none;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 10;
+}
+.tt-date { font-size: 10.5px; color: #94a3b8; }
+.tt-score { font-size: 16px; font-weight: 700; line-height: 1.2; }
+.tt-label { font-size: 11px; color: #64748b; }
+
+/* 空状态 */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 160px;
+  gap: 6px;
+  color: #94a3b8;
+}
+.empty-title { font-size: 13px; color: #7a9caa; margin: 0; font-weight: 500; }
+.empty-sub { font-size: 11.5px; color: #b0c4cc; margin: 0; }
+
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>

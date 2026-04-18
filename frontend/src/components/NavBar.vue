@@ -1,19 +1,5 @@
 <template>
   <header class="site-header">
-    <!-- 顶部工具条 -->
-    <div class="top-bar" :class="{ 'top-bar--dark': isTreehouse }">
-      <div class="top-bar-inner">
-        <span>哈尔滨工业大学（深圳）· 心理健康教育与咨询中心</span>
-        <div class="top-links">
-          <a href="https://www.hitsz.edu.cn" target="_blank" rel="noopener">学校官网</a>
-          <span class="divider">|</span>
-          <a href="#">教务系统</a>
-          <span class="divider">|</span>
-          <span>{{ currentDate }}</span>
-        </div>
-      </div>
-    </div>
-
     <!-- 主导航栏 -->
     <nav class="navbar" :class="isTreehouse ? 'navbar--treehouse' : 'navbar--default'">
       <div class="nav-inner">
@@ -66,10 +52,6 @@ import { useRouter, useRoute } from 'vue-router'
 import { GraduationCap, UserCog, LogOut, LogIn, ShieldCheck } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
 
-const currentDate = new Date().toLocaleDateString('zh-CN', {
-  year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
-})
-
 const router = useRouter()
 const route  = useRoute()
 const { isTeacher, isLoggedIn, clearRole } = useAuth()
@@ -84,44 +66,6 @@ const switchRole = () => {
 
 <style scoped>
 .site-header { width: 100%; }
-
-/* 顶部工具条 */
-.top-bar {
-  background: #f2f7f4;
-  border-bottom: 1px solid #bdd4c8;
-  font-size: 12px;
-  color: #4d6b56;
-  transition: background 0.3s, border-color 0.3s, color 0.3s;
-}
-.top-bar--dark {
-  background: #0e1e35;
-  border-bottom-color: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.5);
-}
-.top-bar--dark .top-links a { color: rgba(255,255,255,0.65) !important; }
-.top-bar--dark .divider { color: rgba(255,255,255,0.18) !important; }
-.top-bar--dark span { color: rgba(255,255,255,0.45); }
-
-.top-bar-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 6px 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.top-links {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.top-links a {
-  color: #5f9e75;
-  text-decoration: none;
-  font-size: 12px;
-}
-.top-links a:hover { text-decoration: underline; }
-.divider { color: #c0cce0; }
 
 /* 主导航 */
 .navbar {

@@ -1,7 +1,7 @@
 <template>
   <div class="app-shell">
     <NavBar />
-    <div :class="['page-content', { 'chat-mode': route.path === '/chat' }]">
+    <div :class="['page-content', { 'chat-mode': route.path === '/chat', 'diary-mode': route.path === '/diary' }]">
       <router-view />
     </div>
 
@@ -52,6 +52,11 @@ const floatHovered = ref(false)
 .page-content.chat-mode {
   overflow: hidden;
   display: flex;
+}
+
+/* 日记页面：不滚动，撑满剩余高度 */
+.page-content.diary-mode {
+  overflow: hidden;
 }
 
 /* 树洞隐秘浮标 */
