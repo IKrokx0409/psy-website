@@ -28,28 +28,28 @@
 </template>
 
 <script setup>
-import { MapPin, Phone, Clock, Mail } from 'lucide-vue-next'
+import { MapPin, Phone, Clock, MessageCircle } from 'lucide-vue-next'
 
 const contacts = [
   {
     icon: MapPin,
     title: '中心地址',
-    lines: ['深圳市南山区学苑大道 1688 号', '哈工大深圳校区 学生服务中心 3 楼 301 室'],
+    lines: ['哈工大（深圳）校区', 'H401A'],
   },
   {
     icon: Phone,
     title: '联系电话',
-    lines: ['预约咨询：0755-2603-3001', '危机援助（24h）：0755-2603-3002'],
+    lines: ['预约咨询：0755-26400952'],
   },
   {
     icon: Clock,
     title: '工作时间',
-    lines: ['周一 ~ 周五 09:00–12:00', '周一 ~ 周五 14:00–17:00', '（节假日除外）'],
+    lines: ['周一至周日', '8:30–11:30  /  13:30–17:00'],
   },
   {
-    icon: Mail,
-    title: '联系邮箱',
-    lines: ['mhc@hitsz.edu.cn', '微信公众号：HITSZ心理中心'],
+    icon: MessageCircle,
+    title: '微信公众号',
+    lines: ['小嗨森'],
   },
 ]
 </script>
@@ -117,7 +117,7 @@ const contacts = [
 
 /* 预约横幅 */
 .appointment-banner {
-  background: #5f9e75;
+  background: linear-gradient(135deg, #2d5a42 0%, #4a8763 100%);
   border-radius: 0;
   padding: 22px 32px;
   display: flex;

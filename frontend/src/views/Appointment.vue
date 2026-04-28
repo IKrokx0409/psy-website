@@ -4,7 +4,8 @@
       <div class="shell-icon"><CalendarDays :size="56" :stroke-width="1" /></div>
       <h2 class="shell-title">预约咨询</h2>
       <p class="shell-desc">线下一对一心理咨询预约系统，保密、专业、温暖，持续建设中……</p>
-      <p class="contact-hint">紧急情况请拨打：<strong>0755-2603-3002</strong>（24h）</p>
+      <p class="contact-hint">预约咨询请拨打：<strong>0755-26400952</strong></p>
+      <p class="contact-hint">服务时间：周一至周日 8:30–11:30 / 13:30–17:00</p>
       <router-link to="/" class="back-btn">← 返回首页</router-link>
     </div>
   </div>

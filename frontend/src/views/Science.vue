@@ -8,7 +8,7 @@
           <ChevronLeft :size="15" :stroke-width="2" /> 返回首页
         </router-link>
         <h1 class="sci-title">心理资源</h1>
-        <p class="sci-subtitle">哈尔滨工业大学（深圳）心理健康教育与咨询中心</p>
+        <p class="sci-subtitle">哈尔滨工业大学（深圳）大学生心理健康教育与咨询中心</p>
       </div>
     </div>
 
@@ -235,7 +235,7 @@ const exitQuiz  = () => { activeQuiz.value = null; quizDetail.value = null; quiz
 
 /* ── 页头 */
 .sci-header {
-  background: linear-gradient(160deg, #5f9e75 0%, #4d8764 100%);
+  background: linear-gradient(160deg, #2d5a42 0%, #4a8763 100%);
   padding: 56px 32px 48px;
   border-bottom: 3px solid rgba(255,255,255,0.2);
   box-shadow: 0 2px 6px rgba(30,100,60,0.3);

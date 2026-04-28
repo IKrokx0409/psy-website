@@ -8,7 +8,7 @@
           <ChevronLeft :size="15" :stroke-width="2" /> 返回首页
         </router-link>
         <h1 class="ann-list-title">通知公告</h1>
-        <p class="ann-list-subtitle">哈尔滨工业大学（深圳）心理健康教育与咨询中心</p>
+        <p class="ann-list-subtitle">哈尔滨工业大学（深圳）大学生心理健康教育与咨询中心</p>
       </div>
     </div>
 

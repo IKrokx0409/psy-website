@@ -4,9 +4,9 @@
       <div class="inner">
         <!-- 品牌列 -->
         <div class="footer-col brand-col">
-          <div class="footer-brand"><BrainCircuit :size="18" :stroke-width="1.5" /> 心理健康中心</div>
+          <div class="footer-brand"><BrainCircuit :size="18" :stroke-width="1.5" /> 大学生心理健康教育与咨询中心</div>
           <p class="footer-intro">
-            哈尔滨工业大学（深圳）心理健康教育与咨询中心，
+            哈尔滨工业大学（深圳）大学生心理健康教育与咨询中心，
             致力于为全校师生提供专业、温暖的心理健康服务。
           </p>
           <div class="footer-tags">
@@ -46,12 +46,12 @@
           <div class="qr-placeholder">
             <div class="qr-box">
               <Smartphone :size="32" :stroke-width="1.5" class="qr-icon" />
-              <div class="qr-label">微信公众号<br>HITSZ心理中心</div>
+              <div class="qr-label">微信公众号<br>小嗨森</div>
             </div>
           </div>
           <div class="hotline">
-            <div class="hotline-label">24h 心理援助</div>
-            <div class="hotline-number">0755-2603-3002</div>
+            <div class="hotline-label">预约咨询电话</div>
+            <div class="hotline-number">0755-26400952</div>
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@
 
     <div class="footer-bottom">
       <div class="inner bottom-inner">
-        <span>© 2026 哈尔滨工业大学（深圳）心理健康教育与咨询中心</span>
+        <span>© 2026 哈尔滨工业大学（深圳）大学生心理健康教育与咨询中心</span>
         <span>粤ICP备XXXXXXXX号</span>
       </div>
     </div>

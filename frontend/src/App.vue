@@ -1,7 +1,11 @@
 <template>
   <div class="app-shell">
     <NavBar />
-    <div :class="['page-content', { 'chat-mode': route.path === '/chat', 'diary-mode': route.path === '/diary' }]">
+    <div :class="['page-content', {
+      'chat-mode':   route.path === '/chat',
+      'diary-mode':  route.path === '/diary',
+      'course-mode': route.path.startsWith('/course/'),
+    }]">
       <router-view />
     </div>
 
@@ -57,6 +61,13 @@ const floatHovered = ref(false)
 /* 日记页面：不滚动，撑满剩余高度 */
 .page-content.diary-mode {
   overflow: hidden;
+}
+
+/* 课程详情页：不滚动，flex 向下传递 */
+.page-content.course-mode {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 树洞隐秘浮标 */

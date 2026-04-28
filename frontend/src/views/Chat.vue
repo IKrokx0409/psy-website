@@ -305,7 +305,7 @@ const sendMessage = async () => {
 .sidebar {
   width: 260px;
   min-width: 260px;
-  background: #4d8764;
+  background: linear-gradient(180deg, #2d5a42 0%, #3d6e52 100%);
   color: #c9d8f0;
   display: flex;
   flex-direction: column;
@@ -323,16 +323,16 @@ const sendMessage = async () => {
   gap: 8px;
   width: 100%;
   padding: 9px 14px;
-  background: #5f9e75;
+  background: rgba(255,255,255,0.14);
   color: white;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.25);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
 }
-.new-chat-btn:hover { background: #6aad82; }
+.new-chat-btn:hover { background: rgba(255,255,255,0.24); }
 
 .history-label {
   padding: 14px 16px 6px;
@@ -363,7 +363,7 @@ const sendMessage = async () => {
   font-size: 13.5px;
 }
 .history-item:hover { background: rgba(255,255,255,0.1); color: white; }
-.history-item.active { background: #5f9e75; color: white; }
+.history-item.active { background: rgba(255,255,255,0.18); color: white; }
 
 .history-icon { flex-shrink: 0; opacity: 0.7; }
 .history-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

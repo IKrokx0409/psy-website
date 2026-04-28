@@ -163,7 +163,7 @@ const legend = [
 
 <style scoped>
 .diary-preview {
-  background: linear-gradient(135deg, #d4ede0 0%, #e4f4ec 60%, #eef8f3 100%);
+  background: linear-gradient(135deg, #2d5a42 0%, #3d6e52 60%, #4a8763 100%);
   padding: 64px 0;
 }
 .inner {
@@ -179,10 +179,10 @@ const legend = [
 /* ── 图表侧 ──────────────────────────────────────────────────────── */
 .chart-side {
   background: white;
-  border: 1px solid #cfe8da;
-  border-radius: 0;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(60, 120, 80, 0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   position: relative;
   overflow: hidden;
 }
@@ -310,25 +310,30 @@ const legend = [
 .text-side { }
 .feature-tag {
   display: inline-block;
-  background: #c4e2d0;
-  color: #4d8764;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.9);
   font-size: 12px;
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 2px;
   margin-bottom: 16px;
+  letter-spacing: 0.5px;
 }
 .feature-title {
   font-size: 32px;
   font-weight: 700;
-  color: #1e293b;
-  line-height: 1.3;
+  font-family: 'Songti SC', 'STSong', 'SimSun', Georgia, serif;
+  color: white;
+  line-height: 1.35;
   margin: 0 0 16px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
 }
 .feature-desc {
   font-size: 14.5px;
-  color: #475569;
-  line-height: 1.75;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.8;
   margin: 0 0 20px;
 }
 .feature-points {
@@ -339,19 +344,20 @@ const legend = [
   flex-direction: column;
   gap: 10px;
 }
-.feature-points li { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #374151; }
-.feature-points li svg { color: #5f9e75; flex-shrink: 0; }
+.feature-points li { display: flex; align-items: center; gap: 8px; font-size: 14px; color: rgba(255,255,255,0.85); }
+.feature-points li svg { color: rgba(255,255,255,0.7); flex-shrink: 0; }
 
 .diary-btn {
   display: inline-block;
-  background: #5f9e75;
-  color: white;
+  background: white;
+  color: #2d5a42;
   padding: 12px 28px;
   border-radius: 2px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.15s, transform 0.15s;
+  transition: box-shadow 0.15s, transform 0.15s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
 }
-.diary-btn:hover { background: #4d8764; transform: translateY(-1px); }
+.diary-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.22); }
 </style>

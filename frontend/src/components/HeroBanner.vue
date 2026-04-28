@@ -44,8 +44,8 @@ import { Leaf, Bot, BookOpen } from 'lucide-vue-next'
 
 const slides = [
   {
-    bg: 'linear-gradient(135deg, #5f9e75 0%, #4d8764 100%)',
-    tag: '哈工大（深圳）心理健康中心',
+    bg: 'linear-gradient(135deg, #2d5a42 0%, #3d6e52 60%, #4e8a66 100%)',
+    tag: '哈工大（深圳）大学生心理健康教育与咨询中心',
     title: '陪伴每一位同学\n守护你的心灵健康',
     desc: '专业、温暖、保密。无论你正在经历什么，我们都在这里。',
     deco: Leaf,
@@ -53,7 +53,7 @@ const slides = [
     primaryLink: '/chat',
   },
   {
-    bg: 'linear-gradient(135deg, #6aad82 0%, #5f9e75 60%, #4d8764 100%)',
+    bg: 'linear-gradient(135deg, #2a4e3a 0%, #38664e 60%, #4a7d5e 100%)',
     tag: 'AI 智能疏导',
     title: '随时倾诉\n不再一个人扛',
     desc: '基于先进大语言模型，提供 7×24 小时智能情绪支持与陪伴。',
@@ -62,7 +62,7 @@ const slides = [
     primaryLink: '/chat',
   },
   {
-    bg: 'linear-gradient(135deg, #4d8764 0%, #5f9e75 100%)',
+    bg: 'linear-gradient(135deg, #264838 0%, #3d6e52 100%)',
     tag: '丰富的心理资源',
     title: '科普 · 测评 · 日记\n全方位守护心理健康',
     desc: '心理科普文章、情绪打卡日记、专业量表自测，一站式心理健康平台。',
@@ -132,11 +132,12 @@ onUnmounted(() => clearInterval(timer))
 .slide-title {
   font-size: 38px;
   font-weight: 700;
-  line-height: 1.3;
+  font-family: 'Songti SC', 'STSong', 'SimSun', Georgia, serif;
+  line-height: 1.35;
   margin: 0 0 16px;
   white-space: pre-line;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  letter-spacing: 2px;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.22);
 }
 
 .slide-desc {
@@ -151,14 +152,15 @@ onUnmounted(() => clearInterval(timer))
 .btn-primary {
   display: inline-block;
   background: white;
-  color: #5f9e75;
+  color: #2e5c41;
   padding: 11px 28px;
   border-radius: 2px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
   transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  letter-spacing: 0.5px;
 }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 

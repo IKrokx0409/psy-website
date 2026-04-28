@@ -8,7 +8,7 @@
           <img src="/logos/logo-white.png" alt="哈工大深圳" class="nav-logo" />
           <div class="brand-divider"></div>
           <div class="brand-text">
-            <div class="brand-main">心理健康教育与咨询中心</div>
+            <div class="brand-main">大学生心理健康教育与咨询中心</div>
             <div class="brand-sub">Mental Health Education &amp; Counseling Center · HITSZ</div>
           </div>
         </router-link>
@@ -19,6 +19,7 @@
           <router-link to="/science">心理资源</router-link>
           <router-link to="/chat">AI 智能疏导</router-link>
           <router-link to="/diary">情绪日记</router-link>
+          <router-link to="/course">心理课</router-link>
           <router-link to="/appointment">预约咨询</router-link>
           <router-link to="/about">关于我们</router-link>
           <router-link v-if="isTeacher" to="/teacher" class="nav-admin-link">
@@ -69,10 +70,10 @@ const switchRole = () => {
 
 /* 主导航 */
 .navbar {
-  box-shadow: 0 2px 6px rgba(30, 100, 60, 0.3);
+  box-shadow: 0 2px 10px rgba(20, 50, 30, 0.35);
   transition: background 0.3s;
 }
-.navbar--default   { background: #5f9e75; }
+.navbar--default   { background: linear-gradient(170deg, #2d5a42 0%, #4a8763 100%); }
 .navbar--treehouse { background: #1c3358; }
 .nav-inner {
   max-width: 1280px;
@@ -112,7 +113,8 @@ const switchRole = () => {
 .brand-main {
   font-size: 17px;
   font-weight: 700;
-  letter-spacing: 1px;
+  font-family: 'Songti SC', 'STSong', 'SimSun', Georgia, serif;
+  letter-spacing: 2px;
   white-space: nowrap;
   line-height: 1;
 }

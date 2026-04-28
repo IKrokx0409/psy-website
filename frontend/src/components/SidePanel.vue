@@ -13,14 +13,22 @@
       <button class="refresh-btn" @click="refreshTip">换一条 ↻</button>
     </div>
 
+    <!-- 预约咨询 -->
+    <div class="panel-card appt-card">
+      <div class="crisis-header"><CalendarDays :size="14" :stroke-width="1.5" /> 预约咨询</div>
+      <div class="crisis-lines">
+        <div class="crisis-line">
+          <span class="line-label">咨询热线</span>
+          <a href="tel:075526400952" class="line-number">0755-26400952</a>
+        </div>
+      </div>
+      <p class="crisis-note">周一至周日 8:30–11:30 / 13:30–17:00</p>
+    </div>
+
     <!-- 危机援助 -->
     <div class="panel-card crisis-card">
       <div class="crisis-header"><PhoneCall :size="14" :stroke-width="1.5" /> 心理援助热线</div>
       <div class="crisis-lines">
-        <div class="crisis-line">
-          <span class="line-label">学校热线</span>
-          <a href="tel:075526033002" class="line-number">0755-26033002</a>
-        </div>
         <div class="crisis-line">
           <span class="line-label">北京危机研究</span>
           <a href="tel:01082951332" class="line-number">010-82951332</a>
@@ -37,7 +45,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Lightbulb, PhoneCall } from 'lucide-vue-next'
+import { Lightbulb, PhoneCall, CalendarDays } from 'lucide-vue-next'
 
 const tips = [
   '深呼吸练习：吸气 4 秒，屏息 4 秒，呼气 6 秒。每天练习 3 次，有效缓解焦虑。',
@@ -119,6 +127,14 @@ const refreshTip = () => {
   transition: background 0.15s;
 }
 .refresh-btn:hover { background: #edf7f2; }
+
+/* 预约咨询 */
+.appt-card {
+  border-color: #d4e8db;
+  background: #f5fbf7;
+}
+.appt-card .crisis-header { color: #3d6e52; border-bottom-color: #d4e8db; }
+.appt-card .line-number { color: #3d6e52; }
 
 /* 危机热线 */
 .crisis-card {

@@ -53,7 +53,7 @@ onMounted(async () => {
 
 <style scoped>
 .treehole-section {
-  background: linear-gradient(135deg, #4d8764 0%, #5f9e75 100%);
+  background: linear-gradient(135deg, #2d5a42 0%, #3d6e52 60%, #4a8763 100%);
   padding: 56px 0;
 }
 .inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; }

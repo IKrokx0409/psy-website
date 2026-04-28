@@ -34,7 +34,7 @@ import SiteFooter       from '@/components/SiteFooter.vue'
 </script>
 
 <style scoped>
-.home-page { background: #f4f7fc; }
+.home-page { background: #f6f2ec; }
 
 .content-section {
   padding: 40px 0 48px;

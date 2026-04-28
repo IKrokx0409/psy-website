@@ -213,3 +213,207 @@ class DiaryEntryOut(BaseModel):
     updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+
+
+# ── Course ────────────────────────────────────────────────────────────────────
+
+class CourseCreate(BaseModel):
+    name:        str  = Field(..., min_length=1, max_length=100)
+    semester:    str  = Field(..., min_length=1, max_length=30)
+    teacher_id:  str
+    description: Optional[str] = None
+
+class CourseOut(BaseModel):
+    id:          int
+    name:        str
+    semester:    str
+    teacher_id:  str
+    description: Optional[str] = None
+    created_at:  datetime
+    model_config = {"from_attributes": True}
+
+
+# ── ClassGroup ────────────────────────────────────────────────────────────────
+
+class ClassGroupCreate(BaseModel):
+    name:       str = Field(..., min_length=1, max_length=100)
+    teacher_id: str
+
+class ClassGroupOut(BaseModel):
+    id:         int
+    course_id:  int
+    name:       str
+    teacher_id: str
+    created_at: datetime
+    model_config = {"from_attributes": True}
+
+class ClassGroupDetail(ClassGroupOut):
+    member_count:     int = 0
+    assignment_count: int = 0
+    thread_count:     int = 0
+
+
+# ── ClassMember ───────────────────────────────────────────────────────────────
+
+class MemberAdd(BaseModel):
+    student_id:   str = Field(..., min_length=1, max_length=50)
+    student_name: str = Field(..., min_length=1, max_length=50)
+
+class MemberOut(BaseModel):
+    id:           int
+    student_id:   str
+    student_name: str
+    added_at:     datetime
+    model_config = {"from_attributes": True}
+
+
+# ── Assignment ────────────────────────────────────────────────────────────────
+
+class AssignmentCreate(BaseModel):
+    title:           str  = Field(..., min_length=1, max_length=200)
+    description:     Optional[str] = None
+    due_date:        Optional[str] = None
+    type:            str  = Field(..., pattern="^(checkin|qa|paper)$")
+    # 情绪打卡
+    required_days:   Optional[int] = Field(None, ge=1)
+    start_date:      Optional[str] = None
+    # 课堂问答
+    questions_json:  Optional[str] = None   # JSON string
+    # 综合作业
+    submission_mode: Optional[str] = Field(None, pattern="^(file|markdown|both)$")
+
+class AssignmentUpdate(BaseModel):
+    title:           Optional[str] = Field(None, min_length=1, max_length=200)
+    description:     Optional[str] = None
+    due_date:        Optional[str] = None
+    required_days:   Optional[int] = Field(None, ge=1)
+    start_date:      Optional[str] = None
+    questions_json:  Optional[str] = None
+    submission_mode: Optional[str] = Field(None, pattern="^(file|markdown|both)$")
+
+class AssignmentOut(BaseModel):
+    id:              int
+    class_id:        int
+    title:           str
+    description:     Optional[str] = None
+    due_date:        Optional[str] = None
+    type:            str
+    required_days:   Optional[int] = None
+    start_date:      Optional[str] = None
+    questions_json:  Optional[str] = None
+    submission_mode: Optional[str] = None
+    created_at:      datetime
+    model_config = {"from_attributes": True}
+
+class AssignmentWithStats(AssignmentOut):
+    submission_count: int = 0
+    graded_count:     int = 0
+
+
+# ── Submission ────────────────────────────────────────────────────────────────
+
+class SubmissionCreate(BaseModel):
+    student_id:   str
+    student_name: str
+    content:      Optional[str] = None       # paper markdown
+    answers_json: Optional[str] = None       # qa answers
+
+class SubmissionGrade(BaseModel):
+    score:           Optional[int] = Field(None, ge=0, le=100)
+    teacher_comment: Optional[str] = None
+
+class SubmissionOut(BaseModel):
+    id:              int
+    assignment_id:   int
+    student_id:      str
+    student_name:    str
+    content:         Optional[str] = None
+    answers_json:    Optional[str] = None
+    file_path:       Optional[str] = None
+    file_name:       Optional[str] = None
+    score:           Optional[int] = None
+    teacher_comment: Optional[str] = None
+    submitted_at:    datetime
+    graded_at:       Optional[datetime] = None
+    model_config = {"from_attributes": True}
+
+class CheckinProgress(BaseModel):
+    assignment_id: int
+    student_id:    str
+    completed_days: int
+    required_days:  int
+
+class CheckinMemberStat(BaseModel):
+    student_id:     str
+    student_name:   str
+    completed_days: int
+    required_days:  int
+
+
+# ── CourseGroup (小组讨论) ─────────────────────────────────────────────────────
+
+class CourseGroupCreate(BaseModel):
+    name:       str = Field(..., min_length=1, max_length=100)
+    member_ids: List[str] = []
+
+class CourseGroupOut(BaseModel):
+    id:         int
+    class_id:   int
+    name:       str
+    member_ids: List[str]
+    created_at: datetime
+    model_config = {"from_attributes": True}
+
+class GroupMessageCreate(BaseModel):
+    author_id:   str
+    author_name: str
+    content:     str = Field(..., min_length=1)
+
+class GroupMessageOut(BaseModel):
+    id:          int
+    group_id:    int
+    author_id:   str
+    author_name: str
+    content:     str
+    created_at:  datetime
+    model_config = {"from_attributes": True}
+
+
+# ── Discussion ────────────────────────────────────────────────────────────────
+
+class ThreadCreate(BaseModel):
+    author_id:   str
+    author_name: str
+    title:       str  = Field(..., min_length=1, max_length=200)
+    content:     Optional[str] = None
+
+class ReplyCreate(BaseModel):
+    author_id:   str
+    author_name: str
+    content:     str = Field(..., min_length=1)
+
+class ReplyOut(BaseModel):
+    id:          int
+    thread_id:   int
+    author_id:   str
+    author_name: str
+    content:     str
+    created_at:  datetime
+    model_config = {"from_attributes": True}
+
+class ThreadOut(BaseModel):
+    id:          int
+    class_id:    int
+    author_id:   str
+    author_name: str
+    title:       str
+    content:     Optional[str] = None
+    pinned:      bool
+    created_at:  datetime
+    model_config = {"from_attributes": True}
+
+class ThreadWithReplies(ThreadOut):
+    replies: List[ReplyOut] = []
+
+class ThreadListItem(ThreadOut):
+    reply_count: int = 0

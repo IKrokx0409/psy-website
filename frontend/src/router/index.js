@@ -4,18 +4,22 @@ import Chat                from '../views/Chat.vue'
 import Diary               from '../views/Diary.vue'
 import Science             from '../views/Science.vue'
 import Appointment         from '../views/Appointment.vue'
-import About               from '../views/About.vue'
+// About redirects to external site — no component needed
 import Treehouse           from '../views/Treehouse.vue'
 import Login               from '../views/Login.vue'
 import TeacherPanel        from '../views/TeacherPanel.vue'
 import AnnouncementList    from '../views/AnnouncementList.vue'
 import AnnouncementDetail  from '../views/AnnouncementDetail.vue'
 import ResourceDetail       from '../views/ResourceDetail.vue'
+import CourseCenter         from '../views/CourseCenter.vue'
+import ClassHome            from '../views/ClassHome.vue'
+import AssignmentDetail     from '../views/AssignmentDetail.vue'
+import DiscussionDetail     from '../views/DiscussionDetail.vue'
 
 const routes = [
   { path: '/login',                component: Login,             meta: { public: true } },
   { path: '/',                     component: Home,              meta: { public: true } },
-  { path: '/about',                component: About,             meta: { public: true } },
+  { path: '/about', beforeEnter() { window.location.href = 'http://xg.hitsz.edu.cn/xlzx/zxgk1/zxjj.htm' }, component: { render: () => null } },
   { path: '/science',              component: Science,           meta: { public: true } },
   { path: '/announcements',        component: AnnouncementList,  meta: { public: true } },
   { path: '/announcements/:id',    component: AnnouncementDetail, meta: { public: true } },
@@ -24,6 +28,10 @@ const routes = [
   { path: '/diary',                component: Diary },
   { path: '/appointment',          component: Appointment },
   { path: '/treehouse',            component: Treehouse },
+  { path: '/course',               component: CourseCenter },
+  { path: '/course/:classId',      component: ClassHome },
+  { path: '/course/:classId/assignment/:assignmentId', component: AssignmentDetail },
+  { path: '/course/:classId/discuss/:threadId',        component: DiscussionDetail },
   { path: '/teacher',              component: TeacherPanel,      meta: { teacherOnly: true } },
 ]
 

@@ -3,14 +3,21 @@
     <div class="shell-inner">
       <div class="shell-icon"><Building2 :size="56" :stroke-width="1" /></div>
       <h2 class="shell-title">关于我们</h2>
-      <p class="shell-desc">中心简介、咨询师团队、服务理念介绍，持续建设中……</p>
-      <router-link to="/" class="back-btn">← 返回首页</router-link>
+      <p class="shell-desc">正在跳转至学校官网中心介绍页……</p>
+      <a :href="TARGET_URL" class="back-btn" target="_blank" rel="noopener">立即前往 →</a>
     </div>
   </div>
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { Building2 } from 'lucide-vue-next'
+
+const TARGET_URL = 'http://xg.hitsz.edu.cn/xlzx/zxgk1/zxjj.htm'
+
+onMounted(() => {
+  window.location.href = TARGET_URL
+})
 </script>
 
 <style scoped>

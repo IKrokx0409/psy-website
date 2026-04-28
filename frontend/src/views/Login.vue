@@ -5,7 +5,7 @@
       <div class="login-header">
         <BrainCircuit :size="36" :stroke-width="1.2" class="header-icon" />
         <div>
-          <div class="header-title">哈工大（深圳）心理健康中心</div>
+          <div class="header-title">哈工大（深圳）大学生心理健康教育与咨询中心</div>
           <div class="header-sub">请选择您的登录身份以继续</div>
         </div>
       </div>

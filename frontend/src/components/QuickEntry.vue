@@ -31,9 +31,10 @@ const entries = [
 
 <style scoped>
 .quick-entry {
-  background: white;
-  border-bottom: 1px solid #cfe8da;
-  box-shadow: 0 4px 16px rgba(0, 157, 224, 0.07);
+  background: #f4f9f5;
+  border-top: 3px solid #4a8763;
+  border-bottom: 1px solid #dde8e2;
+  box-shadow: 0 4px 16px rgba(30, 60, 40, 0.07);
 }
 .inner {
   max-width: 1200px;
@@ -50,20 +51,20 @@ const entries = [
   padding: 22px 20px;
   text-decoration: none;
   color: inherit;
-  border-right: 1px solid #eef2fa;
-  transition: background 0.15s, transform 0.15s;
+  border-right: 1px solid #ede8e0;
+  transition: background 0.18s;
   position: relative;
 }
 .entry-card:last-child { border-right: none; }
 .entry-card:hover {
-  background: #edf7f2;
+  background: #fdf6ec;
 }
 .entry-card::after {
   content: '';
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 3px;
-  background: #5f9e75;
+  background: linear-gradient(90deg, #c9a96e, #d4b87a);
   transform: scaleX(0);
   transition: transform 0.2s;
 }
