@@ -34,6 +34,7 @@ class TreeholePostCreate(BaseModel):
     anonymous_name: str = Field(..., min_length=2, max_length=20)
     content: str = Field(..., min_length=5, max_length=500)
     tags: List[str] = []
+    visibility: str = Field("public", pattern="^(public|bottle_only)$")
 
 
 class TreeholePostOut(BaseModel):
@@ -41,6 +42,7 @@ class TreeholePostOut(BaseModel):
     anonymous_name: str
     content: str
     tags: List[str]
+    visibility: str
     created_at: datetime
 
     model_config = {"from_attributes": True}

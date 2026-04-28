@@ -1,8 +1,9 @@
 import secrets
-from fastapi import APIRouter, Depends, HTTPException
+import random
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import List
+from sqlalchemy import select, and_
+from typing import List, Optional
 
 from database import get_db
 from models import TreeholePost
@@ -20,11 +21,22 @@ router = APIRouter(prefix="/api/treehole", tags=["treehole"])
 async def get_posts(db: AsyncSession = Depends(get_db)):
     stmt = (
         select(TreeholePost)
-        .where(TreeholePost.status == "approved")
+        .where(and_(TreeholePost.status == "approved", TreeholePost.visibility == "public"))
         .order_by(TreeholePost.created_at.desc())
     )
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+@router.get("/bottle", response_model=Optional[TreeholePostOut])
+async def get_bottle(exclude_id: Optional[int] = Query(None), db: AsyncSession = Depends(get_db)):
+    stmt = select(TreeholePost).where(TreeholePost.status == "approved")
+    if exclude_id is not None:
+        stmt = stmt.where(TreeholePost.id != exclude_id)
+    posts = (await db.execute(stmt)).scalars().all()
+    if not posts:
+        return None
+    return random.choice(posts)
 
 
 @router.post("", response_model=TreeholePostCreateResponse, status_code=201)
@@ -34,6 +46,7 @@ async def create_post(data: TreeholePostCreate, db: AsyncSession = Depends(get_d
         anonymous_name=data.anonymous_name,
         content=data.content,
         tags=data.tags,
+        visibility=data.visibility,
         status="pending",
         author_token=token,
     )

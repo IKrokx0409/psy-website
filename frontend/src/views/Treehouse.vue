@@ -28,8 +28,10 @@
         <h1 class="th-title">校园树洞</h1>
         <p class="th-subtitle">说出你的故事，这里有人在听<br>每一条心声都会被温柔对待</p>
         <div class="th-header-actions">
-          <button class="th-bottle-trigger" @click="fetchBottle" :disabled="posts.length === 0">
-            <Waves :size="15" :stroke-width="1.5" /> 捞一条漂流瓶
+          <button class="th-bottle-trigger" @click="fetchBottle" :disabled="fetchingBottle">
+            <Loader2 v-if="fetchingBottle" :size="15" :stroke-width="1.5" class="spin" />
+            <Waves v-else :size="15" :stroke-width="1.5" />
+            捞一条漂流瓶
           </button>
           <button class="th-compose-btn" @click="showCompose = true">
             <PenLine :size="15" :stroke-width="1.5" /> 说点什么
@@ -101,18 +103,27 @@
         <div class="th-bottle-card">
           <div class="th-bottle-header">
             <Waves :size="18" :stroke-width="1.5" />
-            <span>你捞到了一条漂流瓶</span>
+            <span>{{ bottle._empty ? '大海空空如也' : '你捞到了一条漂流瓶' }}</span>
           </div>
-          <span class="th-name th-bottle-name">{{ bottle.anonymous_name }}</span>
-          <p class="th-bottle-content">{{ bottle.content }}</p>
-          <div class="th-tags th-bottle-tags">
-            <span v-for="tag in bottle.tags" :key="tag" :class="['th-tag', tagClass(tag)]">
-              {{ tag }}
-            </span>
-          </div>
+          <template v-if="bottle._empty">
+            <p class="th-bottle-content" style="opacity:0.5;font-style:italic">
+              大海里还没有漂流瓶，快来投下第一条吧
+            </p>
+          </template>
+          <template v-else>
+            <span class="th-name th-bottle-name">{{ bottle.anonymous_name }}</span>
+            <p class="th-bottle-content">{{ bottle.content }}</p>
+            <div class="th-tags th-bottle-tags">
+              <span v-for="tag in bottle.tags" :key="tag" :class="['th-tag', tagClass(tag)]">
+                {{ tag }}
+              </span>
+            </div>
+          </template>
           <div class="th-bottle-foot">
-            <button class="th-bottle-again" @click="fetchBottle">
-              <Shuffle :size="13" :stroke-width="1.5" /> 再捞一条
+            <button v-if="!bottle._empty" class="th-bottle-again" @click="fetchBottle" :disabled="fetchingBottle">
+              <Loader2 v-if="fetchingBottle" :size="13" :stroke-width="1.5" class="spin" />
+              <Shuffle v-else :size="13" :stroke-width="1.5" />
+              再捞一条
             </button>
             <button class="th-bottle-close" @click="bottle = null">放回大海</button>
           </div>
@@ -154,6 +165,28 @@
           </div>
 
           <div class="th-form-group">
+            <div class="th-form-label">可见范围</div>
+            <div class="th-vis-row">
+              <button
+                :class="['th-vis-opt', { active: form.visibility === 'public' }]"
+                @click="form.visibility = 'public'"
+              >
+                <span class="th-vis-dot th-vis-dot--public"></span>
+                公开
+                <span class="th-vis-hint">出现在下方列表</span>
+              </button>
+              <button
+                :class="['th-vis-opt', { active: form.visibility === 'bottle_only' }]"
+                @click="form.visibility = 'bottle_only'"
+              >
+                <span class="th-vis-dot th-vis-dot--bottle"></span>
+                仅投入大海
+                <span class="th-vis-hint">只能靠漂流瓶捞到</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="th-form-group">
             <div class="th-form-label">选择你的匿名身份</div>
             <div class="th-nickname-row">
               <select v-model="form.adjective" class="th-select">
@@ -171,7 +204,9 @@
 
           <div class="th-modal-foot">
             <p v-if="submitError" class="th-submit-error">{{ submitError }}</p>
-            <p v-if="submitSuccess" class="th-submit-ok">已提交！通过审核后将公开显示。</p>
+            <p v-if="submitSuccess" class="th-submit-ok">
+              已提交！通过审核后将{{ submittedVisibility === 'bottle_only' ? '投入大海，等待漂流瓶打捞' : '公开显示' }}。
+            </p>
             <button
               class="th-submit-btn"
               :disabled="submitting || form.content.trim().length < 5"
@@ -196,7 +231,7 @@ import {
   TreePine, PenLine, Waves, Loader2, AlertCircle,
   MessageCircle, Trash2, X, Shuffle, Send,
 } from 'lucide-vue-next'
-import { getPosts, createPost, requestDelete, getMyToken } from '@/api/treehole'
+import { getPosts, createPost, requestDelete, getMyToken, getBottle } from '@/api/treehole'
 
 // ── 昵称数据 ──────────────────────────────────────────────────────────
 const ADJECTIVES = [
@@ -273,20 +308,32 @@ onMounted(async () => {
 })
 
 // ── 漂流瓶 ───────────────────────────────────────────────────────────
-const bottle = ref(null)
+const bottle         = ref(null)
+const fetchingBottle = ref(false)
+const bottleEmpty    = ref(false)
 
-const fetchBottle = () => {
-  if (!posts.value.length) return
-  const pool = posts.value.filter(p => bottle.value ? p.id !== bottle.value.id : true)
-  const src = pool.length ? pool : posts.value
-  bottle.value = src[Math.floor(Math.random() * src.length)]
+const fetchBottle = async () => {
+  fetchingBottle.value = true
+  bottleEmpty.value = false
+  try {
+    const result = await getBottle(bottle.value?.id)
+    if (!result) {
+      bottleEmpty.value = true
+      bottle.value = { _empty: true }
+    } else {
+      bottle.value = result
+    }
+  } finally {
+    fetchingBottle.value = false
+  }
 }
 
 // ── 发帖表单 ─────────────────────────────────────────────────────────
-const showCompose = ref(false)
-const submitting = ref(false)
-const submitError = ref('')
-const submitSuccess = ref(false)
+const showCompose        = ref(false)
+const submitting         = ref(false)
+const submitError        = ref('')
+const submitSuccess      = ref(false)
+const submittedVisibility = ref('public')
 
 const randItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
 
@@ -295,6 +342,7 @@ const form = reactive({
   tags: [],
   adjective: randItem(ADJECTIVES),
   noun: randItem(NOUNS),
+  visibility: 'public',
 })
 
 const randomize = () => {
@@ -318,16 +366,19 @@ const submitPost = async () => {
   submitSuccess.value = false
   submitting.value = true
   try {
+    submittedVisibility.value = form.visibility
     await createPost({
       anonymous_name: form.adjective + form.noun,
       content: form.content.trim(),
       tags: form.tags,
+      visibility: form.visibility,
     })
     submitSuccess.value = true
     form.content = ''
     form.tags = []
     form.adjective = randItem(ADJECTIVES)
     form.noun = randItem(NOUNS)
+    form.visibility = 'public'
   } catch (e) {
     submitError.value = e?.response?.data?.detail || '提交失败，请稍后重试'
   } finally {
@@ -796,6 +847,48 @@ const timeAgo = (isoStr) => {
 }
 .th-submit-btn:hover:not(:disabled) { background: #2e6aa0; }
 .th-submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── 可见范围切换 ─────────────────────────────────────────────────────── */
+.th-vis-row {
+  display: flex;
+  gap: 10px;
+}
+.th-vis-opt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(91, 159, 212, 0.05);
+  border: 1.5px solid rgba(91, 159, 212, 0.15);
+  border-radius: 10px;
+  color: #7ab0d8;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  text-align: left;
+}
+.th-vis-opt:hover { border-color: rgba(91, 159, 212, 0.35); color: #d0e8f8; }
+.th-vis-opt.active {
+  border-color: #7cc4f0;
+  background: rgba(91, 159, 212, 0.12);
+  color: #e0f0fb;
+}
+.th-vis-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.th-vis-dot--public  { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+.th-vis-dot--bottle  { background: #38c2ff; box-shadow: 0 0 6px rgba(56,194,255,0.5); }
+.th-vis-hint {
+  font-size: 11px;
+  color: #3d6898;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.th-vis-opt.active .th-vis-hint { color: #7ab0d8; }
 
 /* ── 弹窗过渡 ─────────────────────────────────────────────────────────── */
 .th-modal-enter-active,

@@ -27,7 +27,8 @@ class TreeholePost(Base):
     tags = Column(ARRAY(String), default=[])
     # pending → approved / rejected；approved → delete_requested
     status = Column(String(20), nullable=False, default="pending")
-    author_token = Column(String(64), nullable=False)   # 不对外暴露，用于验证删除权限
+    visibility = Column(String(20), nullable=False, default="public")  # public | bottle_only
+    author_token = Column(String(64), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

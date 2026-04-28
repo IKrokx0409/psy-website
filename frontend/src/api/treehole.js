@@ -13,8 +13,12 @@ const saveToken = (postId, token) => {
 /** 查询本地是否持有某帖子的 author_token */
 export const getMyToken = (postId) => getMyTokens()[String(postId)] || null
 
-/** 获取所有已审核帖子 */
+/** 获取所有已审核公开帖子 */
 export const getPosts = () => http.get('/api/treehole').then(r => r.data)
+
+/** 随机捞一条漂流瓶（含仅投大海的帖子），可传 excludeId 避免重复 */
+export const getBottle = (excludeId) =>
+  http.get('/api/treehole/bottle', { params: excludeId ? { exclude_id: excludeId } : {} }).then(r => r.data)
 
 /** 发布新帖，成功后自动将 author_token 存入 localStorage */
 export const createPost = async (data) => {
