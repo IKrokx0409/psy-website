@@ -58,6 +58,7 @@ async def create_post(data: TreeholePostCreate, db: AsyncSession = Depends(get_d
         anonymous_name=post.anonymous_name,
         content=post.content,
         tags=post.tags or [],
+        visibility=post.visibility,
         created_at=post.created_at,
         author_token=token,
     )

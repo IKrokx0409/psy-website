@@ -244,11 +244,11 @@ const doGrade = async () => {
 
 .ad-body { max-width: 860px; margin: 0 auto; padding: 24px; }
 
-.ad-info-card { background: white; border: 1px solid #e8e0d4; border-radius: 6px; padding: 20px; margin-bottom: 24px; }
+.ad-info-card { background: white; border: 1px solid var(--c-beige-border); border-radius: var(--r-lg); padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow-xs); }
 .ad-info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .ad-info-label { font-size: 12.5px; font-weight: 600; color: #7a9080; width: 72px; flex-shrink: 0; }
-.type-badge { font-size: 12.5px; background: #f0ebe2; color: #7a9080; padding: 2px 10px; border-radius: 3px; }
-.due-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; padding: 2px 10px; border-radius: 3px; }
+.type-badge { font-size: 12.5px; background: #f0ebe2; color: #7a9080; padding: 2px 10px; border-radius: var(--r-pill); }
+.due-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; padding: 2px 10px; border-radius: var(--r-pill); }
 .due-ok { background: #e8f5ef; color: #3d6e52; }
 .due-overdue { background: #fdf2f2; color: #b84545; }
 .ad-desc { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0ebe2; font-size: 14px; line-height: 1.75; color: #374151; }
@@ -256,46 +256,46 @@ const doGrade = async () => {
 .ad-desc :deep(ul), .ad-desc :deep(ol) { padding-left: 20px; margin: 0 0 10px; }
 
 .section-title { font-size: 14px; font-weight: 700; color: #3d6e52; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
-.section-badge { background: #e8f5ef; color: #3d6e52; font-size: 12px; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
+.section-badge { background: #e8f5ef; color: #3d6e52; font-size: 12px; padding: 1px 8px; border-radius: var(--r-pill); font-weight: 600; }
 
 /* ── 提交卡片（教师视图）── */
-.submission-card { background: white; border: 1px solid #e8e0d4; border-radius: 5px; margin-bottom: 10px; overflow: hidden; }
+.submission-card { background: white; border: 1px solid var(--c-beige-border); border-radius: var(--r-lg); margin-bottom: 10px; overflow: hidden; box-shadow: var(--shadow-xs); }
 .sub-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f0ebe2; }
 .sub-student { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #1c2b22; }
 .sub-time { font-size: 12px; color: #94a3b8; font-weight: 400; margin-left: 8px; }
 .sub-grade-info { display: flex; align-items: center; gap: 10px; }
-.score-badge { font-size: 13px; font-weight: 700; color: #3d6e52; background: #e8f5ef; padding: 2px 10px; border-radius: 3px; }
+.score-badge { font-size: 13px; font-weight: 700; color: #3d6e52; background: #e8f5ef; padding: 2px 10px; border-radius: var(--r-pill); }
 .score-pending { font-size: 12.5px; color: #94a3b8; }
-.btn-grade { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background: #3d6e52; color: white; border: none; border-radius: 3px; font-size: 12.5px; cursor: pointer; transition: background 0.15s; }
+.btn-grade { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background: #3d6e52; color: white; border: none; border-radius: var(--r-xs); font-size: 12.5px; cursor: pointer; transition: background var(--t-base); }
 .btn-grade:hover { background: #2d5a42; }
 .sub-content { padding: 12px 16px; font-size: 13.5px; color: #374151; line-height: 1.7; white-space: pre-wrap; }
 .sub-comment { padding: 8px 16px 12px; font-size: 12.5px; color: #7a9080; display: flex; align-items: center; gap: 6px; border-top: 1px solid #f0ebe2; }
 
 /* ── 学生视图 ── */
-.my-submission-card { background: white; border: 1px solid #e8e0d4; border-radius: 5px; padding: 16px; margin-bottom: 20px; }
+.my-submission-card { background: white; border: 1px solid var(--c-beige-border); border-radius: var(--r-lg); padding: 16px; margin-bottom: 20px; box-shadow: var(--shadow-xs); }
 .sub-time-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: #7a9080; }
-.score-badge-lg { font-size: 16px; font-weight: 700; color: #3d6e52; background: #e8f5ef; padding: 3px 14px; border-radius: 4px; }
+.score-badge-lg { font-size: 16px; font-weight: 700; color: #3d6e52; background: #e8f5ef; padding: 3px 14px; border-radius: var(--r-pill); }
 .my-content { font-size: 14px; line-height: 1.75; color: #374151; white-space: pre-wrap; margin-bottom: 14px; }
-.my-comment { background: #f5fbf7; border: 1px solid #d4e8db; border-radius: 4px; padding: 12px 14px; }
+.my-comment { background: #f5fbf7; border: 1px solid #d4e8db; border-radius: var(--r-sm); padding: 12px 14px; }
 .my-comment-label { font-size: 12.5px; font-weight: 600; color: #3d6e52; display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
 .my-comment-text { font-size: 13.5px; color: #374151; line-height: 1.6; }
-.btn-resubmit { margin-top: 14px; padding: 7px 16px; background: none; border: 1.5px solid #d4e8db; border-radius: 4px; color: #3d6e52; font-size: 13px; cursor: pointer; }
+.btn-resubmit { margin-top: 14px; padding: 7px 16px; background: none; border: 1.5px solid #d4e8db; border-radius: var(--r-sm); color: #3d6e52; font-size: 13px; cursor: pointer; transition: background var(--t-base); }
 .btn-resubmit:hover { background: #f0fbf4; }
 
-.submit-form { background: white; border: 1px solid #e8e0d4; border-radius: 5px; padding: 16px; }
+.submit-form { background: white; border: 1px solid var(--c-beige-border); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow-xs); }
 .submit-textarea { width: 100%; border: 1px solid #ddd6cc; border-radius: 4px; padding: 10px 12px; font-size: 14px; line-height: 1.75; color: #1c2b22; background: #fdfaf5; font-family: inherit; resize: vertical; outline: none; box-sizing: border-box; min-height: 160px; }
 .submit-textarea:focus { border-color: #4a8763; box-shadow: 0 0 0 2px rgba(74,135,99,0.1); }
 .submit-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
 
 /* ── 通用 ── */
-.btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #3d6e52; color: white; border: none; border-radius: 4px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: var(--c-green-deep); color: white; border: none; border-radius: var(--r-sm); font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background var(--t-base); }
 .btn-primary:hover:not(:disabled) { background: #2d5a42; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-cancel { padding: 8px 18px; border: 1.5px solid #d4e8db; border-radius: 4px; background: white; color: #3d6e52; font-size: 13.5px; cursor: pointer; }
+.btn-cancel { padding: 8px 18px; border: 1.5px solid #d4e8db; border-radius: var(--r-sm); background: white; color: #3d6e52; font-size: 13.5px; cursor: pointer; transition: background var(--t-base); }
 .btn-cancel:hover { background: #f0fbf4; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
-.modal { background: white; border-radius: 6px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
+.modal { background: white; border-radius: var(--r-xl); width: 100%; max-width: 460px; box-shadow: var(--shadow-xl); }
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e8e0d4; font-size: 15px; font-weight: 600; color: #1c2b22; }
 .modal-close { background: none; border: none; cursor: pointer; color: #94a3b8; display: flex; }
 .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
@@ -303,7 +303,7 @@ const doGrade = async () => {
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-group label { font-size: 12.5px; font-weight: 600; color: #4a8763; letter-spacing: 0.04em; text-transform: uppercase; }
 .optional { font-weight: 400; color: #94a3b8; text-transform: none; }
-.form-input, .form-textarea { border: 1px solid #ddd6cc; border-radius: 4px; padding: 8px 10px; font-size: 13.5px; color: #1c2b22; background: #fdfaf5; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; }
+.form-input, .form-textarea { border: 1px solid #ddd6cc; border-radius: var(--r-sm); padding: 8px 10px; font-size: 13.5px; color: #1c2b22; background: var(--c-beige-card); font-family: inherit; outline: none; width: 100%; box-sizing: border-box; }
 .form-input:focus, .form-textarea:focus { border-color: #4a8763; box-shadow: 0 0 0 2px rgba(74,135,99,0.12); }
 .form-textarea { resize: vertical; }
 

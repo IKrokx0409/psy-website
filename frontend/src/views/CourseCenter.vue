@@ -329,10 +329,11 @@ const saveClass = async () => {
 /* ── 课程卡片 ── */
 .course-card {
   background: white;
-  border: 1px solid #e8e0d4;
-  border-radius: 6px;
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
   margin-bottom: 20px;
   overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
 .course-card-head {
   display: flex;
@@ -355,12 +356,12 @@ const saveClass = async () => {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 4px;
+  border-radius: var(--r-md);
   border: 1px solid #ede8e0;
-  background: #fdfaf5;
+  background: var(--c-beige-card);
   text-decoration: none;
   color: inherit;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--t-base), border-color var(--t-base);
 }
 .class-item:hover { background: #f5ead8; border-color: #c9a96e; }
 .class-item-left { display: flex; align-items: center; gap: 7px; flex: 1; }
@@ -383,13 +384,15 @@ const saveClass = async () => {
   justify-content: space-between;
   padding: 18px 20px;
   background: white;
-  border: 1px solid #e8e0d4;
-  border-radius: 6px;
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
   margin-bottom: 12px;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, background 0.15s;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--t-base), background var(--t-base), transform var(--t-base);
 }
+.student-class-card:hover { border-color: #4a8763; background: #f5fbf7; transform: translateY(-1px); }
 .student-class-card:hover { border-color: #4a8763; background: #f5fbf7; }
 .sc-name { font-size: 16px; font-weight: 700; color: #1c2b22; }
 .sc-meta { font-size: 13px; color: #7a9080; margin-top: 4px; }
@@ -401,14 +404,14 @@ const saveClass = async () => {
   align-items: center;
   gap: 6px;
   padding: 8px 18px;
-  background: #3d6e52;
+  background: var(--c-green-deep);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--t-base);
 }
 .btn-primary:hover:not(:disabled) { background: #2d5a42; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -418,10 +421,10 @@ const saveClass = async () => {
   align-items: center;
   gap: 5px;
   padding: 5px 12px;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   font-size: 12.5px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--t-base);
   border: 1px solid;
 }
 .btn-ghost { background: none; border-color: #d4e8db; color: #3d6e52; }
@@ -433,7 +436,8 @@ const saveClass = async () => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -442,10 +446,10 @@ const saveClass = async () => {
 }
 .modal {
   background: white;
-  border-radius: 6px;
+  border-radius: var(--r-xl);
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-xl);
 }
 .modal-head {
   display: flex;
@@ -483,7 +487,7 @@ const saveClass = async () => {
 .btn-cancel {
   padding: 8px 18px;
   border: 1.5px solid #d4e8db;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   background: white;
   color: #3d6e52;
   font-size: 13.5px;

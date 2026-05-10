@@ -101,8 +101,8 @@ const currentList = computed(() =>
 <style scoped>
 .ann-list-page {
   min-height: 100%;
-  background: #f5f4f0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--c-beige);
+  font-family: var(--f-sans);
 }
 
 /* ── 页头 ────────────────────────────────────────────────────────── */
@@ -212,7 +212,8 @@ const currentList = computed(() =>
 .ann-table {
   background: #fff;
   border: 1px solid #d8d2c8;
-  border-radius: 2px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
 }
 
 .ann-row {

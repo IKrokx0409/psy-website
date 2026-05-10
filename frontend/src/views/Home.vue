@@ -23,29 +23,36 @@
 </template>
 
 <script setup>
-import HeroBanner       from '@/components/HeroBanner.vue'
-import QuickEntry       from '@/components/QuickEntry.vue'
+import HeroBanner        from '@/components/HeroBanner.vue'
+import QuickEntry        from '@/components/QuickEntry.vue'
 import AnnouncementBoard from '@/components/AnnouncementBoard.vue'
-import SidePanel        from '@/components/SidePanel.vue'
-import OnlineResources  from '@/components/OnlineResources.vue'
-import DiaryPreview     from '@/components/DiaryPreview.vue'
-import ContactSection   from '@/components/ContactSection.vue'
-import SiteFooter       from '@/components/SiteFooter.vue'
+import SidePanel         from '@/components/SidePanel.vue'
+import OnlineResources   from '@/components/OnlineResources.vue'
+import DiaryPreview      from '@/components/DiaryPreview.vue'
+import ContactSection    from '@/components/ContactSection.vue'
+import SiteFooter        from '@/components/SiteFooter.vue'
 </script>
 
 <style scoped>
-.home-page { background: #f6f2ec; }
+.home-page { background: var(--c-beige); }
 
 .content-section {
-  padding: 40px 0 48px;
+  padding: var(--sp-12) 0 var(--sp-16);
 }
+
 .content-inner {
-  max-width: 1200px;
+  max-width: var(--container);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--sp-6);
   display: grid;
   grid-template-columns: 1fr 340px;
-  gap: 24px;
+  gap: var(--sp-6);
   align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .content-inner {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -296,8 +296,8 @@ const sendMessage = async () => {
   display: flex;
   height: 100%;
   width: 100%;
-  background: #f7f8fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--c-beige);
+  font-family: var(--f-sans);
   overflow: hidden;
 }
 
@@ -326,11 +326,11 @@ const sendMessage = async () => {
   background: rgba(255,255,255,0.14);
   color: white;
   border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 8px;
+  border-radius: var(--r-md);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--t-base);
 }
 .new-chat-btn:hover { background: rgba(255,255,255,0.24); }
 
@@ -356,9 +356,9 @@ const sendMessage = async () => {
   align-items: center;
   gap: 10px;
   padding: 9px 10px;
-  border-radius: 8px;
+  border-radius: var(--r-md);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--t-fast);
   color: rgba(255,255,255,0.6);
   font-size: 13.5px;
 }
@@ -385,8 +385,9 @@ const sendMessage = async () => {
 }
 
 .chat-header {
-  padding: 16px 28px;
-  border-bottom: 1px solid #f0f0f2;
+  padding: 14px 28px;
+  border-bottom: 1px solid #eeeae4;
+  background: var(--c-beige-card);
   display: flex;
   align-items: baseline;
   gap: 12px;
@@ -423,24 +424,26 @@ const sendMessage = async () => {
   padding: 0 40px;
 }
 .welcome-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #5f9e75; }
-.welcome-title { font-size: 26px; font-weight: 600; color: #1a1b26; margin: 0 0 10px; }
+.welcome-title { font-size: 26px; font-weight: 600; color: var(--c-text-dark); margin: 0 0 10px; }
 .welcome-sub { font-size: 15px; color: #6b7280; margin: 0 0 32px; }
 
 .welcome-hints { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .hint-chip {
-  padding: 8px 16px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
+  padding: 8px 18px;
+  background: var(--c-green-pale);
+  border: 1px solid rgba(74, 135, 99, 0.2);
+  border-radius: var(--r-pill);
   font-size: 13.5px;
-  color: #374151;
+  color: var(--c-green-deep);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--t-base);
 }
 .hint-chip:hover {
   background: #c4e2d0;
-  border-color: #93c5fd;
-  color: #5f9e75;
+  border-color: var(--c-green-mid);
+  color: var(--c-green-deep);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
 }
 
 /* ========== 消息行 ========== */
@@ -489,9 +492,9 @@ const sendMessage = async () => {
 
 /* ========== 推理块 ========== */
 .thought-block {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  background: var(--c-beige);
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 .thought-summary {
@@ -526,13 +529,13 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
 
 /* ========== 气泡样式 ========== */
 .reply-bubble {
-  background: #f7f8fa;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background: var(--c-beige);
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
   padding: 14px 18px;
   font-size: 14.5px;
   line-height: 1.7;
-  color: #1a1b26;
+  color: var(--c-text-dark);
   word-break: break-word;
 }
 
@@ -582,11 +585,11 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  background: #f7f8fa;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 14px;
+  background: var(--c-beige);
+  border: 1.5px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
   padding: 10px 12px;
-  transition: border-color 0.2s;
+  transition: border-color var(--t-base);
   max-width: 900px;
   margin: 0 auto;
 }
@@ -611,16 +614,16 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
 .send-btn {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   border: none;
-  background: #5f9e75;
+  background: var(--c-green-base);
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.2s, opacity 0.2s;
+  transition: background var(--t-base), opacity var(--t-base);
 }
 .send-btn:hover:not(:disabled) { background: #4d8764; }
 .send-btn:disabled { background: #d1d5db; cursor: not-allowed; }

@@ -75,7 +75,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.rd-page { min-height: 100%; background: #f5f4f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.rd-page { min-height: 100%; background: var(--c-beige); font-family: var(--f-sans); }
 
 .rd-state { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 120px 24px; color: #94a3b8; font-size: 14px; }
 .rd-error { color: #b91c1c; }
@@ -98,7 +98,7 @@ onMounted(async () => {
 .rd-title { font-family: 'SimSun','宋体','STSong',Georgia,serif; font-size: 28px; font-weight: 700; color: #f5efe0; margin: 0; line-height: 1.6; letter-spacing: 1px; }
 
 .rd-body { padding: 48px 32px 80px; }
-.rd-inner { max-width: 860px; margin: 0 auto; background: white; border: 1px solid #d8d2c8; padding: 48px 60px; }
+.rd-inner { max-width: 860px; margin: 0 auto; background: white; border: 1px solid #d8d2c8; border-radius: var(--r-xl); padding: 48px 60px; box-shadow: var(--shadow-sm); }
 
 .rd-markdown { color: #2a241a; font-size: 15.5px; line-height: 2; font-family: 'SimSun','宋体','STSong',Georgia,serif; }
 .rd-markdown :deep(h1),.rd-markdown :deep(h2),.rd-markdown :deep(h3) { font-family: 'SimSun','宋体',Georgia,serif; font-weight: 700; color: #1a1208; margin: 2em 0 0.75em; line-height: 1.5; }
@@ -113,8 +113,8 @@ onMounted(async () => {
 .rd-no-content { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 0; color: #94a3b8; font-size: 14px; }
 
 .rd-footer { margin-top: 48px; padding-top: 28px; border-top: 1px solid #d8d2c8; }
-.back-btn { display: inline-flex; align-items: center; gap: 6px; background: #f0ece4; border: 1px solid #d0c9bc; color: #3a3020; padding: 10px 22px; border-radius: 2px; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: background 0.15s; }
-.back-btn:hover { background: #e4ddd0; }
+.back-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--c-beige); border: 1px solid var(--c-beige-border); color: var(--c-text-body); padding: 10px 22px; border-radius: var(--r-sm); text-decoration: none; font-size: 13.5px; font-weight: 500; transition: background var(--t-base), border-color var(--t-base); }
+.back-btn:hover { background: #eee8de; border-color: #c8b89a; }
 
 @media (max-width: 640px) {
   .rd-header { padding: 40px 20px 36px; }

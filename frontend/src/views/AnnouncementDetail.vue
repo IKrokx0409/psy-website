@@ -102,8 +102,8 @@ const headerStyle = computed(() => {
 <style scoped>
 .ann-detail-page {
   min-height: 100%;
-  background: #f5f4f0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--c-beige);
+  font-family: var(--f-sans);
 }
 
 /* ── 加载 / 错误状态 ─────────────────────────────────────────────── */
@@ -188,8 +188,9 @@ const headerStyle = computed(() => {
   margin: 0 auto;
   background: white;
   border: 1px solid #d8d2c8;
-  border-radius: 2px;
+  border-radius: var(--r-xl);
   padding: 48px 60px;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ── Markdown 渲染样式 ───────────────────────────────────────────── */
@@ -321,20 +322,20 @@ const headerStyle = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #f0ece4;
-  border: 1px solid #d0c9bc;
-  color: #3a3020;
+  background: var(--c-beige);
+  border: 1px solid var(--c-beige-border);
+  color: var(--c-text-body);
   padding: 10px 22px;
-  border-radius: 2px;
+  border-radius: var(--r-sm);
   text-decoration: none;
   font-size: 13.5px;
   font-weight: 500;
   letter-spacing: 0.5px;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--t-base), border-color var(--t-base);
 }
 .back-btn:hover {
-  background: #e4ddd0;
-  border-color: #bab0a0;
+  background: #eee8de;
+  border-color: #c8b89a;
 }
 
 /* ── 响应式 ──────────────────────────────────────────────────────── */

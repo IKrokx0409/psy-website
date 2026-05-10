@@ -1,5 +1,12 @@
 <template>
   <div class="announcement-board">
+    <!-- 板块标题 -->
+    <div class="board-section-header">
+      <span class="section-label">动态</span>
+      <h2 class="section-title">中心公告与活动</h2>
+    </div>
+
+    <!-- Tab + 更多链接 -->
     <div class="board-header">
       <div class="tabs">
         <button
@@ -9,7 +16,10 @@
           @click="activeTab = tab"
         >{{ tab }}</button>
       </div>
-      <router-link to="/announcements" class="more-link">查看全部 →</router-link>
+      <router-link to="/announcements" class="more-link">
+        查看全部
+        <ArrowRight :size="12" :stroke-width="2.5" />
+      </router-link>
     </div>
 
     <div v-if="loading" class="state-row">
@@ -31,7 +41,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Loader2, AlertCircle } from 'lucide-vue-next'
+import { Loader2, AlertCircle, ArrowRight } from 'lucide-vue-next'
 import { getAnnouncements } from '@/api/announcements'
 
 const tabs = ['中心公告', '活动预告', '心理讲座']
@@ -56,50 +66,100 @@ const currentList = computed(() =>
 </script>
 
 <style scoped>
-.announcement-board { background: white; border: 1px solid #cfe8da; overflow: hidden; }
+.announcement-board {
+  background: white;
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
 
+/* 板块标题 */
+.board-section-header {
+  padding: var(--sp-6) var(--sp-6) var(--sp-3);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  border-bottom: 1px solid var(--c-beige-border);
+  background: var(--c-beige-card);
+}
+
+.section-label {
+  display: inline-block;
+  background: var(--c-green-pale);
+  color: var(--c-green-deep);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-text-dark);
+  font-family: var(--f-serif);
+  letter-spacing: 1px;
+}
+
+/* Tab 行 */
 .board-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 2px solid #cfe8da;
-  background: #f5fbf7;
+  padding: 0 var(--sp-5);
+  background: white;
+  border-bottom: 1px solid #f0f0eb;
 }
 
-.tabs { display: flex; }
+.tabs {
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-2) 0;
+}
+
 .tab {
-  padding: 14px 18px;
+  padding: 6px 14px;
   background: none;
   border: none;
-  font-size: 14px;
-  color: #5a7099;
+  font-size: 13px;
+  color: var(--c-text-muted);
   cursor: pointer;
   font-weight: 500;
-  position: relative;
-  transition: color 0.15s;
+  border-radius: var(--r-pill);
+  transition: background var(--t-base), color var(--t-base);
+  letter-spacing: 0.2px;
 }
-.tab::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; left: 0; right: 0;
-  height: 2px;
-  background: #5f9e75;
-  transform: scaleX(0);
-  transition: transform 0.2s;
+.tab:hover {
+  background: var(--c-green-pale);
+  color: var(--c-green-deep);
 }
-.tab:hover { color: #5f9e75; }
-.tab.active { color: #5f9e75; font-weight: 600; }
-.tab.active::after { transform: scaleX(1); }
+.tab.active {
+  background: var(--c-green-pale);
+  color: var(--c-green-deep);
+  font-weight: 600;
+}
 
-.more-link { font-size: 12.5px; color: #5f9e75; text-decoration: none; }
-.more-link:hover { text-decoration: underline; }
+.more-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--c-green-mid);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--t-fast);
+}
+.more-link:hover { color: var(--c-green-deep); }
 
+/* 状态行 */
 .state-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 28px 20px;
+  gap: var(--sp-2);
+  padding: 28px var(--sp-5);
   font-size: 13px;
   color: #94a3b8;
 }
@@ -107,29 +167,53 @@ const currentList = computed(() =>
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.news-list { list-style: none; margin: 0; padding: 8px 0; }
+/* 公告列表 */
+.news-list { list-style: none; margin: 0; padding: var(--sp-2) 0; }
+
 .news-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  border-bottom: 1px dashed #f0f4fb;
-  transition: background 0.12s;
+  gap: var(--sp-3);
+  padding: 10px var(--sp-5);
+  border-bottom: 1px solid #f5f5f2;
+  transition: background var(--t-fast);
 }
 .news-item:last-child { border-bottom: none; }
-.news-item:hover { background: #edf7f2; }
-.news-dot { width: 6px; height: 6px; border-radius: 50%; background: #5f9e75; flex-shrink: 0; }
+.news-item:hover { background: var(--c-beige); }
+
+.news-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c-green-mid);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--c-green-pale);
+}
+
 .news-title {
   flex: 1;
   font-size: 13.5px;
-  color: #1e293b;
+  color: var(--c-text-dark);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 0.12s;
+  transition: color var(--t-fast);
 }
-.news-title:hover { color: #5f9e75; }
-.news-date { font-size: 12px; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
-.news-empty { padding: 20px; font-size: 13px; color: #94a3b8; text-align: center; }
+.news-title:hover { color: var(--c-green-mid); }
+
+.news-date {
+  font-size: 11.5px;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.news-empty {
+  padding: var(--sp-5);
+  font-size: 13px;
+  color: #94a3b8;
+  text-align: center;
+}
 </style>

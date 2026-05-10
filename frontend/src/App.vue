@@ -79,25 +79,26 @@ const floatHovered = ref(false)
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(120, 170, 140, 0.35);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(120, 170, 140, 0.3);
   color: #4a8a60;
-  border-radius: 40px;
-  padding: 10px 14px;
+  border-radius: var(--r-pill);
+  padding: 10px 16px;
   text-decoration: none;
   font-size: 13px;
-  font-weight: 500;
-  box-shadow: 0 4px 18px rgba(60, 120, 80, 0.12);
-  transition: background 0.2s, box-shadow 0.2s, border-color 0.2s, padding 0.2s;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  transition: background var(--t-base), box-shadow var(--t-base), border-color var(--t-base);
   overflow: hidden;
   white-space: nowrap;
+  letter-spacing: 0.3px;
 }
 .treehouse-float:hover {
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 6px 24px rgba(60, 120, 80, 0.18);
-  border-color: rgba(95, 158, 117, 0.5);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(95, 158, 117, 0.45);
 }
 
 .float-label {

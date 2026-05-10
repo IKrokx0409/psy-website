@@ -2,50 +2,57 @@
   <div class="side-panel">
     <!-- 每日心理小贴士 -->
     <div class="panel-card tip-card">
-      <div class="panel-title">
-        <span class="title-dot"></span>
-        每日心理小贴士
+      <div class="panel-header">
+        <div class="header-icon-wrap"><Lightbulb :size="14" :stroke-width="1.5" /></div>
+        <span class="panel-title-text">每日心理小贴士</span>
+        <button class="refresh-btn" @click="refreshTip" title="换一条">
+          <RotateCcw :size="12" :stroke-width="2" />
+        </button>
       </div>
-      <div class="tip-content">
-        <div class="tip-icon"><Lightbulb :size="22" :stroke-width="1.5" /></div>
+      <div class="tip-body">
         <p class="tip-text">{{ currentTip }}</p>
       </div>
-      <button class="refresh-btn" @click="refreshTip">换一条 ↻</button>
     </div>
 
     <!-- 预约咨询 -->
     <div class="panel-card appt-card">
-      <div class="crisis-header"><CalendarDays :size="14" :stroke-width="1.5" /> 预约咨询</div>
-      <div class="crisis-lines">
-        <div class="crisis-line">
-          <span class="line-label">咨询热线</span>
-          <a href="tel:075526400952" class="line-number">0755-26400952</a>
-        </div>
+      <div class="panel-header">
+        <div class="header-icon-wrap appt-icon"><CalendarDays :size="14" :stroke-width="1.5" /></div>
+        <span class="panel-title-text">预约咨询</span>
       </div>
-      <p class="crisis-note">周一至周日 8:30–11:30 / 13:30–17:00</p>
+      <div class="info-body">
+        <div class="info-row">
+          <span class="info-label">咨询热线</span>
+          <a href="tel:075526400952" class="info-number appt-number">0755-26400952</a>
+        </div>
+        <p class="info-note">周一至周日 &nbsp;8:30–11:30 / 13:30–17:00</p>
+      </div>
     </div>
 
     <!-- 危机援助 -->
     <div class="panel-card crisis-card">
-      <div class="crisis-header"><PhoneCall :size="14" :stroke-width="1.5" /> 心理援助热线</div>
-      <div class="crisis-lines">
-        <div class="crisis-line">
-          <span class="line-label">北京危机研究</span>
-          <a href="tel:01082951332" class="line-number">010-82951332</a>
+      <div class="panel-header">
+        <div class="header-icon-wrap crisis-icon"><PhoneCall :size="14" :stroke-width="1.5" /></div>
+        <span class="panel-title-text">心理援助热线</span>
+        <span class="badge-24h">24h</span>
+      </div>
+      <div class="info-body">
+        <div class="info-row">
+          <span class="info-label">北京危机研究</span>
+          <a href="tel:01082951332" class="info-number crisis-number">010-82951332</a>
         </div>
-        <div class="crisis-line">
-          <span class="line-label">全国心理援助</span>
-          <a href="tel:4001161117" class="line-number">400-116-1117</a>
+        <div class="info-row">
+          <span class="info-label">全国心理援助</span>
+          <a href="tel:4001161117" class="info-number crisis-number">400-116-1117</a>
         </div>
       </div>
-      <p class="crisis-note">以上热线 24 小时开放</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { Lightbulb, PhoneCall, CalendarDays } from 'lucide-vue-next'
+import { Lightbulb, PhoneCall, CalendarDays, RotateCcw } from 'lucide-vue-next'
 
 const tips = [
   '深呼吸练习：吸气 4 秒，屏息 4 秒，呼气 6 秒。每天练习 3 次，有效缓解焦虑。',
@@ -67,105 +74,139 @@ const refreshTip = () => {
   idx.value = next
   currentTip.value = tips[next]
 }
-
 </script>
 
 <style scoped>
-.side-panel { display: flex; flex-direction: column; gap: 16px; }
+.side-panel { display: flex; flex-direction: column; gap: var(--sp-4); }
 
+/* 通用卡片 */
 .panel-card {
   background: white;
-  border: 1px solid #cfe8da;
-  border-radius: 0;
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
-.panel-title {
+/* 卡片标题行 */
+.panel-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-  border-bottom: 1px solid #f0f4fb;
-  background: #f5fbf7;
-}
-.title-dot {
-  width: 3px;
-  height: 16px;
-  background: #5f9e75;
-  border-radius: 2px;
-  flex-shrink: 0;
+  gap: var(--sp-2);
+  padding: 14px var(--sp-4);
+  border-bottom: 1px solid var(--c-beige-border);
+  background: var(--c-beige-card);
 }
 
-/* 贴士卡 */
-.tip-content {
+.header-icon-wrap {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px 10px;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  background: var(--c-green-pale);
+  color: var(--c-green-mid);
+  flex-shrink: 0;
 }
-.tip-icon { display: flex; flex-shrink: 0; color: #f59e0b; }
-.tip-text {
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: #374151;
-  margin: 0;
+.appt-icon  { background: #e8f4ff; color: #3b82f6; }
+.crisis-icon { background: #fff0f0; color: #ef4444; }
+
+.panel-title-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-dark);
+  letter-spacing: 0.3px;
 }
 
 .refresh-btn {
-  display: block;
-  margin: 0 16px 14px auto;
-  background: none;
-  border: 1px solid #d0dcf0;
-  color: #5f9e75;
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.refresh-btn:hover { background: #edf7f2; }
-
-/* 预约咨询 */
-.appt-card {
-  border-color: #d4e8db;
-  background: #f5fbf7;
-}
-.appt-card .crisis-header { color: #3d6e52; border-bottom-color: #d4e8db; }
-.appt-card .line-number { color: #3d6e52; }
-
-/* 危机热线 */
-.crisis-card {
-  border-color: #fde8e8;
-  background: #fffaf9;
-}
-.crisis-header {
-  padding: 12px 16px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #c0392b;
-  border-bottom: 1px solid #fde8e8;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-sm);
+  color: var(--c-text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: background var(--t-fast), color var(--t-fast);
 }
-.crisis-lines { padding: 10px 16px; display: flex; flex-direction: column; gap: 8px; }
-.crisis-line { display: flex; justify-content: space-between; align-items: center; }
-.line-label { font-size: 12.5px; color: #64748b; }
-.line-number {
+.refresh-btn:hover {
+  background: var(--c-green-pale);
+  color: var(--c-green-mid);
+  border-color: var(--c-green-pale);
+}
+
+.badge-24h {
+  font-size: 10px;
+  font-weight: 700;
+  background: #fff0f0;
+  color: #ef4444;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  letter-spacing: 0.5px;
+  border: 1px solid #ffd5d5;
+}
+
+/* 贴士内容 */
+.tip-body { padding: var(--sp-4); }
+.tip-text {
   font-size: 13px;
-  font-weight: 600;
-  color: #c0392b;
-  text-decoration: none;
-  font-family: monospace;
-}
-.crisis-note {
-  padding: 0 16px 12px;
-  font-size: 11.5px;
-  color: #94a3b8;
+  line-height: 1.75;
+  color: var(--c-text-body);
   margin: 0;
+}
+
+/* 咨询/热线信息 */
+.info-body {
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.info-label {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.info-number {
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  transition: opacity var(--t-fast);
+}
+.info-number:hover { opacity: 0.75; }
+
+.appt-number  { color: #3b82f6; }
+.crisis-number { color: #ef4444; }
+
+.info-note {
+  font-size: 11.5px;
+  color: var(--c-text-muted);
+  margin: -4px 0 0;
   text-align: right;
 }
+
+/* 预约卡 */
+.appt-card {
+  border-color: #d8eaff;
+}
+.appt-card .panel-header { background: #f0f7ff; border-bottom-color: #d8eaff; }
+
+/* 危机卡 */
+.crisis-card {
+  border-color: #ffd5d5;
+}
+.crisis-card .panel-header { background: #fff5f5; border-bottom-color: #ffd5d5; }
 </style>

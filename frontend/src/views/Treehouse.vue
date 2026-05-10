@@ -419,7 +419,7 @@ const timeAgo = (isoStr) => {
   min-height: 100%;
   background: #0a1525;
   color: #d0e8f8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--f-sans);
 }
 
 /* ── 页头 ────────────────────────────────────────────────────────────── */
@@ -506,11 +506,11 @@ const timeAgo = (isoStr) => {
   color: #38c2ff;
   border: 1.5px solid #38c2ff;
   padding: 11px 24px;
-  border-radius: 24px;
+  border-radius: var(--r-pill);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: border-color var(--t-base), color var(--t-base), box-shadow var(--t-base);
   box-shadow: 0 0 10px rgba(56, 194, 255, 0.25);
 }
 .th-bottle-trigger:hover {
@@ -528,11 +528,11 @@ const timeAgo = (isoStr) => {
   color: white;
   border: none;
   padding: 11px 28px;
-  border-radius: 24px;
+  border-radius: var(--r-pill);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition: background var(--t-base), transform var(--t-fast);
   box-shadow: 0 4px 20px rgba(61, 120, 181, 0.4);
 }
 .th-compose-btn:hover { background: #2e6aa0; transform: translateY(-1px); }
@@ -568,10 +568,12 @@ const timeAgo = (isoStr) => {
   color: white;
   border: none;
   padding: 8px 20px;
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   font-size: 13px;
   cursor: pointer;
+  transition: background var(--t-base);
 }
+.th-compose-btn-sm:hover { background: #2e6aa0; }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -585,13 +587,13 @@ const timeAgo = (isoStr) => {
 .th-card {
   background: #132035;
   border: 1px solid rgba(91, 159, 212, 0.1);
-  border-radius: 16px;
+  border-radius: var(--r-xl);
   padding: 20px;
   height: 190px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  transition: border-color 0.2s, transform 0.15s;
+  transition: border-color var(--t-base), transform var(--t-fast);
 }
 .th-card:hover {
   border-color: rgba(91, 159, 212, 0.28);
@@ -628,7 +630,7 @@ const timeAgo = (isoStr) => {
 .th-tags { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
 
 /* 标签颜色 */
-.th-tag { font-size: 11.5px; padding: 3px 10px; border-radius: 20px; }
+.th-tag { font-size: 11.5px; padding: 3px 10px; border-radius: var(--r-pill); }
 .tag-teal    { background: rgba(45,212,191,0.12);  color: #5eead4; }
 .tag-emerald { background: rgba(52,211,153,0.12);  color: #6ee7b7; }
 .tag-amber   { background: rgba(251,191,36,0.12);  color: #fcd34d; }
@@ -642,11 +644,11 @@ const timeAgo = (isoStr) => {
   border: 1px solid rgba(248, 113, 113, 0.3);
   color: #f87171;
   padding: 4px 10px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: background 0.15s;
+  transition: background var(--t-fast);
 }
 .th-delete-btn:hover { background: rgba(248, 113, 113, 0.1); }
 .th-delete-pending { font-size: 11.5px; color: #3d6898; }
@@ -704,10 +706,10 @@ const timeAgo = (isoStr) => {
   border: 1px solid rgba(128, 190, 240, 0.32);
   color: #80bef0;
   padding: 8px 18px;
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--t-base);
 }
 .th-bottle-again:hover { background: rgba(128, 190, 240, 0.18); }
 .th-bottle-close {
@@ -715,10 +717,10 @@ const timeAgo = (isoStr) => {
   border: 1px solid rgba(148, 163, 184, 0.18);
   color: #7ab0d8;
   padding: 8px 18px;
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--t-base);
 }
 .th-bottle-close:hover { background: rgba(148, 163, 184, 0.15); }
 
@@ -750,8 +752,8 @@ const timeAgo = (isoStr) => {
   cursor: pointer;
   padding: 4px;
   display: flex;
-  border-radius: 8px;
-  transition: color 0.15s, background 0.15s;
+  border-radius: var(--r-sm);
+  transition: color var(--t-base), background var(--t-base);
 }
 .th-close-btn:hover { color: #e0f0fb; background: rgba(91,159,212,0.1); }
 
@@ -762,7 +764,7 @@ const timeAgo = (isoStr) => {
   width: 100%;
   background: #0a1525;
   border: 1px solid rgba(91, 159, 212, 0.15);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: #d0e8f8;
   font-size: 14px;
   line-height: 1.7;
@@ -770,7 +772,7 @@ const timeAgo = (isoStr) => {
   resize: vertical;
   font-family: inherit;
   box-sizing: border-box;
-  transition: border-color 0.2s;
+  transition: border-color var(--t-base);
 }
 .th-textarea:focus { outline: none; border-color: #7cc4f0; }
 .th-textarea::placeholder { color: #3d6898; }
@@ -782,10 +784,10 @@ const timeAgo = (isoStr) => {
   background: transparent;
   color: #7ab0d8;
   padding: 5px 14px;
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   font-size: 12.5px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--t-base);
 }
 .th-tag-opt:not(.selected):hover { border-color: #4a7aaa; color: #d0e8f8; }
 .th-tag-opt.selected.tag-teal    { background: rgba(45,212,191,0.18);   border-color: #2dd4bf; color: #5eead4; }
@@ -801,7 +803,7 @@ const timeAgo = (isoStr) => {
   flex: 1;
   background: #0a1525;
   border: 1px solid rgba(91, 159, 212, 0.15);
-  border-radius: 10px;
+  border-radius: var(--r-md);
   color: #d0e8f8;
   font-size: 13.5px;
   padding: 8px 10px;
@@ -813,11 +815,11 @@ const timeAgo = (isoStr) => {
   border: 1px solid rgba(91, 159, 212, 0.25);
   color: #7cc4f0;
   padding: 9px 12px;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: background 0.15s;
+  transition: background var(--t-base);
 }
 .th-random-btn:hover { background: rgba(91, 159, 212, 0.22); }
 .th-nickname-preview { font-size: 12.5px; color: #7cc4f0; margin-top: 8px; }
@@ -838,11 +840,11 @@ const timeAgo = (isoStr) => {
   color: white;
   border: none;
   padding: 10px 24px;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--t-base);
   box-shadow: 0 4px 16px rgba(61, 120, 181, 0.35);
 }
 .th-submit-btn:hover:not(:disabled) { background: #2e6aa0; }
@@ -861,11 +863,11 @@ const timeAgo = (isoStr) => {
   padding: 10px 14px;
   background: rgba(91, 159, 212, 0.05);
   border: 1.5px solid rgba(91, 159, 212, 0.15);
-  border-radius: 10px;
+  border-radius: var(--r-md);
   color: #7ab0d8;
   font-size: 13.5px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: border-color var(--t-base), background var(--t-base), color var(--t-base);
   text-align: left;
 }
 .th-vis-opt:hover { border-color: rgba(91, 159, 212, 0.35); color: #d0e8f8; }

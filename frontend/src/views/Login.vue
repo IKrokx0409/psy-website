@@ -1,35 +1,58 @@
 <template>
   <div class="login-page">
-    <div class="login-card">
-      <!-- 顶部品牌 -->
-      <div class="login-header">
-        <BrainCircuit :size="36" :stroke-width="1.2" class="header-icon" />
-        <div>
-          <div class="header-title">哈工大（深圳）大学生心理健康教育与咨询中心</div>
-          <div class="header-sub">请选择您的登录身份以继续</div>
+    <!-- 左侧装饰区 -->
+    <div class="login-deco" aria-hidden="true">
+      <div class="deco-content">
+        <div class="deco-logo">
+          <BrainCircuit :size="48" :stroke-width="1.2" />
         </div>
+        <h1 class="deco-title">大学生心理健康<br>教育与咨询中心</h1>
+        <p class="deco-sub">哈尔滨工业大学（深圳）</p>
+        <div class="deco-divider"></div>
+        <p class="deco-quote">专业 · 温暖 · 保密</p>
       </div>
+      <svg class="deco-bg-svg" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="350" cy="80"  r="120" fill="white" fill-opacity="0.04"/>
+        <circle cx="50"  cy="420" r="100" fill="white" fill-opacity="0.04"/>
+        <circle cx="200" cy="260" r="200" stroke="white" stroke-opacity="0.05" stroke-width="1"/>
+        <circle cx="200" cy="260" r="150" stroke="white" stroke-opacity="0.04" stroke-width="1"/>
+        <circle cx="200" cy="260" r="100" stroke="white" stroke-opacity="0.04" stroke-width="1"/>
+      </svg>
+    </div>
 
-      <div class="role-grid">
-        <!-- 学生 -->
-        <button class="role-btn" @click="login('student')">
-          <GraduationCap :size="40" :stroke-width="1.2" class="role-icon" />
-          <div class="role-name">学生</div>
-          <div class="role-desc">浏览资源、AI 疏导<br>情绪日记、预约咨询</div>
-        </button>
+    <!-- 右侧登录区 -->
+    <div class="login-panel">
+      <div class="login-card">
+        <div class="card-header">
+          <div class="card-title">欢迎回来</div>
+          <div class="card-sub">请选择您的身份以继续</div>
+        </div>
 
-        <!-- 教师/咨询师 -->
-        <button class="role-btn role-btn--teacher" @click="login('teacher')">
-          <UserCog :size="40" :stroke-width="1.2" class="role-icon" />
-          <div class="role-name">教师 / 咨询师</div>
-          <div class="role-desc">管理公告、查看树洞<br>处理预约、数据统计</div>
-        </button>
+        <div class="role-grid">
+          <!-- 学生 -->
+          <button class="role-btn" @click="login('student')">
+            <div class="role-icon-wrap role-icon-student">
+              <GraduationCap :size="32" :stroke-width="1.3" />
+            </div>
+            <div class="role-name">学生</div>
+            <div class="role-desc">浏览资源、AI 疏导<br>情绪日记、预约咨询</div>
+          </button>
+
+          <!-- 教师/咨询师 -->
+          <button class="role-btn" @click="login('teacher')">
+            <div class="role-icon-wrap role-icon-teacher">
+              <UserCog :size="32" :stroke-width="1.3" />
+            </div>
+            <div class="role-name">教师 / 咨询师</div>
+            <div class="role-desc">管理公告、查看树洞<br>处理预约、数据统计</div>
+          </button>
+        </div>
+
+        <p class="login-note">
+          <Lock :size="12" :stroke-width="1.5" />
+          当前为开发模式，无需账号密码，选择身份即可进入
+        </p>
       </div>
-
-      <p class="login-note">
-        <Lock :size="12" :stroke-width="1.5" />
-        当前为开发模式，无需账号密码，选择身份即可进入
-      </p>
     </div>
   </div>
 </template>
@@ -51,97 +74,192 @@ const login = (role) => {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #5f9e75 0%, #4d8764 100%);
+  display: flex;
+}
+
+/* 左侧装饰 */
+.login-deco {
+  flex: 1;
+  background: linear-gradient(145deg, #2d5a42 0%, #3d6e52 50%, #4a8763 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--sp-12);
+  position: relative;
+  overflow: hidden;
+}
+
+.deco-bg-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.deco-content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  max-width: 320px;
+}
+
+.deco-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--r-xl);
+  margin-bottom: var(--sp-6);
+  color: white;
+}
+
+.deco-title {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--f-serif);
+  line-height: 1.4;
+  letter-spacing: 2px;
+  margin: 0 0 var(--sp-3);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  color: white;
+}
+
+.deco-sub {
+  font-size: 14px;
+  opacity: 0.65;
+  margin: 0 0 var(--sp-6);
+  letter-spacing: 0.5px;
+}
+
+.deco-divider {
+  width: 40px;
+  height: 2px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 2px;
+  margin-bottom: var(--sp-4);
+}
+
+.deco-quote {
+  font-size: 13px;
+  opacity: 0.7;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+/* 右侧登录面板 */
+.login-panel {
+  width: 480px;
+  flex-shrink: 0;
+  background: var(--c-beige);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-10) var(--sp-8);
 }
 
 .login-card {
-  background: white;
-  border-radius: 4px;
-  padding: 44px 48px;
   width: 100%;
-  max-width: 520px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  max-width: 380px;
 }
 
-.login-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 36px;
-  padding-bottom: 28px;
-  border-bottom: 1px solid #cfe8da;
+.card-header {
+  margin-bottom: var(--sp-8);
 }
 
-.header-icon { color: #5f9e75; flex-shrink: 0; }
-
-.header-title {
-  font-size: 16px;
+.card-title {
+  font-size: 24px;
   font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 4px;
-}
-.header-sub {
-  font-size: 13px;
-  color: #64748b;
+  color: var(--c-text-dark);
+  font-family: var(--f-serif);
+  letter-spacing: 1px;
+  margin-bottom: var(--sp-2);
 }
 
+.card-sub {
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+/* 角色选择 */
 .role-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
 }
 
 .role-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 28px 16px;
-  border: 2px solid #cfe8da;
-  border-radius: 4px;
-  background: #f5fbf7;
+  gap: var(--sp-3);
+  padding: var(--sp-6) var(--sp-4);
+  border: 1.5px solid var(--c-beige-border);
+  border-radius: var(--r-xl);
+  background: white;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  transition: border-color var(--t-base), background var(--t-base), transform var(--t-base), box-shadow var(--t-base);
   text-align: center;
+  box-shadow: var(--shadow-xs);
 }
 .role-btn:hover {
-  border-color: #5f9e75;
-  background: #edf7f2;
-  transform: translateY(-2px);
+  border-color: var(--c-green-base);
+  background: white;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
-.role-btn--teacher:hover {
-  border-color: #4d8764;
-  background: #edf7f2;
+.role-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-lg);
+  transition: background var(--t-base), color var(--t-base);
+}
+.role-icon-student {
+  background: var(--c-green-pale);
+  color: var(--c-green-mid);
+}
+.role-icon-teacher {
+  background: #e8f0ff;
+  color: #4a6eb5;
 }
 
-.role-icon { color: #5f9e75; }
-.role-btn--teacher .role-icon { color: #4d8764; }
+.role-btn:hover .role-icon-student {
+  background: var(--c-green-mid);
+  color: white;
+}
+.role-btn:hover .role-icon-teacher {
+  background: #4a6eb5;
+  color: white;
+}
 
 .role-name {
   font-size: 15px;
-  font-weight: 600;
-  color: #1e293b;
+  font-weight: 700;
+  color: var(--c-text-dark);
+  letter-spacing: 0.3px;
 }
 
 .role-desc {
-  font-size: 12px;
-  color: #64748b;
-  line-height: 1.6;
+  font-size: 11.5px;
+  color: var(--c-text-muted);
+  line-height: 1.7;
 }
 
 .login-note {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  font-size: 12px;
-  color: #94a3b8;
+  gap: var(--sp-1);
+  font-size: 11.5px;
+  color: #b0bcc5;
   margin: 0;
   text-align: center;
 }

@@ -7,19 +7,23 @@
         :to="item.to"
         class="entry-card"
       >
-        <div class="entry-icon"><component :is="item.icon" :size="28" :stroke-width="1.5" /></div>
+        <div class="entry-icon-wrap">
+          <component :is="item.icon" :size="24" :stroke-width="1.5" />
+        </div>
         <div class="entry-body">
           <div class="entry-title">{{ item.title }}</div>
           <div class="entry-desc">{{ item.desc }}</div>
         </div>
-        <div class="entry-arrow">→</div>
+        <div class="entry-arrow">
+          <ArrowRight :size="15" :stroke-width="2" />
+        </div>
       </router-link>
     </div>
   </section>
 </template>
 
 <script setup>
-import { Bot, BookMarked, Library, ClipboardList } from 'lucide-vue-next'
+import { Bot, BookMarked, Library, ClipboardList, ArrowRight } from 'lucide-vue-next'
 
 const entries = [
   { to: '/chat',        icon: Bot,           title: 'AI 智能疏导', desc: '随时倾诉，智能陪伴' },
@@ -31,15 +35,16 @@ const entries = [
 
 <style scoped>
 .quick-entry {
-  background: #f4f9f5;
-  border-top: 3px solid #4a8763;
-  border-bottom: 1px solid #dde8e2;
-  box-shadow: 0 4px 16px rgba(30, 60, 40, 0.07);
+  background: var(--c-beige-card);
+  border-top: 3px solid var(--c-green-mid);
+  border-bottom: 1px solid var(--c-beige-border);
+  box-shadow: var(--shadow-sm);
 }
+
 .inner {
-  max-width: 1200px;
+  max-width: var(--container);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--sp-6);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
 }
@@ -47,49 +52,66 @@ const entries = [
 .entry-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 22px 20px;
+  gap: var(--sp-4);
+  padding: 20px var(--sp-5);
   text-decoration: none;
   color: inherit;
-  border-right: 1px solid #ede8e0;
-  transition: background 0.18s;
+  border-right: 1px solid var(--c-beige-border);
+  transition: background var(--t-base), transform var(--t-base), box-shadow var(--t-base);
   position: relative;
 }
 .entry-card:last-child { border-right: none; }
 .entry-card:hover {
-  background: #fdf6ec;
+  background: var(--c-gold-pale);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(30, 70, 40, 0.06);
+  z-index: 1;
 }
-.entry-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #c9a96e, #d4b87a);
-  transform: scaleX(0);
-  transition: transform 0.2s;
-}
-.entry-card:hover::after { transform: scaleX(1); }
 
-.entry-icon { display: flex; align-items: center; justify-content: center; width: 36px; flex-shrink: 0; color: #5f9e75; }
+/* 图标容器 */
+.entry-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-md);
+  background: var(--c-green-pale);
+  color: var(--c-green-deep);
+  flex-shrink: 0;
+  transition: background var(--t-base), color var(--t-base);
+}
+.entry-card:hover .entry-icon-wrap {
+  background: var(--c-green-mid);
+  color: white;
+}
 
 .entry-body { flex: 1; min-width: 0; }
+
 .entry-title {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--c-text-dark);
   margin-bottom: 3px;
+  letter-spacing: 0.2px;
 }
 .entry-desc {
-  font-size: 12.5px;
-  color: #64748b;
+  font-size: 12px;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entry-arrow {
-  color: #5f9e75;
-  font-size: 18px;
+  color: var(--c-green-mid);
   opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 0.15s, transform 0.15s;
+  transform: translateX(-6px);
+  transition: opacity var(--t-base), transform var(--t-base);
+  flex-shrink: 0;
 }
-.entry-card:hover .entry-arrow { opacity: 1; transform: translateX(0); }
+.entry-card:hover .entry-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
 </style>

@@ -481,11 +481,11 @@ onUnmounted(() => { resizeObserver?.disconnect() })
 <style scoped>
 /* ── 基础 ── */
 .diary-page {
-  background: #f6f2ec;
+  background: var(--c-beige);
   height: 100%;
   overflow: hidden;
   padding: 16px 0 0;
-  font-family: var(--f-sans, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif);
+  font-family: var(--f-sans);
   box-sizing: border-box;
 }
 .diary-inner {
@@ -503,9 +503,9 @@ onUnmounted(() => { resizeObserver?.disconnect() })
 /* ── Cards ── */
 .card {
   background: #ffffff;
-  border: 1px solid #e8e0d4;
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(30, 40, 25, 0.08), 0 1px 3px rgba(30, 40, 25, 0.05);
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -564,13 +564,13 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   width: 100%;
   padding: 7px 10px;
   border: 1px solid #ddd6cc;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   font-size: 13px;
   color: #1c2b22;
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
-  background: #fdfaf5;
+  background: var(--c-beige-card);
 }
 .date-input:focus { border-color: #4a8763; box-shadow: 0 0 0 2px rgba(74,135,99,0.12); }
 
@@ -643,12 +643,12 @@ onUnmounted(() => { resizeObserver?.disconnect() })
 .tag-btn {
   padding: 4px 11px;
   border: 1px solid #ddd6cc;
-  background: #fdfaf5;
+  background: var(--c-beige-card);
   font-size: 12px;
   color: #6b7f6e;
   cursor: pointer;
-  border-radius: 3px;
-  transition: all 0.12s;
+  border-radius: var(--r-pill);
+  transition: all var(--t-fast);
   font-family: inherit;
   letter-spacing: 0.01em;
 }
@@ -668,7 +668,7 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   resize: none;
   padding: 9px 11px;
   border: 1px solid #ddd6cc;
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   font-size: 13.5px;
   line-height: 1.75;
   color: #1c2b22;
@@ -676,7 +676,7 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   box-sizing: border-box;
   font-family: inherit;
   min-height: 80px;
-  background: #fdfaf5;
+  background: var(--c-beige-card);
 }
 .diary-textarea::placeholder { color: #b8ad9e; }
 .diary-textarea:focus { border-color: #4a8763; box-shadow: 0 0 0 2px rgba(74,135,99,0.1); }
@@ -700,8 +700,8 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   font-weight: 600;
   cursor: pointer;
   border: none;
-  border-radius: 4px;
-  transition: all 0.15s;
+  border-radius: var(--r-sm);
+  transition: all var(--t-base);
   font-family: inherit;
   letter-spacing: 0.02em;
 }
@@ -726,7 +726,7 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   display: flex;
   background: none;
   border: 1px solid #ddd6cc;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   padding: 1px 3px;
   cursor: pointer;
   color: #4a8763;
@@ -792,7 +792,7 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   background: #f5ead8;
   color: #8a6030;
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: var(--r-pill);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -828,8 +828,8 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   background: none;
   color: #7a9080;
   cursor: pointer;
-  border-radius: 3px;
-  transition: all 0.12s;
+  border-radius: var(--r-pill);
+  transition: all var(--t-fast);
   font-family: inherit;
 }
 .range-tab:hover { border-color: #4a8763; color: #3d6e52; background: #f5fbf7; }
@@ -854,10 +854,10 @@ onUnmounted(() => { resizeObserver?.disconnect() })
   align-items: center;
   gap: 1px;
   background: white;
-  border: 1px solid #e8e0d4;
-  border-radius: 5px;
+  border: 1px solid var(--c-beige-border);
+  border-radius: var(--r-md);
   padding: 6px 12px;
-  box-shadow: 0 6px 18px rgba(30,40,25,0.12);
+  box-shadow: var(--shadow-md);
   pointer-events: none;
   transform: translateX(-50%);
   white-space: nowrap;

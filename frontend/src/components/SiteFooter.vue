@@ -4,13 +4,18 @@
       <div class="inner">
         <!-- 品牌列 -->
         <div class="footer-col brand-col">
-          <div class="footer-brand"><BrainCircuit :size="18" :stroke-width="1.5" /> 大学生心理健康教育与咨询中心</div>
+          <div class="footer-brand">
+            <BrainCircuit :size="18" :stroke-width="1.5" />
+            大学生心理健康教育与咨询中心
+          </div>
           <p class="footer-intro">
             哈尔滨工业大学（深圳）大学生心理健康教育与咨询中心，
             致力于为全校师生提供专业、温暖的心理健康服务。
           </p>
           <div class="footer-tags">
-            <span>专业</span><span>温暖</span><span>保密</span>
+            <span>专业</span>
+            <span>温暖</span>
+            <span>保密</span>
           </div>
         </div>
 
@@ -45,7 +50,7 @@
           <div class="col-title">关注我们</div>
           <div class="qr-placeholder">
             <div class="qr-box">
-              <Smartphone :size="32" :stroke-width="1.5" class="qr-icon" />
+              <Smartphone :size="28" :stroke-width="1.5" class="qr-icon" />
               <div class="qr-label">微信公众号<br>小嗨森</div>
             </div>
           </div>
@@ -71,53 +76,70 @@ import { BrainCircuit, Smartphone } from 'lucide-vue-next'
 </script>
 
 <style scoped>
-.site-footer { background: #4a7e62; color: rgba(255,255,255,0.75); }
-
-.footer-main { padding: 52px 0 40px; }
-.inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.2fr;
-  gap: 40px;
+.site-footer {
+  background: #1a3827;
+  color: rgba(255,255,255,0.65);
 }
 
+.footer-main {
+  padding: var(--sp-16) 0 var(--sp-10);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--sp-6);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: var(--sp-10);
+}
+
+/* 品牌 */
 .footer-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 17px;
+  gap: var(--sp-2);
+  font-size: 16px;
   font-weight: 700;
   color: white;
-  margin-bottom: 12px;
-}
-.footer-intro {
-  font-size: 13px;
-  line-height: 1.7;
-  color: rgba(255,255,255,0.6);
-  margin: 0 0 16px;
-}
-.footer-tags {
-  display: flex;
-  gap: 8px;
-}
-.footer-tags span {
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.7);
-  font-size: 11.5px;
-  padding: 3px 12px;
-  border-radius: 0;
-  border: 1px solid rgba(255,255,255,0.2);
+  margin-bottom: var(--sp-3);
+  font-family: var(--f-serif);
+  letter-spacing: 1px;
 }
 
-.col-title {
-  font-size: 13.5px;
+.footer-intro {
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.45);
+  margin: 0 0 var(--sp-4);
+}
+
+.footer-tags {
+  display: flex;
+  gap: var(--sp-2);
+}
+.footer-tags span {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
   font-weight: 600;
-  color: white;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding: 3px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(255,255,255,0.12);
+  letter-spacing: 0.8px;
+}
+
+/* 列标题 */
+.col-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 .footer-links {
@@ -126,39 +148,54 @@ import { BrainCircuit, Smartphone } from 'lucide-vue-next'
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .footer-links a {
   font-size: 13px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.45);
   text-decoration: none;
-  transition: color 0.15s;
+  transition: color var(--t-base);
+  display: flex;
+  align-items: center;
 }
-.footer-links a:hover { color: white; }
+.footer-links a:hover { color: rgba(255,255,255,0.85); }
 
-.qr-placeholder { margin-bottom: 16px; }
+/* QR 占位 */
+.qr-placeholder { margin-bottom: var(--sp-4); }
 .qr-box {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 0;
-  padding: 14px 20px;
+  gap: var(--sp-2);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-5);
 }
-.qr-icon { color: rgba(255,255,255,0.7); }
-.qr-label { font-size: 11.5px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.5; }
+.qr-icon { color: rgba(255,255,255,0.5); }
+.qr-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  line-height: 1.6;
+}
 
-.hotline-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
-.hotline-number { font-size: 16px; font-weight: 700; color: white; font-family: monospace; letter-spacing: 0.5px; }
+/* 热线 */
+.hotline-label { font-size: 11.5px; color: rgba(255,255,255,0.35); margin-bottom: var(--sp-1); }
+.hotline-number {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
 
 /* 底部版权条 */
 .footer-bottom {
-  border-top: 1px solid rgba(255,255,255,0.1);
-  padding: 14px 0;
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: var(--sp-4) 0;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.3);
 }
 .bottom-inner {
   display: flex;
