@@ -2,15 +2,16 @@ import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from hiagent_client import HiAgentClient
-from database import engine
-from models import Base
+from database import engine, get_db
+from models import Base, ChatRecord
 from routers import announcements, treehole, admin, diary, resources, questionnaires, courses
 
 load_dotenv()
@@ -52,12 +53,16 @@ client = HiAgentClient()
 class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
+    user_id: Optional[str] = None
 
 
 @app.post("/api/chat")
-async def chat_endpoint(request: ChatRequest):
+async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     try:
         result = client.ask_ai(request.message, request.conversation_id)
+        if request.user_id:
+            db.add(ChatRecord(user_id=request.user_id))
+            await db.commit()
         return {
             "status": "success",
             "conversation_id": result["conversation_id"],

@@ -36,6 +36,10 @@ export const gradeSubmission    = (submission_id, data)           => http.patch(
 export const getCheckinProgress = (assignment_id, student_id)     => http.get(`/api/assignments/${assignment_id}/checkin-progress`, { params: { student_id } }).then(r => r.data)
 export const getCheckinStats    = (assignment_id)                  => http.get(`/api/assignments/${assignment_id}/checkin-stats`).then(r => r.data)
 
+// ── AI对话进度 ────────────────────────────────────────────────────────────────
+export const getChatProgress    = (assignment_id, student_id)     => http.get(`/api/assignments/${assignment_id}/chat-progress`, { params: { student_id } }).then(r => r.data)
+export const getChatStats       = (assignment_id)                  => http.get(`/api/assignments/${assignment_id}/chat-stats`).then(r => r.data)
+
 // ── 全班讨论 ──────────────────────────────────────────────────────────────────
 export const getThreads     = (class_id)          => http.get(`/api/classes/${class_id}/threads`).then(r => r.data)
 export const createThread   = (class_id, data)    => http.post(`/api/classes/${class_id}/threads`, data).then(r => r.data)

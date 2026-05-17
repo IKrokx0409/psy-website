@@ -275,10 +275,12 @@ class AssignmentCreate(BaseModel):
     title:           str  = Field(..., min_length=1, max_length=200)
     description:     Optional[str] = None
     due_date:        Optional[str] = None
-    type:            str  = Field(..., pattern="^(checkin|qa|paper)$")
+    type:            str  = Field(..., pattern="^(checkin|qa|paper|chat)$")
     # 情绪打卡
     required_days:   Optional[int] = Field(None, ge=1)
     start_date:      Optional[str] = None
+    # AI对话
+    required_rounds: Optional[int] = Field(None, ge=1)
     # 课堂问答
     questions_json:  Optional[str] = None   # JSON string
     # 综合作业
@@ -290,6 +292,7 @@ class AssignmentUpdate(BaseModel):
     due_date:        Optional[str] = None
     required_days:   Optional[int] = Field(None, ge=1)
     start_date:      Optional[str] = None
+    required_rounds: Optional[int] = Field(None, ge=1)
     questions_json:  Optional[str] = None
     submission_mode: Optional[str] = Field(None, pattern="^(file|markdown|both)$")
 
@@ -302,6 +305,7 @@ class AssignmentOut(BaseModel):
     type:            str
     required_days:   Optional[int] = None
     start_date:      Optional[str] = None
+    required_rounds: Optional[int] = None
     questions_json:  Optional[str] = None
     submission_mode: Optional[str] = None
     created_at:      datetime
@@ -350,6 +354,18 @@ class CheckinMemberStat(BaseModel):
     student_name:   str
     completed_days: int
     required_days:  int
+
+class ChatProgress(BaseModel):
+    assignment_id:    int
+    student_id:       str
+    completed_rounds: int
+    required_rounds:  int
+
+class ChatMemberStat(BaseModel):
+    student_id:       str
+    student_name:     str
+    completed_rounds: int
+    required_rounds:  int
 
 
 # ── CourseGroup (小组讨论) ─────────────────────────────────────────────────────

@@ -115,15 +115,25 @@ class Assignment(Base):
     title           = Column(String(200), nullable=False)
     description     = Column(Text, nullable=True)           # Markdown，所有类型通用
     due_date        = Column(String(10),  nullable=True)    # YYYY-MM-DD
-    type            = Column(String(20),  nullable=False, default="qa")  # checkin|qa|paper
+    type            = Column(String(20),  nullable=False, default="qa")  # checkin|qa|paper|chat
     # 情绪打卡专属
     required_days   = Column(Integer,     nullable=True)    # 要求天数
     start_date      = Column(String(10),  nullable=True)    # 统计起始日期
+    # AI对话专属
+    required_rounds = Column(Integer,     nullable=True)    # 要求对话轮数
     # 课堂问答专属
     questions_json  = Column(Text,        nullable=True)    # JSON: [{text, description?}]
     # 综合作业专属
     submission_mode = Column(String(20),  nullable=True)    # file|markdown|both
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class ChatRecord(Base):
+    __tablename__ = "chat_records"
+
+    id      = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(50), nullable=False, index=True)
+    sent_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class Submission(Base):

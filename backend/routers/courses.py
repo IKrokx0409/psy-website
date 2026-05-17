@@ -13,7 +13,7 @@ from models import (
     Assignment, Submission,
     DiscussionThread, DiscussionReply,
     CourseGroup, GroupMessage,
-    DiaryEntry,
+    DiaryEntry, ChatRecord,
 )
 from schemas import (
     CourseCreate, CourseOut,
@@ -22,6 +22,7 @@ from schemas import (
     AssignmentCreate, AssignmentUpdate, AssignmentOut, AssignmentWithStats,
     SubmissionCreate, SubmissionGrade, SubmissionOut,
     CheckinProgress, CheckinMemberStat,
+    ChatProgress, ChatMemberStat,
     ThreadCreate, ReplyCreate, ReplyOut,
     ThreadOut, ThreadWithReplies, ThreadListItem,
     CourseGroupCreate, CourseGroupOut,
@@ -316,6 +317,53 @@ async def checkin_stats(assignment_id: int, db: AsyncSession = Depends(get_db)):
             student_name=m.student_name,
             completed_days=await _count_checkin(a, m.student_id, db),
             required_days=a.required_days or 0,
+        )
+        for m in members
+    ]
+
+
+# ── AI对话进度 ────────────────────────────────────────────────────────────────
+
+async def _count_chat(assignment: Assignment, student_id: str, db: AsyncSession) -> int:
+    filters = [ChatRecord.user_id == student_id]
+    if assignment.start_date:
+        filters.append(ChatRecord.sent_at >= assignment.start_date)
+    if assignment.due_date:
+        from datetime import datetime as dt
+        filters.append(ChatRecord.sent_at < (assignment.due_date + "T23:59:59"))
+    return (await db.execute(select(func.count()).where(and_(*filters)))).scalar() or 0
+
+
+@router.get("/assignments/{assignment_id}/chat-progress", response_model=ChatProgress)
+async def chat_progress(
+    assignment_id: int, student_id: str = Query(...), db: AsyncSession = Depends(get_db)
+):
+    a = (await db.execute(select(Assignment).where(Assignment.id == assignment_id))).scalar_one_or_none()
+    if not a or a.type != "chat":
+        raise HTTPException(404, "作业不存在或类型不符")
+    completed = await _count_chat(a, student_id, db)
+    return ChatProgress(
+        assignment_id=assignment_id,
+        student_id=student_id,
+        completed_rounds=completed,
+        required_rounds=a.required_rounds or 0,
+    )
+
+
+@router.get("/assignments/{assignment_id}/chat-stats", response_model=List[ChatMemberStat])
+async def chat_stats(assignment_id: int, db: AsyncSession = Depends(get_db)):
+    a = (await db.execute(select(Assignment).where(Assignment.id == assignment_id))).scalar_one_or_none()
+    if not a or a.type != "chat":
+        raise HTTPException(404, "作业不存在或类型不符")
+    members = (await db.execute(
+        select(ClassMember).where(ClassMember.class_id == a.class_id)
+    )).scalars().all()
+    return [
+        ChatMemberStat(
+            student_id=m.student_id,
+            student_name=m.student_name,
+            completed_rounds=await _count_chat(a, m.student_id, db),
+            required_rounds=a.required_rounds or 0,
         )
         for m in members
     ]

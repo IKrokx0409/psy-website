@@ -15,3 +15,6 @@ export const updateDiary = (id, data) =>
 
 export const deleteDiary = (id) =>
   http.delete(`/api/diary/${id}`).then(r => r.data)
+
+export const getAIDiaryResponse = (data) =>
+  http.post('/api/diary/ai-response', data, { timeout: 120000 }).then(r => r.data)

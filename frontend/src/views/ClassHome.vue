@@ -71,7 +71,13 @@
               <div class="cp-bar-wrap">
                 <div class="cp-bar-fill" :style="{ width: checkinPct(a.id) + '%' }"></div>
               </div>
-              <span>{{ checkinMap[a.id].completed_days }}/{{ checkinMap[a.id].required_days }}</span>
+              <span>{{ checkinMap[a.id].completed_days }}/{{ checkinMap[a.id].required_days }}天</span>
+            </div>
+            <div v-else-if="a.type === 'chat' && chatMap[a.id]" class="checkin-progress-mini">
+              <div class="cp-bar-wrap">
+                <div class="cp-bar-fill cp-bar-fill-chat" :style="{ width: chatPct(a.id) + '%' }"></div>
+              </div>
+              <span>{{ chatMap[a.id].completed_rounds }}/{{ chatMap[a.id].required_rounds }}轮</span>
             </div>
             <div v-if="isTeacher" class="assign-del" @click.stop="doDeleteAssignment(a)">
               <Trash2 :size="13" />
@@ -227,6 +233,16 @@
               <div class="form-group">
                 <label>要求天数</label>
                 <input v-model.number="assignForm.required_days" type="number" min="1" class="form-input" placeholder="如：14" />
+              </div>
+              <div class="form-group">
+                <label>统计起始日期 <span class="opt">（选填，默认从发布日起）</span></label>
+                <input v-model="assignForm.start_date" type="date" class="form-input" />
+              </div>
+            </template>
+            <template v-if="assignForm.type === 'chat'">
+              <div class="form-group">
+                <label>要求对话轮数</label>
+                <input v-model.number="assignForm.required_rounds" type="number" min="1" class="form-input" placeholder="如：20" />
               </div>
               <div class="form-group">
                 <label>统计起始日期 <span class="opt">（选填，默认从发布日起）</span></label>
@@ -392,7 +408,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   ChevronLeft, ChevronRight, Plus, Trash2, X, Loader2, AlertCircle,
   FileText, MessageSquare, Users, CalendarDays, Pin, UserPlus,
-  Edit3, BookOpen, ClipboardList, Upload, Shuffle,
+  Edit3, BookOpen, ClipboardList, Upload, Shuffle, BotMessageSquare,
 } from 'lucide-vue-next'
 import { useAuth }   from '@/composables/useAuth'
 import { useUserId } from '@/composables/useUserId'
@@ -401,7 +417,7 @@ import {
   getThreads, createThread, deleteThread, pinThread,
   getMembers, addMember, removeMember,
   getGroups, createGroup, updateGroup, deleteGroup, getMyGroup,
-  getCheckinProgress,
+  getCheckinProgress, getChatProgress,
 } from '@/api/courses'
 
 
@@ -411,11 +427,12 @@ const classId = Number(route.params.classId)
 const { isTeacher } = useAuth()
 const userId  = useUserId()
 
-const TYPE_LABEL = { checkin: '情绪打卡', qa: '课堂问答', paper: '综合作业' }
+const TYPE_LABEL = { checkin: '情绪打卡', qa: '课堂问答', paper: '综合作业', chat: 'AI情绪对话' }
 const ASSIGN_TYPES = [
-  { value: 'checkin', label: '情绪打卡', icon: CalendarDays, desc: '按天数统计日记完成情况' },
-  { value: 'qa',      label: '课堂问答', icon: ClipboardList, desc: '多题问答，Markdown 作答' },
-  { value: 'paper',   label: '综合作业', icon: Upload,  desc: '报告/论文，支持文件或 Markdown' },
+  { value: 'checkin', label: '情绪打卡',   icon: CalendarDays,    desc: '按天数统计日记完成情况' },
+  { value: 'chat',    label: 'AI情绪对话', icon: BotMessageSquare, desc: '按对话轮数统计AI沟通完成情况' },
+  { value: 'qa',      label: '课堂问答',   icon: ClipboardList,   desc: '多题问答，Markdown 作答' },
+  { value: 'paper',   label: '综合作业',   icon: Upload,          desc: '报告/论文，支持文件或 Markdown' },
 ]
 const SUBMIT_MODES = [
   { value: 'markdown', label: 'Markdown 在线撰写' },
@@ -443,6 +460,7 @@ const myGroup    = ref(null)
 const members    = ref([])
 const saving     = ref(false)
 const checkinMap = reactive({})  // assignment_id → CheckinProgress
+const chatMap    = reactive({})  // assignment_id → ChatProgress
 
 onMounted(async () => {
   try {
@@ -461,11 +479,14 @@ onMounted(async () => {
       members.value = mems
     } else {
       myGroup.value = await getMyGroup(classId, userId)
-      await Promise.all(
-        as_.filter(x => x.type === 'checkin').map(async a => {
+      await Promise.all([
+        ...as_.filter(x => x.type === 'checkin').map(async a => {
           checkinMap[a.id] = await getCheckinProgress(a.id, userId)
-        })
-      )
+        }),
+        ...as_.filter(x => x.type === 'chat').map(async a => {
+          chatMap[a.id] = await getChatProgress(a.id, userId)
+        }),
+      ])
     }
   } catch {
     error.value = '加载失败，请检查后端服务'
@@ -485,6 +506,11 @@ const checkinPct = (id) => {
   if (!p || !p.required_days) return 0
   return Math.min(100, Math.round(p.completed_days / p.required_days * 100))
 }
+const chatPct = (id) => {
+  const p = chatMap[id]
+  if (!p || !p.required_rounds) return 0
+  return Math.min(100, Math.round(p.completed_rounds / p.required_rounds * 100))
+}
 
 const goAssignment = (a) => router.push(`/course/${classId}/assignment/${a.id}`)
 const goThread     = (t) => router.push(`/course/${classId}/discuss/${t.id}`)
@@ -495,11 +521,11 @@ const assignFormVisible = ref(false)
 const questions = ref([{ text: '', description: '' }])
 const assignForm = reactive({
   title: '', description: '', due_date: '', type: 'qa',
-  required_days: null, start_date: '', submission_mode: 'both',
+  required_days: null, start_date: '', required_rounds: null, submission_mode: 'both',
 })
 
 const openAssignForm = () => {
-  Object.assign(assignForm, { title: '', description: '', due_date: '', type: 'qa', required_days: null, start_date: '', submission_mode: 'both' })
+  Object.assign(assignForm, { title: '', description: '', due_date: '', type: 'qa', required_days: null, start_date: '', required_rounds: null, submission_mode: 'both' })
   questions.value = [{ text: '', description: '' }]
   assignFormVisible.value = true
 }
@@ -510,12 +536,13 @@ const saveAssignment = async () => {
   saving.value = true
   try {
     const payload = {
-      title:       assignForm.title.trim(),
-      description: assignForm.description.trim() || null,
-      due_date:    assignForm.due_date || null,
-      type:        assignForm.type,
+      title:           assignForm.title.trim(),
+      description:     assignForm.description.trim() || null,
+      due_date:        assignForm.due_date || null,
+      type:            assignForm.type,
       required_days:   assignForm.type === 'checkin' ? (assignForm.required_days || null) : null,
       start_date:      assignForm.type === 'checkin' ? (assignForm.start_date || null) : null,
+      required_rounds: assignForm.type === 'chat' ? (assignForm.required_rounds || null) : null,
       questions_json:  assignForm.type === 'qa' ? JSON.stringify(questions.value.filter(q => q.text.trim())) : null,
       submission_mode: assignForm.type === 'paper' ? assignForm.submission_mode : null,
     }
@@ -763,8 +790,9 @@ const doRandomGroup = async () => {
 .assign-row:hover { border-color: #4a8763; background: #f5fbf7; }
 .assign-type-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .type-checkin { background: #c9a96e; }
-.type-qa { background: #4a8763; }
-.type-paper { background: #5a7ec4; }
+.type-chat    { background: #5a7ec4; }
+.type-qa      { background: #4a8763; }
+.type-paper   { background: #7c6e8a; }
 .assign-body { flex: 1; }
 .assign-title { font-size: 14.5px; font-weight: 600; color: #1c2b22; margin-bottom: 5px; }
 .assign-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -781,6 +809,7 @@ const doRandomGroup = async () => {
 .checkin-progress-mini { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #7a9080; flex-shrink: 0; }
 .cp-bar-wrap { width: 60px; height: 5px; background: #e8e0d4; border-radius: 3px; overflow: hidden; }
 .cp-bar-fill { height: 100%; background: #c9a96e; border-radius: 3px; transition: width 0.3s; }
+.cp-bar-fill-chat { background: #5a7ec4; }
 
 /* ── 讨论列表 ── */
 .thread-row {

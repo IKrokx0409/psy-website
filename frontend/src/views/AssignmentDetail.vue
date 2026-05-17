@@ -31,8 +31,104 @@
         <div v-if="assignment.description" class="ad-desc" v-html="renderMd(assignment.description)" />
       </div>
 
-      <!-- ══ 教师视图：提交列表 ══════════════════════════════════════════════ -->
-      <template v-if="isTeacher">
+      <!-- ══ 情绪打卡 ══════════════════════════════════════════════════════════ -->
+      <template v-if="assignment.type === 'checkin'">
+        <!-- 教师视图：全班统计 -->
+        <template v-if="isTeacher">
+          <div class="section-title">
+            全班打卡统计
+            <span class="section-badge">{{ checkinStats.length }} 人</span>
+          </div>
+          <div v-if="checkinStats.length === 0" class="ad-state" style="padding:40px 0">
+            <Users :size="36" :stroke-width="1" style="opacity:.25" /><span>班级暂无成员</span>
+          </div>
+          <div v-for="s in checkinStats" :key="s.student_id" class="stat-card">
+            <div class="stat-head">
+              <span class="stat-name"><User :size="13" /> {{ s.student_name }}</span>
+              <span :class="['stat-badge', s.completed_days >= s.required_days ? 'badge-done' : 'badge-pending']">
+                {{ s.completed_days >= s.required_days ? '已达标' : '未达标' }}
+              </span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-bar">
+                <div class="prog-fill" :style="{ width: pct(s.completed_days, s.required_days) + '%' }"></div>
+              </div>
+              <span class="prog-label">{{ s.completed_days }} / {{ s.required_days }} 天</span>
+            </div>
+          </div>
+        </template>
+        <!-- 学生视图：我的进度 -->
+        <template v-else>
+          <div class="section-title">我的打卡进度</div>
+          <div class="progress-card">
+            <div class="prog-nums">
+              <span class="prog-big">{{ checkinProgress.completed_days }}</span>
+              <span class="prog-sep">/</span>
+              <span class="prog-total">{{ checkinProgress.required_days }} 天</span>
+            </div>
+            <div class="prog-bar prog-bar-lg">
+              <div class="prog-fill" :style="{ width: pct(checkinProgress.completed_days, checkinProgress.required_days) + '%' }"></div>
+            </div>
+            <div v-if="checkinProgress.completed_days >= checkinProgress.required_days" class="done-tip">
+              <CheckCircle2 :size="15" /> 已达到要求天数，作业自动完成！
+            </div>
+            <div v-else class="hint-tip">
+              <BookOpen :size="14" /> 前往<router-link to="/diary" class="hint-link">情绪日记</router-link>记录今日心情，即可累计天数
+            </div>
+          </div>
+        </template>
+      </template>
+
+      <!-- ══ AI对话 ═══════════════════════════════════════════════════════════ -->
+      <template v-else-if="assignment.type === 'chat'">
+        <!-- 教师视图：全班统计 -->
+        <template v-if="isTeacher">
+          <div class="section-title">
+            全班对话统计
+            <span class="section-badge">{{ chatStats.length }} 人</span>
+          </div>
+          <div v-if="chatStats.length === 0" class="ad-state" style="padding:40px 0">
+            <Users :size="36" :stroke-width="1" style="opacity:.25" /><span>班级暂无成员</span>
+          </div>
+          <div v-for="s in chatStats" :key="s.student_id" class="stat-card">
+            <div class="stat-head">
+              <span class="stat-name"><User :size="13" /> {{ s.student_name }}</span>
+              <span :class="['stat-badge', s.completed_rounds >= s.required_rounds ? 'badge-done' : 'badge-pending']">
+                {{ s.completed_rounds >= s.required_rounds ? '已达标' : '未达标' }}
+              </span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-bar">
+                <div class="prog-fill prog-fill-chat" :style="{ width: pct(s.completed_rounds, s.required_rounds) + '%' }"></div>
+              </div>
+              <span class="prog-label">{{ s.completed_rounds }} / {{ s.required_rounds }} 轮</span>
+            </div>
+          </div>
+        </template>
+        <!-- 学生视图：我的进度 -->
+        <template v-else>
+          <div class="section-title">我的对话进度</div>
+          <div class="progress-card">
+            <div class="prog-nums">
+              <span class="prog-big">{{ chatProgress.completed_rounds }}</span>
+              <span class="prog-sep">/</span>
+              <span class="prog-total">{{ chatProgress.required_rounds }} 轮</span>
+            </div>
+            <div class="prog-bar prog-bar-lg">
+              <div class="prog-fill prog-fill-chat" :style="{ width: pct(chatProgress.completed_rounds, chatProgress.required_rounds) + '%' }"></div>
+            </div>
+            <div v-if="chatProgress.completed_rounds >= chatProgress.required_rounds" class="done-tip">
+              <CheckCircle2 :size="15" /> 对话轮数已达标，作业自动完成！
+            </div>
+            <div v-else class="hint-tip">
+              <MessageCircle :size="14" /> 前往<router-link to="/chat" class="hint-link">AI对话</router-link>与心理智能体交流，即可累计轮数
+            </div>
+          </div>
+        </template>
+      </template>
+
+      <!-- ══ 教师视图（qa/paper）：提交列表 ════════════════════════════════════ -->
+      <template v-else-if="isTeacher">
         <div class="section-title">
           提交情况
           <span class="section-badge">{{ submissions.length }} 份</span>
@@ -63,7 +159,7 @@
         </div>
       </template>
 
-      <!-- ══ 学生视图：提交/查看 ══════════════════════════════════════════════ -->
+      <!-- ══ 学生视图（qa/paper）：提交/查看 ═══════════════════════════════════ -->
       <template v-else>
         <template v-if="mySubmission">
           <div class="section-title">我的提交</div>
@@ -138,8 +234,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  ChevronLeft, CalendarDays, FileText, User, Edit3, MessageCircle,
-  Loader2, AlertCircle, X,
+  ChevronLeft, CalendarDays, FileText, User, Users, Edit3, MessageCircle,
+  Loader2, AlertCircle, X, CheckCircle2, BookOpen,
 } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import { useAuth } from '@/composables/useAuth'
@@ -147,6 +243,8 @@ import { useUserId } from '@/composables/useUserId'
 import {
   getAssignment, getSubmissions, getMySubmission,
   submitAssignment, gradeSubmission,
+  getCheckinProgress, getCheckinStats,
+  getChatProgress, getChatStats,
 } from '@/api/courses'
 
 const route      = useRoute()
@@ -157,24 +255,52 @@ const userId     = useUserId()
 const md         = new MarkdownIt({ html: false, linkify: true, typographer: true })
 const renderMd   = (s) => md.render(s || '')
 
-const TYPE_LABEL = { checkin: '情绪打卡', qa: '课堂问答', paper: '综合作业' }
+const TYPE_LABEL = { checkin: '情绪打卡', qa: '课堂问答', paper: '综合作业', chat: 'AI情绪对话' }
 
 const loading    = ref(true)
 const error      = ref('')
 const assignment = ref(null)
-const submissions = ref([])
+
+// qa/paper 用
+const submissions  = ref([])
 const mySubmission = ref(null)
 const submitContent = ref('')
-const submitting = ref(false)
-const editMode   = ref(false)
+const submitting    = ref(false)
+const editMode      = ref(false)
+
+// checkin 用
+const checkinProgress = ref({ completed_days: 0, required_days: 0 })
+const checkinStats    = ref([])
+
+// chat 用
+const chatProgress = ref({ completed_rounds: 0, required_rounds: 0 })
+const chatStats    = ref([])
+
+const pct = (done, total) => total > 0 ? Math.min(100, Math.round(done / total * 100)) : 0
 
 onMounted(async () => {
   try {
     assignment.value = await getAssignment(assignId)
-    if (isTeacher.value) {
-      submissions.value = await getSubmissions(assignId)
+    const type = assignment.value.type
+
+    if (type === 'checkin') {
+      if (isTeacher.value) {
+        checkinStats.value = await getCheckinStats(assignId)
+      } else {
+        checkinProgress.value = await getCheckinProgress(assignId, userId)
+      }
+    } else if (type === 'chat') {
+      if (isTeacher.value) {
+        chatStats.value = await getChatStats(assignId)
+      } else {
+        chatProgress.value = await getChatProgress(assignId, userId)
+      }
     } else {
-      mySubmission.value = await getMySubmission(assignId, userId)
+      if (isTeacher.value) {
+        submissions.value = await getSubmissions(assignId)
+      } else {
+        mySubmission.value = await getMySubmission(assignId, userId)
+      }
     }
   } catch {
     error.value = '加载失败，请检查后端服务'
@@ -257,6 +383,32 @@ const doGrade = async () => {
 
 .section-title { font-size: 14px; font-weight: 700; color: #3d6e52; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
 .section-badge { background: #e8f5ef; color: #3d6e52; font-size: 12px; padding: 1px 8px; border-radius: var(--r-pill); font-weight: 600; }
+
+/* ── 进度条（通用）── */
+.prog-wrap { display: flex; align-items: center; gap: 10px; }
+.prog-bar { flex: 1; height: 6px; background: #e8e0d4; border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; background: #4a8763; border-radius: 3px; transition: width 0.4s ease; }
+.prog-fill-chat { background: #5a7ec4; }
+.prog-label { font-size: 12.5px; color: #7a9080; white-space: nowrap; min-width: 64px; text-align: right; }
+
+/* ── 统计卡片（教师视图）── */
+.stat-card { background: white; border: 1px solid var(--c-beige-border); border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 8px; box-shadow: var(--shadow-xs); }
+.stat-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.stat-name { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #1c2b22; }
+.stat-badge { font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: var(--r-pill); }
+.badge-done { background: #e8f5ef; color: #3d6e52; }
+.badge-pending { background: #f5f0e8; color: #7a9080; }
+
+/* ── 学生进度卡片── */
+.progress-card { background: white; border: 1px solid var(--c-beige-border); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--shadow-xs); }
+.prog-nums { display: flex; align-items: baseline; gap: 6px; margin-bottom: 16px; }
+.prog-big { font-size: 48px; font-weight: 700; color: #3d6e52; font-family: var(--f-serif, serif); line-height: 1; }
+.prog-sep { font-size: 24px; color: #c4bbb0; }
+.prog-total { font-size: 20px; color: #7a9080; }
+.prog-bar-lg { height: 10px; border-radius: 5px; margin-bottom: 16px; }
+.done-tip { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: #3d6e52; background: #e8f5ef; padding: 10px 14px; border-radius: var(--r-sm); }
+.hint-tip { display: flex; align-items: center; gap: 7px; font-size: 13.5px; color: #7a9080; background: #f5f0e8; padding: 10px 14px; border-radius: var(--r-sm); }
+.hint-link { color: #4a8763; font-weight: 600; text-decoration: underline; }
 
 /* ── 提交卡片（教师视图）── */
 .submission-card { background: white; border: 1px solid var(--c-beige-border); border-radius: var(--r-lg); margin-bottom: 10px; overflow: hidden; box-shadow: var(--shadow-xs); }

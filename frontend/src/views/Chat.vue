@@ -118,7 +118,9 @@ import { ref, nextTick, watch, onMounted } from 'vue'
 import axios from 'axios'
 import MarkdownIt from 'markdown-it'
 import { Bot, Leaf } from 'lucide-vue-next'
+import { useUserId } from '@/composables/useUserId'
 
+const userId = useUserId()
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
 
 // DOM refs
@@ -243,7 +245,8 @@ const sendMessage = async () => {
   try {
     const response = await axios.post('http://127.0.0.1:8000/api/chat', {
       message: text,
-      conversation_id: hiagentConvId.value || null
+      conversation_id: hiagentConvId.value || null,
+      user_id: userId || null,
     })
 
     messages.value.pop()
