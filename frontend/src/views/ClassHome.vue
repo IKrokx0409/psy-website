@@ -225,28 +225,24 @@
               <label>说明 <span class="opt">（Markdown，选填）</span></label>
               <textarea v-model="assignForm.description" class="form-textarea" rows="3" />
             </div>
-            <div class="form-group">
-              <label>截止日期 <span class="opt">（选填）</span></label>
-              <input v-model="assignForm.due_date" type="date" class="form-input" />
-            </div>
             <template v-if="assignForm.type === 'checkin'">
+              <div class="form-group">
+                <label>统计起始日期 <span class="opt">（选填，默认从发布日起）</span></label>
+                <input v-model="assignForm.start_date" type="date" class="form-input" />
+              </div>
               <div class="form-group">
                 <label>要求天数</label>
                 <input v-model.number="assignForm.required_days" type="number" min="1" class="form-input" placeholder="如：14" />
               </div>
-              <div class="form-group">
-                <label>统计起始日期 <span class="opt">（选填，默认从发布日起）</span></label>
-                <input v-model="assignForm.start_date" type="date" class="form-input" />
-              </div>
             </template>
             <template v-if="assignForm.type === 'chat'">
               <div class="form-group">
-                <label>要求对话轮数</label>
-                <input v-model.number="assignForm.required_rounds" type="number" min="1" class="form-input" placeholder="如：20" />
-              </div>
-              <div class="form-group">
                 <label>统计起始日期 <span class="opt">（选填，默认从发布日起）</span></label>
                 <input v-model="assignForm.start_date" type="date" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>要求对话轮数</label>
+                <input v-model.number="assignForm.required_rounds" type="number" min="1" class="form-input" placeholder="如：20" />
               </div>
             </template>
             <template v-if="assignForm.type === 'qa'">
@@ -276,10 +272,15 @@
                 </div>
               </div>
             </template>
+            <div class="form-group">
+              <label>截止日期 <span class="opt">（选填）</span></label>
+              <input v-model="assignForm.due_date" type="date" class="form-input" />
+            </div>
+            <p v-if="assignDateError" class="date-error-msg">截止日期不能早于统计起始日期</p>
           </div>
           <div class="modal-foot">
             <button class="btn-cancel" @click="assignFormVisible = false">取消</button>
-            <button class="btn-primary" :disabled="saving" @click="saveAssignment">{{ saving ? '发布中…' : '发布' }}</button>
+            <button class="btn-primary" :disabled="saving || assignDateError" @click="saveAssignment">{{ saving ? '发布中…' : '发布' }}</button>
           </div>
         </div>
       </div>
@@ -523,6 +524,10 @@ const assignForm = reactive({
   title: '', description: '', due_date: '', type: 'qa',
   required_days: null, start_date: '', required_rounds: null, submission_mode: 'both',
 })
+const assignDateError = computed(() =>
+  ['checkin', 'chat'].includes(assignForm.type) &&
+  assignForm.start_date && assignForm.due_date && assignForm.due_date < assignForm.start_date
+)
 
 const openAssignForm = () => {
   Object.assign(assignForm, { title: '', description: '', due_date: '', type: 'qa', required_days: null, start_date: '', required_rounds: null, submission_mode: 'both' })
@@ -541,7 +546,7 @@ const saveAssignment = async () => {
       due_date:        assignForm.due_date || null,
       type:            assignForm.type,
       required_days:   assignForm.type === 'checkin' ? (assignForm.required_days || null) : null,
-      start_date:      assignForm.type === 'checkin' ? (assignForm.start_date || null) : null,
+      start_date:      ['checkin', 'chat'].includes(assignForm.type) ? (assignForm.start_date || null) : null,
       required_rounds: assignForm.type === 'chat' ? (assignForm.required_rounds || null) : null,
       questions_json:  assignForm.type === 'qa' ? JSON.stringify(questions.value.filter(q => q.text.trim())) : null,
       submission_mode: assignForm.type === 'paper' ? assignForm.submission_mode : null,
@@ -889,6 +894,7 @@ const doRandomGroup = async () => {
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-group label { font-size: 12px; font-weight: 600; color: #4a8763; text-transform: uppercase; letter-spacing: 0.06em; }
 .opt { font-weight: 400; color: #94a3b8; text-transform: none; }
+.date-error-msg { font-size: 12px; color: #b84545; margin: -4px 0 0; display: flex; align-items: center; gap: 4px; }
 .form-input, .form-textarea {
   border: 1px solid #ddd6cc; border-radius: 4px; padding: 8px 10px;
   font-size: 13.5px; color: #1c2b22; background: #fdfaf5; font-family: inherit;

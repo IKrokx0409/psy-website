@@ -15,6 +15,7 @@ export const getMyClasses   = (student_id)        => http.get('/api/my/classes',
 
 // ── 成员 ──────────────────────────────────────────────────────────────────────
 export const getMembers     = (class_id)          => http.get(`/api/classes/${class_id}/members`).then(r => r.data)
+export const getMember      = (class_id, sid)     => http.get(`/api/classes/${class_id}/members/${sid}`).then(r => r.data)
 export const addMember      = (class_id, data)    => http.post(`/api/classes/${class_id}/members`, data).then(r => r.data)
 export const removeMember   = (class_id, sid)     => http.delete(`/api/classes/${class_id}/members/${sid}`).then(r => r.data)
 

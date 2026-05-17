@@ -28,6 +28,18 @@
           <div class="card-sub">请选择您的身份以继续</div>
         </div>
 
+        <div class="id-field">
+          <label class="id-label">工号 / 学号</label>
+          <input
+            v-model="inputId"
+            class="id-input"
+            placeholder="例如：001"
+            maxlength="50"
+            @keyup.enter="inputId && login('student')"
+          />
+          <p v-if="idError" class="id-error">请输入工号或学号</p>
+        </div>
+
         <div class="role-grid">
           <!-- 学生 -->
           <button class="role-btn" @click="login('student')">
@@ -50,7 +62,7 @@
 
         <p class="login-note">
           <Lock :size="12" :stroke-width="1.5" />
-          当前为开发模式，无需账号密码，选择身份即可进入
+          当前为开发模式，填写 ID 后选择身份即可进入
         </p>
       </div>
     </div>
@@ -58,6 +70,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { BrainCircuit, GraduationCap, UserCog, Lock } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
@@ -65,7 +78,14 @@ import { useAuth } from '@/composables/useAuth'
 const router = useRouter()
 const { setRole } = useAuth()
 
+const inputId  = ref(localStorage.getItem('diary_user_id') || '')
+const idError  = ref(false)
+
 const login = (role) => {
+  const id = inputId.value.trim()
+  if (!id) { idError.value = true; return }
+  idError.value = false
+  localStorage.setItem('diary_user_id', id)
   setRole(role)
   router.push('/')
 }
@@ -251,6 +271,42 @@ const login = (role) => {
   font-size: 11.5px;
   color: var(--c-text-muted);
   line-height: 1.7;
+}
+
+.id-field {
+  margin-bottom: var(--sp-5);
+}
+
+.id-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-dark);
+  margin-bottom: var(--sp-2);
+  letter-spacing: 0.3px;
+}
+
+.id-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--c-beige-border);
+  border-radius: var(--r-lg);
+  font-size: 14px;
+  color: var(--c-text-dark);
+  background: white;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--t-base), box-shadow var(--t-base);
+}
+.id-input:focus {
+  border-color: var(--c-green-base);
+  box-shadow: 0 0 0 3px rgba(74, 135, 99, 0.12);
+}
+
+.id-error {
+  font-size: 12px;
+  color: #e05252;
+  margin: var(--sp-1) 0 0;
 }
 
 .login-note {

@@ -193,6 +193,16 @@ async def add_member(class_id: int, data: MemberAdd, db: AsyncSession = Depends(
     return member
 
 
+@router.get("/classes/{class_id}/members/{student_id}", response_model=MemberOut)
+async def get_member(class_id: int, student_id: str, db: AsyncSession = Depends(get_db)):
+    m = (await db.execute(
+        select(ClassMember).where(and_(ClassMember.class_id == class_id, ClassMember.student_id == student_id))
+    )).scalar_one_or_none()
+    if not m:
+        raise HTTPException(404, "成员不存在")
+    return m
+
+
 @router.delete("/classes/{class_id}/members/{student_id}")
 async def remove_member(class_id: int, student_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
@@ -327,10 +337,13 @@ async def checkin_stats(assignment_id: int, db: AsyncSession = Depends(get_db)):
 async def _count_chat(assignment: Assignment, student_id: str, db: AsyncSession) -> int:
     filters = [ChatRecord.user_id == student_id]
     if assignment.start_date:
-        filters.append(ChatRecord.sent_at >= assignment.start_date)
+        start_dt = datetime.strptime(assignment.start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        filters.append(ChatRecord.sent_at >= start_dt)
     if assignment.due_date:
-        from datetime import datetime as dt
-        filters.append(ChatRecord.sent_at < (assignment.due_date + "T23:59:59"))
+        due_dt = datetime.strptime(assignment.due_date, "%Y-%m-%d").replace(
+            hour=23, minute=59, second=59, tzinfo=timezone.utc
+        )
+        filters.append(ChatRecord.sent_at <= due_dt)
     return (await db.execute(select(func.count()).where(and_(*filters)))).scalar() or 0
 
 

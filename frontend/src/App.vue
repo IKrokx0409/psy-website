@@ -4,7 +4,7 @@
     <div :class="['page-content', {
       'chat-mode':   route.path === '/chat',
       'diary-mode':  route.path === '/diary',
-      'course-mode': route.path.startsWith('/course/'),
+      'course-mode': /^\/course\/[^/]+$/.test(route.path),
     }]">
       <router-view />
     </div>
