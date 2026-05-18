@@ -12,7 +12,7 @@ from models import (
     Course, ClassGroup, ClassMember,
     Assignment, Submission,
     DiscussionThread, DiscussionReply,
-    CourseGroup, GroupMessage,
+    CourseGroup, GroupMessage, GroupConclusion,
     DiaryEntry, ChatRecord,
 )
 from schemas import (
@@ -25,8 +25,9 @@ from schemas import (
     ChatProgress, ChatMemberStat,
     ThreadCreate, ReplyCreate, ReplyOut,
     ThreadOut, ThreadWithReplies, ThreadListItem,
-    CourseGroupCreate, CourseGroupOut,
+    CourseGroupCreate, CourseGroupOut, CourseGroupSummary,
     GroupMessageCreate, GroupMessageOut,
+    GroupConclusionOut, GroupConclusionUpdate,
 )
 
 router = APIRouter(prefix="/api", tags=["courses"])
@@ -632,6 +633,14 @@ async def my_group(class_id: int = Query(...), student_id: str = Query(...), db:
     return None
 
 
+@router.get("/groups/{group_id}", response_model=CourseGroupOut)
+async def get_group(group_id: int, db: AsyncSession = Depends(get_db)):
+    g = (await db.execute(select(CourseGroup).where(CourseGroup.id == group_id))).scalar_one_or_none()
+    if not g:
+        raise HTTPException(404, "小组不存在")
+    return g
+
+
 @router.get("/groups/{group_id}/messages", response_model=List[GroupMessageOut])
 async def get_messages(group_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
@@ -649,3 +658,78 @@ async def send_message(group_id: int, data: GroupMessageCreate, db: AsyncSession
     await db.commit()
     await db.refresh(msg)
     return msg
+
+
+@router.delete("/groups/{group_id}/messages/{message_id}")
+async def delete_message(group_id: int, message_id: int, db: AsyncSession = Depends(get_db)):
+    m = (await db.execute(
+        select(GroupMessage).where(GroupMessage.id == message_id, GroupMessage.group_id == group_id)
+    )).scalar_one_or_none()
+    if not m:
+        raise HTTPException(404, "消息不存在")
+    await db.delete(m)
+    await db.commit()
+    return {"ok": True}
+
+
+# ── 小组结论 ──────────────────────────────────────────────────────────────────
+
+@router.get("/groups/{group_id}/conclusion", response_model=Optional[GroupConclusionOut])
+async def get_conclusion(group_id: int, db: AsyncSession = Depends(get_db)):
+    return (await db.execute(
+        select(GroupConclusion).where(GroupConclusion.group_id == group_id)
+    )).scalar_one_or_none()
+
+
+@router.put("/groups/{group_id}/conclusion", response_model=GroupConclusionOut)
+async def set_conclusion(group_id: int, data: GroupConclusionUpdate, db: AsyncSession = Depends(get_db)):
+    if not (await db.execute(select(CourseGroup).where(CourseGroup.id == group_id))).scalar_one_or_none():
+        raise HTTPException(404, "小组不存在")
+    c = (await db.execute(
+        select(GroupConclusion).where(GroupConclusion.group_id == group_id)
+    )).scalar_one_or_none()
+    now = datetime.now(timezone.utc)
+    if c:
+        c.content         = data.content
+        c.updated_by_id   = data.updated_by_id
+        c.updated_by_name = data.updated_by_name
+        c.updated_at      = now
+    else:
+        c = GroupConclusion(group_id=group_id, updated_at=now, **data.model_dump())
+        db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    return c
+
+
+@router.get("/classes/{class_id}/groups/overview", response_model=List[CourseGroupSummary])
+async def groups_overview(class_id: int, db: AsyncSession = Depends(get_db)):
+    groups = (await db.execute(
+        select(CourseGroup).where(CourseGroup.class_id == class_id).order_by(CourseGroup.created_at)
+    )).scalars().all()
+    if not groups:
+        return []
+    group_ids = [g.id for g in groups]
+
+    msg_counts = {
+        r.group_id: r.cnt
+        for r in (await db.execute(
+            select(GroupMessage.group_id, func.count().label("cnt"))
+            .where(GroupMessage.group_id.in_(group_ids))
+            .group_by(GroupMessage.group_id)
+        )).all()
+    }
+    conclusions = {
+        c.group_id: c
+        for c in (await db.execute(
+            select(GroupConclusion).where(GroupConclusion.group_id.in_(group_ids))
+        )).scalars().all()
+    }
+
+    out = []
+    for g in groups:
+        item = CourseGroupSummary.model_validate(g)
+        item.message_count = msg_counts.get(g.id, 0)
+        item.conclusion    = conclusions.get(g.id)
+        out.append(item)
+    return out

@@ -122,24 +122,34 @@
         <div v-show="activeTab === 'groups'" class="cp-panel">
           <div class="panel-header">
             <span class="panel-title">小组讨论</span>
-            <button v-if="isTeacher" class="btn-primary btn-sm" @click="randomGroupVisible = true">
-              <Shuffle :size="13" /> 随机分组
-            </button>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button v-if="isTeacher" class="btn-primary btn-sm" @click="randomGroupVisible = true">
+                <Shuffle :size="13" /> 随机分组
+              </button>
+            </div>
           </div>
 
-          <!-- 教师：所有小组列表 -->
+          <!-- 教师：所有小组列表（附结论状态） -->
           <template v-if="isTeacher">
             <div v-if="groups.length === 0" class="cp-empty">
               <Users :size="36" :stroke-width="1" /><span>暂无小组</span>
             </div>
             <div
-              v-for="g in groups" :key="g.id"
+              v-for="g in groupsWithOverview" :key="g.id"
               class="group-card"
               @click="goGroup(g)"
             >
               <div class="group-card-left">
                 <div class="group-name">{{ g.name }}</div>
-                <div class="group-meta">{{ g.member_ids.length }} 名成员</div>
+                <div class="group-meta">{{ g.member_ids.length }} 名成员 · {{ g.message_count ?? 0 }} 条消息</div>
+              </div>
+              <div class="group-conclusion-status">
+                <span v-if="g.conclusion" class="conclusion-chip conclusion-chip--done">
+                  <CheckCircle2 :size="11" /> 已提交结论
+                </span>
+                <span v-else class="conclusion-chip conclusion-chip--none">
+                  未提交结论
+                </span>
               </div>
               <div class="group-card-actions" @click.stop>
                 <button class="icon-btn" @click="openGroupForm(g)"><Edit3 :size="13" /></button>
@@ -163,6 +173,11 @@
               <ChevronRight :size="18" class="group-chevron" />
             </div>
           </template>
+        </div>
+
+        <!-- ══ 数据统计（仅教师）════════════════════════════════════════════ -->
+        <div v-show="activeTab === 'stats' && isTeacher" class="cp-panel cp-stats-panel">
+          <ClassStats :class-id="classId" :teacher-id="userId" />
         </div>
 
         <!-- ══ 成员管理（仅教师）════════════════════════════════════════════ -->
@@ -409,15 +424,16 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   ChevronLeft, ChevronRight, Plus, Trash2, X, Loader2, AlertCircle,
   FileText, MessageSquare, Users, CalendarDays, Pin, UserPlus,
-  Edit3, BookOpen, ClipboardList, Upload, Shuffle, BotMessageSquare,
+  Edit3, BookOpen, ClipboardList, Upload, Shuffle, BotMessageSquare, CheckCircle2, BarChart3,
 } from 'lucide-vue-next'
+import ClassStats from '@/components/ClassStats.vue'
 import { useAuth }   from '@/composables/useAuth'
 import { useUserId } from '@/composables/useUserId'
 import {
   getClass, getAssignments, createAssignment, deleteAssignment,
   getThreads, createThread, deleteThread, pinThread,
   getMembers, addMember, removeMember,
-  getGroups, createGroup, updateGroup, deleteGroup, getMyGroup,
+  getGroups, getGroupsOverview, createGroup, updateGroup, deleteGroup, getMyGroup,
   getCheckinProgress, getChatProgress,
 } from '@/api/courses'
 
@@ -446,7 +462,10 @@ const TABS = computed(() => {
     { key: 'discuss',     label: '全班讨论', icon: MessageSquare },
     { key: 'groups',      label: '小组讨论', icon: Users        },
   ]
-  if (isTeacher.value) t.push({ key: 'members', label: '成员', icon: Users })
+  if (isTeacher.value) {
+    t.push({ key: 'stats',   label: '数据统计', icon: BarChart3 })
+    t.push({ key: 'members', label: '成员',     icon: Users    })
+  }
   return t
 })
 
@@ -457,6 +476,7 @@ const classInfo  = ref(null)
 const assignments = ref([])
 const threads    = ref([])
 const groups     = ref([])
+const groupsWithOverview = ref([])  // teacher overview: groups + conclusion status
 const myGroup    = ref(null)
 const members    = ref([])
 const saving     = ref(false)
@@ -475,9 +495,10 @@ onMounted(async () => {
     threads.value     = th
 
     if (isTeacher.value) {
-      const [grps, mems] = await Promise.all([getGroups(classId), getMembers(classId)])
-      groups.value  = grps
-      members.value = mems
+      const [grps, mems, overview] = await Promise.all([getGroups(classId), getMembers(classId), getGroupsOverview(classId)])
+      groups.value            = grps
+      members.value           = mems
+      groupsWithOverview.value = overview
     } else {
       myGroup.value = await getMyGroup(classId, userId)
       await Promise.all([
@@ -613,8 +634,12 @@ const saveGroup = async () => {
     if (groupFormEditing.value) {
       const updated = await updateGroup(groupFormEditing.value.id, payload)
       Object.assign(groupFormEditing.value, updated)
+      const idx = groupsWithOverview.value.findIndex(x => x.id === updated.id)
+      if (idx !== -1) Object.assign(groupsWithOverview.value[idx], updated)
     } else {
-      groups.value.push(await createGroup(classId, payload))
+      const newG = await createGroup(classId, payload)
+      groups.value.push(newG)
+      groupsWithOverview.value.push({ ...newG, message_count: 0, conclusion: null })
     }
     groupFormVisible.value = false
   } finally { saving.value = false }
@@ -623,6 +648,7 @@ const doDeleteGroup = async (g) => {
   if (!confirm(`确认删除小组「${g.name}」？`)) return
   await deleteGroup(g.id)
   groups.value = groups.value.filter(x => x.id !== g.id)
+  groupsWithOverview.value = groupsWithOverview.value.filter(x => x.id !== g.id)
 }
 
 // ── 成员 ─────────────────────────────────────────────────────────────────────
@@ -676,6 +702,7 @@ const doRandomGroup = async () => {
   try {
     for (const g of groups.value) await deleteGroup(g.id)
     groups.value = []
+    groupsWithOverview.value = []
 
     const shuffled = [...members.value].sort(() => Math.random() - 0.5)
     const sizes    = computeGroupSizes(shuffled.length, G)
@@ -683,10 +710,12 @@ const doRandomGroup = async () => {
     for (let i = 0; i < sizes.length; i++) {
       const slice = shuffled.slice(idx, idx + sizes[i])
       idx += sizes[i]
-      groups.value.push(await createGroup(classId, {
+      const newG = await createGroup(classId, {
         name:       `第${i + 1}组`,
         member_ids: slice.map(m => m.student_id),
-      }))
+      })
+      groups.value.push(newG)
+      groupsWithOverview.value.push({ ...newG, message_count: 0, conclusion: null })
     }
     randomGroupVisible.value = false
   } finally { saving.value = false }
@@ -775,6 +804,7 @@ const doRandomGroup = async () => {
 .cp-state-err { color: #b84545; }
 
 .cp-panel { padding: 24px; flex: 1; }
+.cp-stats-panel { overflow-y: auto; }
 .discuss-panel { display: flex; flex-direction: column; }
 .panel-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -848,6 +878,13 @@ const doRandomGroup = async () => {
 .group-meta { font-size: 12px; color: #94a3b8; }
 .group-card-actions { display: flex; gap: 4px; }
 .group-chevron { color: #b0bec5; }
+.group-conclusion-status { display: flex; align-items: center; margin-right: 4px; }
+.conclusion-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11.5px; padding: 2px 9px; border-radius: 20px; font-weight: 600;
+}
+.conclusion-chip--done { background: #edf7f2; color: #3d6e52; }
+.conclusion-chip--none { background: #f0ebe2; color: #94a3b8; }
 .my-group-card {
   display: flex; align-items: center; gap: 16px;
   padding: 20px; background: white;
@@ -949,4 +986,22 @@ const doRandomGroup = async () => {
 .modal-enter-active .modal, .modal-leave-active .modal { transition: transform 0.2s; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 .modal-enter-from .modal, .modal-leave-to .modal { transform: translateY(12px); }
+
+/* ── 响应式 ── */
+@media (max-width: 768px) {
+  .cp-wrap { flex-direction: column; height: auto; overflow: visible; }
+  .cp-sidebar {
+    width: 100%; min-width: unset;
+    flex-direction: row; flex-wrap: wrap;
+    padding: 10px 8px 0;
+    overflow: visible;
+  }
+  .cp-back { padding: 4px 8px 8px; width: 100%; }
+  .cp-course-name { display: none; }
+  .cp-nav { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: 4px; padding: 0 4px 8px; flex: unset; width: 100%; }
+  .cp-nav-item { font-size: 12.5px; padding: 7px 10px; white-space: nowrap; }
+  .cp-sidebar-footer { display: none; }
+  .cp-main { overflow: visible; }
+  .cp-panel { padding: 16px; }
+}
 </style>

@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ChevronLeft, UserCircle, Pin, Trash2, MessageSquare, Loader2, AlertCircle,
@@ -116,14 +116,31 @@ const thread   = ref(null)
 const replyContent = ref('')
 const submitting   = ref(false)
 
-onMounted(async () => {
+let pollTimer = null
+
+const loadThread = async () => {
   try {
-    thread.value = await getThread(threadId)
+    const data = await getThread(threadId)
+    if (thread.value) {
+      thread.value.replies = data.replies
+      thread.value.pinned  = data.pinned
+    } else {
+      thread.value = data
+    }
   } catch {
-    error.value = '加载失败，请检查后端服务'
+    if (!thread.value) error.value = '加载失败，请检查后端服务'
   } finally {
     loading.value = false
   }
+}
+
+onMounted(async () => {
+  await loadThread()
+  pollTimer = setInterval(loadThread, 5000)
+})
+
+onUnmounted(() => {
+  clearInterval(pollTimer)
 })
 
 const fmtDate = (iso) => {
@@ -157,7 +174,7 @@ const doReply = async () => {
   try {
     const r = await addReply(threadId, {
       author_id:   userId,
-      author_name: isTeacher.value ? '教师' : '我',
+      author_name: userId,
       content:     replyContent.value.trim(),
     })
     thread.value.replies.push(r)

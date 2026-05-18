@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from hiagent_client import HiAgentClient
 from database import engine, get_db
 from models import Base, ChatRecord
-from routers import announcements, treehole, admin, diary, resources, questionnaires, courses
+from routers import announcements, treehole, admin, diary, resources, questionnaires, courses, stats, tips
 
 load_dotenv()
 
@@ -41,6 +41,8 @@ app.include_router(diary.router)
 app.include_router(resources.router)
 app.include_router(questionnaires.router)
 app.include_router(courses.router)
+app.include_router(stats.router)
+app.include_router(tips.router)
 
 import os
 _uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")

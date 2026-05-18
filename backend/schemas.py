@@ -397,6 +397,26 @@ class GroupMessageOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class GroupConclusionOut(BaseModel):
+    group_id:        int
+    content:         str
+    updated_by_id:   Optional[str] = None
+    updated_by_name: Optional[str] = None
+    updated_at:      Optional[datetime] = None
+    model_config = {"from_attributes": True}
+
+
+class GroupConclusionUpdate(BaseModel):
+    content:         str
+    updated_by_id:   str
+    updated_by_name: str
+
+
+class CourseGroupSummary(CourseGroupOut):
+    message_count: int = 0
+    conclusion:    Optional[GroupConclusionOut] = None
+
+
 # ── Discussion ────────────────────────────────────────────────────────────────
 
 class ThreadCreate(BaseModel):

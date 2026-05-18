@@ -16,7 +16,7 @@
     </section>
 
     <DiaryPreview />
-    <OnlineResources />
+    <div id="resources"><OnlineResources /></div>
     <ContactSection />
     <SiteFooter />
   </div>

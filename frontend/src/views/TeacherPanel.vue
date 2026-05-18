@@ -364,6 +364,74 @@
       </div>
     </Transition>
 
+    <!-- ══ 心理小贴士管理 ══════════════════════════════════════════════════ -->
+    <div v-if="activeTab === 'tips'" class="tp-body">
+      <div class="ann-toolbar">
+        <span class="ann-count">共 {{ tipsList.length }} 条</span>
+        <button class="ann-new-btn" @click="openTipForm(null)">
+          <Plus :size="15" :stroke-width="2" /> 新建贴士
+        </button>
+      </div>
+      <div v-if="tipsLoading" class="tp-state"><Loader2 :size="24" :stroke-width="1.5" class="spin" /><span>加载中…</span></div>
+      <div v-else-if="tipsError"  class="tp-state tp-state-error"><AlertCircle :size="20" /><span>加载失败</span></div>
+      <div v-else-if="tipsList.length === 0" class="tp-state">
+        <Lightbulb :size="36" :stroke-width="1" style="opacity:.3" /><span>暂无贴士，点击「新建贴士」添加</span>
+      </div>
+      <div v-else class="tp-table-wrap">
+        <table class="tp-table">
+          <thead><tr>
+            <th style="width:60px">ID</th>
+            <th>内容</th>
+            <th style="width:90px">状态</th>
+            <th style="width:160px">操作</th>
+          </tr></thead>
+          <tbody>
+            <tr v-for="t in tipsList" :key="t.id">
+              <td class="td-id">#{{ t.id }}</td>
+              <td><span class="td-ann-title">{{ t.content }}</span></td>
+              <td><span :class="['td-status', t.active ? 'status-approved' : 'status-rejected']">{{ t.active ? '启用' : '禁用' }}</span></td>
+              <td><div class="td-actions">
+                <button class="act-btn act-neutral" @click="openTipForm(t)">编辑</button>
+                <button :class="['act-btn', t.active ? 'act-reject' : 'act-approve']" @click="toggleTipActive(t)">{{ t.active ? '禁用' : '启用' }}</button>
+                <button class="act-btn act-reject" @click="doDeleteTip(t)">删除</button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 贴士编辑弹窗 -->
+    <Transition name="tp-modal">
+      <div v-if="tipFormVisible" class="tp-overlay" @click.self="tipFormVisible = false">
+        <div class="tp-modal">
+          <div class="tp-modal-head">
+            <span>{{ tipFormData.id ? '编辑贴士' : '新建贴士' }}</span>
+            <button class="tp-close-btn" @click="tipFormVisible = false"><X :size="18" /></button>
+          </div>
+          <div class="tp-form-group">
+            <label class="tp-label">内容</label>
+            <textarea v-model="tipFormData.content" class="tp-textarea" rows="4" placeholder="输入心理小贴士内容…" maxlength="500" />
+          </div>
+          <div class="tp-form-group tp-form-group--inline">
+            <label class="tp-label" style="margin:0">立即启用</label>
+            <label class="tp-toggle">
+              <input type="checkbox" v-model="tipFormData.active" />
+              <span class="tp-toggle-track"></span>
+            </label>
+          </div>
+          <div class="tp-modal-foot">
+            <button class="tp-cancel-btn" @click="tipFormVisible = false">取消</button>
+            <button class="tp-save-btn" :disabled="tipFormSaving || !tipFormData.content.trim()" @click="saveTip">
+              <Loader2 v-if="tipFormSaving" :size="14" class="spin" />
+              <Save v-else :size="14" />
+              {{ tipFormSaving ? '保存中…' : '保存' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- ══ 公告编辑弹窗 ═══════════════════════════════════════════════════ -->
     <Transition name="tp-modal">
       <div v-if="annFormVisible" class="tp-overlay" @click.self="annFormVisible = false">
@@ -452,7 +520,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import {
   ShieldCheck, TreePine, Megaphone, Loader2, AlertCircle,
-  MessageSquare, Plus, X, Save, Library, ClipboardList, Trash2,
+  MessageSquare, Plus, X, Save, Library, ClipboardList, Trash2, Lightbulb,
 } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import {
@@ -465,6 +533,7 @@ import {
 import {
   getAdminQuestionnaires, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire,
 } from '@/api/questionnaires'
+import { listTips, createTip, updateTip, deleteTip } from '@/api/tips'
 
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
 
@@ -474,6 +543,7 @@ const MAIN_TABS = [
   { key: 'announcements', label: '公告管理',  icon: Megaphone     },
   { key: 'resources',     label: '知识库管理', icon: Library       },
   { key: 'quizzes',       label: '问卷管理',  icon: ClipboardList },
+  { key: 'tips',          label: '每日贴士',  icon: Lightbulb     },
 ]
 const activeTab = ref('treehole')
 
@@ -786,12 +856,64 @@ const toggleQuizPublish = async (q) => {
   catch (e) { alert(e?.response?.data?.detail || '操作失败') }
 }
 
+// ── 心理贴士 ─────────────────────────────────────────────────────────────────
+const tipsList    = ref([])
+const tipsLoading = ref(false)
+const tipsError   = ref(false)
+
+const loadTips = async () => {
+  tipsLoading.value = true; tipsError.value = false
+  try { tipsList.value = await listTips() }
+  catch { tipsError.value = true }
+  finally { tipsLoading.value = false }
+}
+
+const tipFormVisible = ref(false)
+const tipFormSaving  = ref(false)
+const tipFormData    = reactive({ id: null, content: '', active: true })
+
+const openTipForm = (t) => {
+  if (t) Object.assign(tipFormData, { id: t.id, content: t.content, active: t.active })
+  else Object.assign(tipFormData, { id: null, content: '', active: true })
+  tipFormVisible.value = true
+}
+
+const saveTip = async () => {
+  if (!tipFormData.content.trim()) return
+  tipFormSaving.value = true
+  try {
+    const payload = { content: tipFormData.content.trim(), active: tipFormData.active }
+    if (tipFormData.id) {
+      const u = await updateTip(tipFormData.id, payload)
+      const idx = tipsList.value.findIndex(x => x.id === u.id)
+      if (idx >= 0) Object.assign(tipsList.value[idx], u)
+    } else {
+      const n = await createTip(payload)
+      tipsList.value.push(n)
+    }
+    tipFormVisible.value = false
+  } catch (e) { alert(e?.response?.data?.detail || '保存失败') }
+  finally { tipFormSaving.value = false }
+}
+
+const toggleTipActive = async (t) => {
+  try { const u = await updateTip(t.id, { content: t.content, active: !t.active }); Object.assign(t, u) }
+  catch (e) { alert(e?.response?.data?.detail || '操作失败') }
+}
+
+const doDeleteTip = async (t) => {
+  if (!confirm('确认删除此贴士？')) return
+  try { await deleteTip(t.id); tipsList.value = tipsList.value.filter(x => x.id !== t.id) }
+  catch (e) { alert(e?.response?.data?.detail || '删除失败') }
+}
+
 // ── 初始化 ────────────────────────────────────────────────────────────────────
 onMounted(() => {
   loadPosts()
   loadAnnouncements()
   loadResources()
   loadQuizzes()
+  loadTips()
 })
 </script>
 

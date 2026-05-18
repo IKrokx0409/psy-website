@@ -1,7 +1,9 @@
 <template>
-  <div class="chat-layout">
+  <div class="chat-layout" @click.self="sidebarOpen = false">
+    <!-- 移动端侧边栏遮罩 -->
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
     <!-- ============ 侧边栏 ============ -->
-    <aside class="sidebar">
+    <aside :class="['sidebar', { 'sidebar--open': sidebarOpen }]">
       <div class="sidebar-top">
         <button class="new-chat-btn" @click="startNewConversation">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
@@ -32,6 +34,10 @@
     <main class="chat-main">
       <!-- 顶部标题栏 -->
       <div class="chat-header">
+        <button class="sidebar-toggle" @click.stop="sidebarOpen = !sidebarOpen" aria-label="历史对话">
+          <XIcon v-if="sidebarOpen" :size="18" />
+          <Menu v-else :size="18" />
+        </button>
         <span class="chat-title">大学生心理疗愈智能体</span>
         <span class="chat-subtitle">基于 HITSZ HiAgent 2.0</span>
       </div>
@@ -115,12 +121,13 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
-import axios from 'axios'
 import MarkdownIt from 'markdown-it'
-import { Bot, Leaf } from 'lucide-vue-next'
+import { Bot, Leaf, Menu, X as XIcon } from 'lucide-vue-next'
 import { useUserId } from '@/composables/useUserId'
+import http from '@/api/http'
 
 const userId = useUserId()
+const sidebarOpen = ref(false)
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
 
 // DOM refs
@@ -243,7 +250,7 @@ const sendMessage = async () => {
   messages.value.push({ role: 'assistant', isLoading: true, thought: '', reply: '' })
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/chat', {
+    const response = await http.post('/api/chat', {
       message: text,
       conversation_id: hiagentConvId.value || null,
       user_id: userId || null,
@@ -642,6 +649,51 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
 }
 
 /* ========== Markdown 内容样式 ========== */
+
+/* ========== 响应式 ========== */
+.sidebar-toggle { display: none; }
+.sidebar-overlay { display: none; }
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    width: 260px;
+  }
+  .sidebar--open { transform: translateX(0); }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 199;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #4d8764;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--r-sm);
+    flex-shrink: 0;
+  }
+  .sidebar-toggle:hover { background: var(--c-green-pale); }
+
+  .chat-header { padding: 12px 16px; gap: 8px; }
+  .chat-title  { font-size: 14px; }
+  .chat-subtitle { display: none; }
+
+  .message-row { padding: 6px 12px; }
+  .input-wrapper { padding: 12px 12px 16px; }
+}
 </style>
 
 <style>

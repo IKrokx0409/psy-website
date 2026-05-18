@@ -503,4 +503,15 @@ const saveClass = async () => {
 
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .cc-body { padding: 16px; }
+  .cc-header-inner { padding: 0 16px; flex-wrap: wrap; gap: 8px; }
+  .cc-my-id { font-size: 12px; }
+  .cc-id-hint { display: none; }
+  .course-card-head { flex-wrap: wrap; }
+  .course-actions { width: 100%; justify-content: flex-end; }
+  .modal-overlay { padding: 16px; }
+  .modal { max-width: 100%; }
+}
 </style>

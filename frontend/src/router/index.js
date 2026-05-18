@@ -15,6 +15,7 @@ import CourseCenter         from '../views/CourseCenter.vue'
 import ClassHome            from '../views/ClassHome.vue'
 import AssignmentDetail     from '../views/AssignmentDetail.vue'
 import DiscussionDetail     from '../views/DiscussionDetail.vue'
+import GroupDetail          from '../views/GroupDetail.vue'
 
 const routes = [
   { path: '/login',                component: Login,             meta: { public: true } },
@@ -32,6 +33,7 @@ const routes = [
   { path: '/course/:classId',      component: ClassHome },
   { path: '/course/:classId/assignment/:assignmentId', component: AssignmentDetail },
   { path: '/course/:classId/discuss/:threadId',        component: DiscussionDetail },
+  { path: '/course/:classId/group/:groupId',           component: GroupDetail },
   { path: '/teacher',              component: TeacherPanel,      meta: { teacherOnly: true } },
 ]
 

@@ -1344,4 +1344,19 @@ onUnmounted(() => { resizeObserver?.disconnect(); resizeObserver = null; stopThi
 }
 .chart-toggle-btn:hover { background: #f5fbf7; border-color: #5f9e75; color: #3d6e52; }
 .chart-toggle-btn.active { background: #3d6e52; color: white; border-color: #3d6e52; }
+
+/* ── 响应式 ── */
+@media (max-width: 900px) {
+  .diary-inner {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+    padding: 12px 16px 24px;
+  }
+  .left-sidebar { grid-column: 1; grid-row: auto; overflow: visible; }
+  .center-col   { grid-column: 1; grid-row: auto; overflow: visible; }
+  .right-col    { grid-column: 1; grid-row: auto; overflow: visible; }
+  .chart-strip  { grid-column: 1; grid-row: auto; }
+  .diary-page   { overflow: auto; }
+}
 </style>

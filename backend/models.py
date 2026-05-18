@@ -176,6 +176,18 @@ class GroupMessage(Base):
     created_at  = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class GroupConclusion(Base):
+    """小组结论——每个小组至多一条，组员可随时修改"""
+    __tablename__ = "group_conclusions"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    group_id        = Column(Integer, ForeignKey("course_groups.id", ondelete="CASCADE"), nullable=False, unique=True)
+    content         = Column(Text, nullable=False, default="")
+    updated_by_id   = Column(String(50), nullable=True)
+    updated_by_name = Column(String(50), nullable=True)
+    updated_at      = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class DiscussionThread(Base):
     __tablename__ = "discussion_threads"
 
@@ -198,3 +210,12 @@ class DiscussionReply(Base):
     author_name = Column(String(50), nullable=False)
     content     = Column(Text, nullable=False)
     created_at  = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class DailyTip(Base):
+    __tablename__ = "daily_tips"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    content    = Column(Text, nullable=False)
+    active     = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

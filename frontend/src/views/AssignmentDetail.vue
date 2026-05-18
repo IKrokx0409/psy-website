@@ -169,7 +169,7 @@
             <div v-if="s.content" class="sub-content">{{ s.content }}</div>
             <div v-if="s.file_name" class="sub-file">
               <Paperclip :size="13" /> {{ s.file_name }}
-              <a :href="`http://127.0.0.1:8000${s.file_path}`" target="_blank" class="sub-file-link">下载</a>
+              <a :href="s.file_path" target="_blank" class="sub-file-link">下载</a>
             </div>
           </template>
           <div v-if="s.teacher_comment" class="sub-comment">
@@ -205,7 +205,7 @@
               <div v-if="mySubmission.file_name" class="my-file-info">
                 <Paperclip :size="14" />
                 <span>{{ mySubmission.file_name }}</span>
-                <a :href="`http://127.0.0.1:8000${mySubmission.file_path}`" target="_blank" class="sub-file-link">下载</a>
+                <a :href="mySubmission.file_path" target="_blank" class="sub-file-link">下载</a>
               </div>
             </template>
 
@@ -853,4 +853,16 @@ const doGrade = async () => {
 .modal-enter-from .modal, .modal-leave-to .modal { transform: translateY(12px); }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .ad-body { padding: 16px; }
+  .ad-header-inner { padding: 0 16px; }
+  .ad-title { font-size: 18px; }
+  .stat-card, .submission-card, .progress-card, .my-submission-card { border-radius: var(--r-sm); }
+  .modal-overlay { padding: 16px; }
+  .modal, .modal-lg { max-width: 100%; }
+  .sub-head { flex-wrap: wrap; gap: 8px; }
+  .sub-grade-info { width: 100%; justify-content: flex-end; }
+  .prog-big { font-size: 36px; }
+}
 </style>

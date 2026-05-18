@@ -51,10 +51,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Lightbulb, PhoneCall, CalendarDays, RotateCcw } from 'lucide-vue-next'
+import { getRandomTip } from '@/api/tips'
 
-const tips = [
+const FALLBACK = [
   '深呼吸练习：吸气 4 秒，屏息 4 秒，呼气 6 秒。每天练习 3 次，有效缓解焦虑。',
   '每天花 5 分钟记录 3 件让你感到感激的事，有助于提升整体幸福感。',
   '"5-4-3-2-1" 接地技术：找出 5 样能看到的、4 样能触摸到的、3 样能听到的、2 样能闻到的、1 样能尝到的，帮你回到当下。',
@@ -65,15 +66,20 @@ const tips = [
   '情绪没有对错。允许自己感到悲伤、愤怒或焦虑，接纳情绪是处理情绪的第一步。',
 ]
 
-const idx = ref(Math.floor(Math.random() * tips.length))
-const currentTip = ref(tips[idx.value])
+const currentTip = ref(FALLBACK[Math.floor(Math.random() * FALLBACK.length)])
 
-const refreshTip = () => {
-  let next = Math.floor(Math.random() * tips.length)
-  while (next === idx.value && tips.length > 1) next = Math.floor(Math.random() * tips.length)
-  idx.value = next
-  currentTip.value = tips[next]
+const fetchTip = async () => {
+  try {
+    const tip = await getRandomTip()
+    if (tip?.content) currentTip.value = tip.content
+  } catch {
+    // keep fallback
+  }
 }
+
+onMounted(fetchTip)
+
+const refreshTip = fetchTip
 </script>
 
 <style scoped>
