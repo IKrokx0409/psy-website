@@ -172,7 +172,7 @@
             <template v-else-if="aiEmotional">
               <div class="ai-sections">
                 <div class="ai-section">
-                  <p class="ai-response-text">{{ aiEmotional }}</p>
+                  <div class="ai-response-text markdown-body" v-html="renderMd(aiEmotional)"></div>
                 </div>
               </div>
               <button class="ai-re-btn" @click="analyzeEmotion">
@@ -211,7 +211,7 @@
               </div>
             </template>
             <template v-else-if="aiWeekly">
-              <p class="ai-response-text">{{ aiWeekly }}</p>
+              <div class="ai-response-text markdown-body" v-html="renderMd(aiWeekly)"></div>
             </template>
             <template v-else>
               <div class="weekly-empty">
@@ -322,6 +322,10 @@ import {
 } from 'lucide-vue-next'
 import { getDiaries, saveDiary, deleteDiary, getAIDiaryResponse } from '@/api/diary'
 import { useUserId } from '@/composables/useUserId'
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
+const renderMd = (text) => text ? md.render(text) : ''
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const SVG_H = 88
@@ -1174,7 +1178,18 @@ onUnmounted(() => { resizeObserver?.disconnect(); resizeObserver = null; stopThi
 .ai-sections::-webkit-scrollbar-thumb { background: #cfe8da; border-radius: 2px; }
 
 .ai-section { padding: 9px 11px; }
-.ai-response-text { font-size: 12.5px; color: #3d4f4a; line-height: 1.8; margin: 0; white-space: pre-wrap; text-align: left; }
+.ai-response-text { font-size: 12.5px; color: #3d4f4a; line-height: 1.8; margin: 0; text-align: left; }
+.ai-response-text.markdown-body p { margin: 0 0 8px; }
+.ai-response-text.markdown-body p:last-child { margin-bottom: 0; }
+.ai-response-text.markdown-body ul,
+.ai-response-text.markdown-body ol { padding-left: 18px; margin: 6px 0; }
+.ai-response-text.markdown-body li { margin: 4px 0; }
+.ai-response-text.markdown-body strong { font-weight: 600; color: #2d4039; }
+.ai-response-text.markdown-body h1,
+.ai-response-text.markdown-body h2,
+.ai-response-text.markdown-body h3 { font-weight: 600; margin: 10px 0 4px; color: #2d4039; }
+.ai-response-text.markdown-body h3 { font-size: 13px; }
+.ai-response-text.markdown-body blockquote { border-left: 3px solid #a8d5b8; padding-left: 10px; color: #5a7a6a; margin: 6px 0; }
 
 .ai-re-btn {
   display: flex;

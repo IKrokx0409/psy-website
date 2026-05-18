@@ -68,12 +68,20 @@ const FALLBACK = [
 
 const currentTip = ref(FALLBACK[Math.floor(Math.random() * FALLBACK.length)])
 
+const pickFallback = () => {
+  const current = currentTip.value
+  const choices = FALLBACK.filter(t => t !== current)
+  const pool = choices.length ? choices : FALLBACK
+  currentTip.value = pool[Math.floor(Math.random() * pool.length)]
+}
+
 const fetchTip = async () => {
   try {
     const tip = await getRandomTip()
     if (tip?.content) currentTip.value = tip.content
+    else pickFallback()
   } catch {
-    // keep fallback
+    pickFallback()
   }
 }
 
