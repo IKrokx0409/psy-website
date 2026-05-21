@@ -1,0 +1,20 @@
+# AI Engine 额外依赖（在 requirements.txt 基础上安装）
+# pip install -r requirements.txt -r requirements_ai.txt
+
+# LLM 调用（OpenAI 协议兼容，支持 DeepSeek / OpenAI / 其他）
+openai>=1.30.0
+
+# 本地 Embedding & Reranker 模型
+sentence-transformers>=3.0.0
+
+# pgvector Python 客户端（SQLAlchemy 集成）
+pgvector>=0.3.0
+
+# PDF 解析（知识库入库用）
+pypdf>=4.0.0
+
+# Excel 解析（xlsx / 伪装成 .csv 的 xlsx）
+openpyxl>=3.1.0
+
+# 危机语义检测中的向量运算
+numpy>=1.24.0
