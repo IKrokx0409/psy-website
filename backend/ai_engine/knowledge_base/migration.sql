@@ -24,3 +24,17 @@ CREATE INDEX IF NOT EXISTS knowledge_chunks_embedding_idx
 -- GIN 索引加速全文检索
 CREATE INDEX IF NOT EXISTS knowledge_chunks_fts_idx
     ON knowledge_chunks USING gin(fts);
+
+-- ── 持久化对话历史表 ────────────────────────────────────────────────────────
+-- 解决 per-request 实例化导致内存记忆丢失的 Bug，同时支持多 Worker 部署
+CREATE TABLE IF NOT EXISTS chat_history (
+    id              SERIAL PRIMARY KEY,
+    conversation_id VARCHAR(64)  NOT NULL,
+    role            VARCHAR(16)  NOT NULL,   -- 'user' | 'assistant'
+    content         TEXT         NOT NULL,
+    created_at      TIMESTAMPTZ  DEFAULT NOW()
+);
+
+-- 按 conversation_id 排序查询专用索引
+CREATE INDEX IF NOT EXISTS chat_history_conv_idx
+    ON chat_history (conversation_id, created_at DESC);

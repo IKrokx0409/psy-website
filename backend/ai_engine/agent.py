@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TypedDict
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,7 @@ from ai_engine.rag.embedder import Embedder
 from ai_engine.rag.pg_retriever import PGRetriever, RetrievedChunk
 from ai_engine.rag.reranker import Reranker
 from ai_engine.tools.crisis import CrisisTool, CrisisLevel
-from ai_engine.tools.memory import MemoryTool
+from ai_engine.tools.db_memory import DBMemoryTool
 from ai_engine.tools.retrieval import RetrievalTool
 
 
@@ -53,7 +53,13 @@ _MAX_RETRY = 2  # Query 改写最大重试次数
 # ── Agent ─────────────────────────────────────────────────────────────────────
 
 class PsychAgent:
-    """心理健康 Agentic RAG 主循环。
+    """心理健康 Agentic RAG 主循环（无状态版本）。
+
+    原有 MemoryTool 使用内存内 deque，在 per-request 实例化模式下每次请求都
+    丢失历史（真实 Bug）。现改为 DBMemoryTool，将对话状态持久化到 PostgreSQL：
+    - 服务层真正无状态，可直接接负载均衡 / 多 Worker 部署
+    - 每次请求开始时从 DB 拉取最近 N 轮历史
+    - 生成回复后异步写入 DB
 
     流程：
     1. 危机检测（前置门控，命中则跳过 RAG 直接返回协议响应）
@@ -61,7 +67,7 @@ class PsychAgent:
     3. 混合检索 + 重排序
     4. 质量评估（不达标则重写 Query 重试，最多 _MAX_RETRY 次）
     5. 基于检索上下文生成回复
-    6. 更新对话记忆
+    6. 持久化对话记忆到 DB
     """
 
     def __init__(self, config: AIEngineConfig, db: AsyncSession) -> None:
@@ -72,17 +78,15 @@ class PsychAgent:
         self._llm = LLMClient(config)
         self._crisis = CrisisTool(config, embedder)
         self._retrieval = RetrievalTool(retriever, reranker, config)
-        # 每个 conversation_id 对应独立的 MemoryTool
-        self._memories: dict[str, MemoryTool] = {}
         self._config = config
-
-    def _get_memory(self, conversation_id: str) -> MemoryTool:
-        if conversation_id not in self._memories:
-            self._memories[conversation_id] = MemoryTool(self._config)
-        return self._memories[conversation_id]
+        self._db = db
 
     async def run(self, message: str, conversation_id: str) -> AgentResponse:
         """Agent 主入口，对外接口与 HiAgentClient 保持相同签名。"""
+        # 每次请求创建独立的 DBMemoryTool，从 DB 加载历史
+        mem = DBMemoryTool(self._db, conversation_id, self._config)
+        await mem.load()
+
         state: AgentState = {
             "message": message,
             "conversation_id": conversation_id,
@@ -97,19 +101,20 @@ class PsychAgent:
 
         state = await self._step_crisis_detection(state)
         if state["crisis_level"] in (CrisisLevel.HIGH, CrisisLevel.MEDIUM):
+            await self._persist_turn(mem, message, state["final_response"])
             return self._build_response(state)
 
-        state = await self._step_query_rewrite(state)
+        state = await self._step_query_rewrite(state, mem)
 
         for _ in range(_MAX_RETRY + 1):
             state = await self._step_retrieve(state)
             if self._retrieval.is_quality_sufficient(state["retrieval_quality"]):
                 break
             state["retry_count"] += 1
-            state = await self._step_query_rewrite(state, is_retry=True)
+            state = await self._step_query_rewrite(state, mem, is_retry=True)
 
-        state = await self._step_generate(state)
-        self._update_memory(state)
+        state = await self._step_generate(state, mem)
+        await self._persist_turn(mem, message, state["final_response"])
         return self._build_response(state)
 
     # ── 步骤 ──────────────────────────────────────────────────────────────────
@@ -124,9 +129,10 @@ class PsychAgent:
             state["thought"] = f"检测到危机信号（{level.value}），跳过 RAG，执行危机协议。"
         return state
 
-    async def _step_query_rewrite(self, state: AgentState, is_retry: bool = False) -> AgentState:
+    async def _step_query_rewrite(
+        self, state: AgentState, mem: DBMemoryTool, is_retry: bool = False
+    ) -> AgentState:
         """步骤 2：Query 改写，将口语化表达转为检索友好的关键词句。"""
-        mem = self._get_memory(state["conversation_id"])
         if is_retry:
             prompt = (
                 f"上一次检索质量不足（分数 {state['retrieval_quality']:.2f}）。\n"
@@ -157,9 +163,8 @@ class PsychAgent:
         state["thought"] += f"\n检索质量分数：{quality:.2f}（阈值 {self._config.retrieval_score_threshold}）"
         return state
 
-    async def _step_generate(self, state: AgentState) -> AgentState:
+    async def _step_generate(self, state: AgentState, mem: DBMemoryTool) -> AgentState:
         """步骤 4：基于检索上下文调用 LLM 生成最终回复。"""
-        mem = self._get_memory(state["conversation_id"])
         context = self._retrieval.format_context(state["retrieved_chunks"])
         user_prompt = (
             f"参考以下知识库内容：\n{context}\n\n"
@@ -173,10 +178,12 @@ class PsychAgent:
 
     # ── 辅助 ──────────────────────────────────────────────────────────────────
 
-    def _update_memory(self, state: AgentState) -> None:
-        mem = self._get_memory(state["conversation_id"])
-        mem.add_turn("user", state["message"])
-        mem.add_turn("assistant", state["final_response"])
+    async def _persist_turn(
+        self, mem: DBMemoryTool, user_msg: str, assistant_msg: str
+    ) -> None:
+        """持久化 user + assistant 两条记录到 DB。"""
+        await mem.save_turn("user", user_msg)
+        await mem.save_turn("assistant", assistant_msg)
 
     def _build_response(self, state: AgentState) -> AgentResponse:
         return AgentResponse(

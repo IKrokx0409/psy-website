@@ -20,8 +20,13 @@ class Reranker:
 
     def _ensure_loaded(self) -> None:
         if self._model is None:
+            import os
             from sentence_transformers import CrossEncoder
-            self._model = CrossEncoder("BAAI/bge-reranker-base")
+            # 强制本地缓存，避免 WSL2 下 HF 网络请求失败
+            self._model = CrossEncoder(
+                "BAAI/bge-reranker-base",
+                local_files_only=os.getenv("HF_HUB_OFFLINE", "0") == "1",
+            )
 
     async def rerank(
         self, query: str, chunks: list[RetrievedChunk], top_k: int | None = None

@@ -18,8 +18,13 @@ class Embedder:
 
     def _ensure_loaded(self) -> None:
         if self._model is None:
+            import os
             from sentence_transformers import SentenceTransformer
-            self._model = SentenceTransformer(self._model_name)
+            # 模型已下载到本地缓存，强制离线模式避免 WSL2 下 HF 网络请求失败
+            self._model = SentenceTransformer(
+                self._model_name,
+                local_files_only=os.getenv("HF_HUB_OFFLINE", "0") == "1",
+            )
 
     async def embed(self, text: str) -> list[float]:
         self._ensure_loaded()
