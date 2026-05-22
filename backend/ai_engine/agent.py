@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import AsyncIterator, TypedDict
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,6 +35,19 @@ class AgentResponse:
     conversation_id: str
     thought: str
     reply: str
+
+
+@dataclass
+class StreamEvent:
+    """SSE 流式传输的单个事件。
+
+    event 类型：
+      thinking  — RAG 前处理进度（危机检测/改写/检索，全部完成后发一次）
+      token     — LLM 生成的逐字 token
+      done      — 流结束，携带 thought / conversation_id / ttft_ms 元数据
+    """
+    event: str      # thinking | token | done
+    data: str
 
 
 # ── 系统 Prompt ───────────────────────────────────────────────────────────────
@@ -70,19 +84,28 @@ class PsychAgent:
     6. 持久化对话记忆到 DB
     """
 
-    def __init__(self, config: AIEngineConfig, db: AsyncSession) -> None:
-        embedder = Embedder(config)
-        retriever = PGRetriever(db, embedder, config)
-        reranker = Reranker(config)
+    def __init__(
+        self,
+        config: AIEngineConfig,
+        db: AsyncSession,
+        embedder: Embedder | None = None,
+        reranker: Reranker | None = None,
+    ) -> None:
+        # 优先使用外部注入的单例（main_ai.py 在启动时预热），
+        # 否则新建（测试脚本、单元测试场景兼容）
+        _embedder = embedder or Embedder(config)
+        _reranker = reranker or Reranker(config)
+
+        retriever = PGRetriever(db, _embedder, config)
 
         self._llm = LLMClient(config)
-        self._crisis = CrisisTool(config, embedder)
-        self._retrieval = RetrievalTool(retriever, reranker, config)
+        self._crisis = CrisisTool(config, _embedder)
+        self._retrieval = RetrievalTool(retriever, _reranker, config)
         self._config = config
         self._db = db
 
     async def run(self, message: str, conversation_id: str) -> AgentResponse:
-        """Agent 主入口，对外接口与 HiAgentClient 保持相同签名。"""
+        """Agent 主入口（非流式），对外接口与 HiAgentClient 保持相同签名。"""
         # 每次请求创建独立的 DBMemoryTool，从 DB 加载历史
         mem = DBMemoryTool(self._db, conversation_id, self._config)
         await mem.load()
@@ -116,6 +139,102 @@ class PsychAgent:
         state = await self._step_generate(state, mem)
         await self._persist_turn(mem, message, state["final_response"])
         return self._build_response(state)
+
+    async def stream(
+        self, message: str, conversation_id: str
+    ) -> AsyncIterator[StreamEvent]:
+        """Agent 流式入口 — 两阶段 SSE。
+
+        阶段 1（阻塞，约 1-1.5s）：
+          危机检测 → Query 改写 → 混合检索 → 重排序
+          → 发送一个 thinking 事件（进度摘要，前端显示"思考中"动画）
+
+        阶段 2（流式）：
+          LLM 逐 token 生成 → 每个 token 作为 token 事件推送
+          → 最终发送 done 事件（含 thought / TTFT 元数据）
+
+        TTFT（首字时延）= 危机检测 + Query改写 + 检索 + 重排 + LLM首token
+        """
+        t_start = time.perf_counter()
+
+        mem = DBMemoryTool(self._db, conversation_id, self._config)
+        await mem.load()
+
+        state: AgentState = {
+            "message": message,
+            "conversation_id": conversation_id,
+            "crisis_level": CrisisLevel.NONE,
+            "rewritten_query": message,
+            "retrieved_chunks": [],
+            "retrieval_quality": 0.0,
+            "retry_count": 0,
+            "thought": "",
+            "final_response": "",
+        }
+
+        # ── 阶段 1：危机检测 ──────────────────────────────────────────────────
+        state = await self._step_crisis_detection(state)
+        if state["crisis_level"] in (CrisisLevel.HIGH, CrisisLevel.MEDIUM):
+            # 危机场景：跳过 RAG，直接流式返回协议响应（逐字发送）
+            await self._persist_turn(mem, message, state["final_response"])
+            yield StreamEvent("thinking", state["thought"])
+            for char in state["final_response"]:
+                yield StreamEvent("token", char)
+            yield StreamEvent("done", f"crisis:{state['crisis_level'].value}")
+            return
+
+        # ── 阶段 1：RAG 前处理 ────────────────────────────────────────────────
+        yield StreamEvent("thinking", "危机检测通过，正在改写检索查询…")
+
+        state = await self._step_query_rewrite(state, mem)
+
+        for _ in range(_MAX_RETRY + 1):
+            state = await self._step_retrieve(state)
+            if self._retrieval.is_quality_sufficient(state["retrieval_quality"]):
+                break
+            state["retry_count"] += 1
+            yield StreamEvent("thinking", f"检索质量不足（{state['retrieval_quality']:.2f}），重试改写查询…")
+            state = await self._step_query_rewrite(state, mem, is_retry=True)
+
+        t_rag_done = time.perf_counter()
+        rag_ms = (t_rag_done - t_start) * 1000
+        state["thought"] += f"\nRAG 前处理耗时：{rag_ms:.0f}ms"
+        yield StreamEvent("thinking", state["thought"].strip())
+
+        # ── 阶段 2：流式 LLM 生成 ────────────────────────────────────────────
+        context = self._retrieval.format_context(state["retrieved_chunks"])
+        user_prompt = (
+            f"参考以下知识库内容：\n{context}\n\n"
+            f"请回复用户的问题：{message}"
+        )
+        messages = mem.get_messages() + [{"role": "user", "content": user_prompt}]
+
+        full_reply = ""
+        first_token = True
+        ttft_ms = 0.0
+        async for token in self._llm.stream(system=_SYSTEM_PROMPT, messages=messages):
+            if first_token:
+                ttft_ms = (time.perf_counter() - t_start) * 1000
+                first_token = False
+            full_reply += token
+            yield StreamEvent("token", token)
+
+        # ── 收尾：持久化 + done 事件 ──────────────────────────────────────────
+        state["final_response"] = full_reply
+        await self._persist_turn(mem, message, full_reply)
+
+        import json
+        yield StreamEvent(
+            "done",
+            json.dumps({
+                "thought": state["thought"].strip(),
+                "conversation_id": conversation_id,
+                "ttft_ms": round(ttft_ms, 1),
+                "rag_ms": round(rag_ms, 1),
+                "retrieval_quality": round(state["retrieval_quality"], 3),
+                "retry_count": state["retry_count"],
+            }, ensure_ascii=False),
+        )
 
     # ── 步骤 ──────────────────────────────────────────────────────────────────
 

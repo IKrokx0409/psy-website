@@ -69,18 +69,22 @@
                 <span class="typing-dot"></span>
               </div>
               <template v-else>
-                <!-- 推理块（可折叠） -->
+                <!-- 推理块（可折叠，含 TTFT 数据） -->
                 <details v-if="msg.thought" class="thought-block">
                   <summary class="thought-summary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                       <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
                     </svg>
                     推理过程
+                    <span v-if="msg.ttft_ms" class="ttft-badge">TTFT {{ msg.ttft_ms }}ms</span>
                   </summary>
                   <div class="thought-content">{{ msg.thought }}</div>
                 </details>
-                <!-- 正式回复 -->
-                <div class="reply-bubble markdown-body" v-html="renderMd(msg.reply)"></div>
+                <!-- 正式回复：流式时显示纯文本+光标，完成后渲染 Markdown -->
+                <div v-if="msg.isStreaming" class="reply-bubble streaming-bubble">
+                  {{ msg.reply }}<span class="stream-cursor">▌</span>
+                </div>
+                <div v-else class="reply-bubble markdown-body" v-html="renderMd(msg.reply)"></div>
               </template>
             </div>
           </template>
@@ -120,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch, onMounted } from 'vue'
+import { ref, reactive, nextTick, watch, onMounted } from 'vue'
 import MarkdownIt from 'markdown-it'
 import { Bot, Leaf, Menu, X as XIcon } from 'lucide-vue-next'
 import { useUserId } from '@/composables/useUserId'
@@ -237,7 +241,23 @@ const loadConversation = (conv) => {
   messages.value = [...conv.messages]
 }
 
-// ===== 发送消息 =====
+// ===== SSE 流式发送消息 =====
+// 解析 SSE 文本块，返回 [{event, data}]
+const parseSSEChunk = (raw) => {
+  const events = []
+  const blocks = raw.split('\n\n')
+  for (const block of blocks) {
+    if (!block.trim()) continue
+    let event = '', data = ''
+    for (const line of block.split('\n')) {
+      if (line.startsWith('event: ')) event = line.slice(7).trim()
+      else if (line.startsWith('data: ')) data = line.slice(6)
+    }
+    if (event && data !== undefined) events.push({ event, data })
+  }
+  return events
+}
+
 const sendMessage = async () => {
   const text = inputText.value.trim()
   if (!text || isSending.value) return
@@ -245,29 +265,70 @@ const sendMessage = async () => {
   messages.value.push({ role: 'user', content: text })
   inputText.value = ''
   resetTextarea()
-
   isSending.value = true
-  messages.value.push({ role: 'assistant', isLoading: true, thought: '', reply: '' })
+
+  // 插入占位消息（thinking 阶段显示 loading 动画）
+  const aiMsg = reactive({
+    role: 'assistant',
+    isLoading: true,
+    isStreaming: false,
+    thought: '',
+    reply: '',
+    ttft_ms: null,
+  })
+  messages.value.push(aiMsg)
 
   try {
-    const response = await http.post('/api/chat', {
+    const params = new URLSearchParams({
       message: text,
-      conversation_id: hiagentConvId.value || null,
-      user_id: userId || null,
+      conversation_id: hiagentConvId.value || '',
     })
+    const res = await fetch(`/api/chat/stream?${params}`, {
+      headers: { 'Accept': 'text/event-stream' },
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-    messages.value.pop()
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
 
-    if (response.data.conversation_id) {
-      hiagentConvId.value = response.data.conversation_id
+    // 逐块读取 SSE 流
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+
+      // 以双换行分割完整事件块
+      const parts = buffer.split('\n\n')
+      buffer = parts.pop() ?? ''   // 最后可能是不完整事件，留到下次
+
+      for (const block of parts) {
+        for (const { event, data } of parseSSEChunk(block + '\n\n')) {
+          if (event === 'thinking') {
+            // RAG 前处理阶段：保持 loading 动画，等待
+            aiMsg.isLoading = true
+          } else if (event === 'token') {
+            // 首个 token 到达：切换为打字流状态
+            aiMsg.isLoading = false
+            aiMsg.isStreaming = true
+            aiMsg.reply += data
+          } else if (event === 'done') {
+            aiMsg.isStreaming = false
+            aiMsg.isLoading = false
+            try {
+              const meta = JSON.parse(data)
+              aiMsg.thought = meta.thought || ''
+              aiMsg.ttft_ms = meta.ttft_ms
+              if (meta.conversation_id) hiagentConvId.value = meta.conversation_id
+            } catch { /* crisis done 不是 JSON，忽略 */ }
+          } else if (event === 'error') {
+            aiMsg.isLoading = false
+            aiMsg.isStreaming = false
+            aiMsg.reply = '抱歉，服务出现了异常，请稍后再试。'
+          }
+        }
+      }
     }
-
-    messages.value.push({
-      role: 'assistant',
-      thought: response.data.thought || '',
-      reply: response.data.reply || '',
-      isLoading: false
-    })
 
     // 首次回复时创建历史条目
     if (!currentConvId.value) {
@@ -276,7 +337,7 @@ const sendMessage = async () => {
         name: text.length > 18 ? text.slice(0, 18) + '…' : text,
         hiagentConvId: hiagentConvId.value,
         messages: [...messages.value],
-        createdAt: Date.now()
+        createdAt: Date.now(),
       }
       currentConvId.value = newConv.id
       conversationHistory.value.unshift(newConv)
@@ -286,13 +347,9 @@ const sendMessage = async () => {
     }
 
   } catch (error) {
-    messages.value.pop()
-    messages.value.push({
-      role: 'assistant',
-      thought: '',
-      reply: '抱歉，我的思绪暂时飘远了（服务器连接断开），请检查后端是否在运行哦。',
-      isLoading: false
-    })
+    aiMsg.isLoading = false
+    aiMsg.isStreaming = false
+    aiMsg.reply = '抱歉，我的思绪暂时飘远了（服务器连接断开），请检查后端是否在运行哦。'
     console.error(error)
   } finally {
     isSending.value = false
@@ -581,6 +638,34 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
 @keyframes typingBounce {
   0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
   40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* 流式打字气泡 */
+.streaming-bubble {
+  white-space: pre-wrap;
+}
+.stream-cursor {
+  display: inline-block;
+  color: #5f9e75;
+  animation: blink 0.8s step-end infinite;
+  margin-left: 1px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* TTFT 徽章 */
+.ttft-badge {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #5f9e75;
+  background: #edf7f1;
+  border: 1px solid #b8e0c9;
+  border-radius: 20px;
+  padding: 1px 8px;
+  letter-spacing: 0.3px;
 }
 
 /* ========== 输入区 ========== */
