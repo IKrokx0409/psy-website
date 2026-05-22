@@ -38,3 +38,30 @@ CREATE TABLE IF NOT EXISTS chat_history (
 -- 按 conversation_id 排序查询专用索引
 CREATE INDEX IF NOT EXISTS chat_history_conv_idx
     ON chat_history (conversation_id, created_at DESC);
+
+-- ── 请求链路追踪表 ──────────────────────────────────────────────────────────
+-- 记录每次 Agent 调用的完整决策链路，用于 Bad Case 排查和性能分析
+-- 面试时可直接 SELECT 出来展示：哪步慢、检索质量如何、重试了几次
+CREATE TABLE IF NOT EXISTS request_traces (
+    id                  SERIAL PRIMARY KEY,
+    request_id          UUID         DEFAULT gen_random_uuid(),
+    conversation_id     VARCHAR(64),
+    crisis_level        VARCHAR(16)  DEFAULT 'none',
+    query_original      TEXT,
+    query_rewritten     TEXT,
+    retrieval_quality   FLOAT,
+    retry_count         INTEGER      DEFAULT 0,
+    -- 各步骤耗时（毫秒），JSONB 方便增删字段
+    step_timings        JSONB        DEFAULT '{}',
+    -- 完整 thought 链路（含每步日志）
+    thought             TEXT,
+    total_ms            FLOAT,
+    created_at          TIMESTAMPTZ  DEFAULT NOW()
+);
+
+-- 按时间倒序查询最近 N 条 trace
+CREATE INDEX IF NOT EXISTS request_traces_time_idx
+    ON request_traces (created_at DESC);
+-- 按会话 ID 回溯历史 trace
+CREATE INDEX IF NOT EXISTS request_traces_conv_idx
+    ON request_traces (conversation_id, created_at DESC);

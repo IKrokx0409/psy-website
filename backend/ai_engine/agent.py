@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 import time
+import uuid
 from dataclasses import dataclass
 from typing import AsyncIterator, TypedDict
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_engine.config import AIEngineConfig
@@ -106,7 +109,9 @@ class PsychAgent:
 
     async def run(self, message: str, conversation_id: str) -> AgentResponse:
         """Agent 主入口（非流式），对外接口与 HiAgentClient 保持相同签名。"""
-        # 每次请求创建独立的 DBMemoryTool，从 DB 加载历史
+        t0 = time.perf_counter()
+        timings: dict[str, float] = {}
+
         mem = DBMemoryTool(self._db, conversation_id, self._config)
         await mem.load()
 
@@ -122,22 +127,39 @@ class PsychAgent:
             "final_response": "",
         }
 
+        t1 = time.perf_counter()
         state = await self._step_crisis_detection(state)
+        timings["crisis_ms"] = round((time.perf_counter() - t1) * 1000, 1)
+
         if state["crisis_level"] in (CrisisLevel.HIGH, CrisisLevel.MEDIUM):
             await self._persist_turn(mem, message, state["final_response"])
+            total_ms = round((time.perf_counter() - t0) * 1000, 1)
+            await self._write_trace(state, timings, total_ms)
             return self._build_response(state)
 
+        t2 = time.perf_counter()
         state = await self._step_query_rewrite(state, mem)
+        timings["rewrite_ms"] = round((time.perf_counter() - t2) * 1000, 1)
 
         for _ in range(_MAX_RETRY + 1):
+            t3 = time.perf_counter()
             state = await self._step_retrieve(state)
+            timings["retrieve_ms"] = round((time.perf_counter() - t3) * 1000, 1)
             if self._retrieval.is_quality_sufficient(state["retrieval_quality"]):
                 break
             state["retry_count"] += 1
+            t4 = time.perf_counter()
             state = await self._step_query_rewrite(state, mem, is_retry=True)
+            timings[f"rewrite_retry{state['retry_count']}_ms"] = round((time.perf_counter() - t4) * 1000, 1)
 
+        t5 = time.perf_counter()
         state = await self._step_generate(state, mem)
+        timings["generate_ms"] = round((time.perf_counter() - t5) * 1000, 1)
+
         await self._persist_turn(mem, message, state["final_response"])
+
+        total_ms = round((time.perf_counter() - t0) * 1000, 1)
+        await self._write_trace(state, timings, total_ms)
         return self._build_response(state)
 
     async def stream(
@@ -219,11 +241,18 @@ class PsychAgent:
             full_reply += token
             yield StreamEvent("token", token)
 
-        # ── 收尾：持久化 + done 事件 ──────────────────────────────────────────
+        # ── 收尾：持久化 + Trace 写入 + done 事件 ────────────────────────────
         state["final_response"] = full_reply
         await self._persist_turn(mem, message, full_reply)
 
-        import json
+        total_ms = round((time.perf_counter() - t_start) * 1000, 1)
+        stream_timings = {
+            "rag_ms": round(rag_ms, 1),
+            "ttft_ms": round(ttft_ms, 1),
+            "total_ms": total_ms,
+        }
+        await self._write_trace(state, stream_timings, total_ms)
+
         yield StreamEvent(
             "done",
             json.dumps({
@@ -310,3 +339,41 @@ class PsychAgent:
             thought=state["thought"].strip(),
             reply=state["final_response"],
         )
+
+    async def _write_trace(
+        self,
+        state: AgentState,
+        step_timings: dict,
+        total_ms: float,
+    ) -> None:
+        """异步写入请求追踪记录到 request_traces 表。
+
+        使用 try/except 静默失败——Trace 写入失败不应影响正常回复。
+        面试时可 SELECT 出来展示完整决策链路和性能数据。
+        """
+        try:
+            sql = text("""
+                INSERT INTO request_traces
+                    (request_id, conversation_id, crisis_level,
+                     query_original, query_rewritten, retrieval_quality,
+                     retry_count, step_timings, thought, total_ms)
+                VALUES
+                    (CAST(:req_id AS uuid), :conv_id, :crisis,
+                     :q_orig, :q_rw, :quality,
+                     :retry, CAST(:timings AS jsonb), :thought, :total)
+            """)
+            await self._db.execute(sql, {
+                "req_id":  str(uuid.uuid4()),
+                "conv_id": state["conversation_id"],
+                "crisis":  state["crisis_level"].value,
+                "q_orig":  state["message"],
+                "q_rw":    state["rewritten_query"],
+                "quality": state["retrieval_quality"],
+                "retry":   state["retry_count"],
+                "timings": json.dumps(step_timings, ensure_ascii=False),
+                "thought": state["thought"].strip(),
+                "total":   total_ms,
+            })
+            await self._db.commit()
+        except Exception:
+            pass  # Trace 写入不影响主流程
