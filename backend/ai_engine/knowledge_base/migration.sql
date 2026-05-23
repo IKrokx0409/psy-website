@@ -65,3 +65,26 @@ CREATE INDEX IF NOT EXISTS request_traces_time_idx
 -- 按会话 ID 回溯历史 trace
 CREATE INDEX IF NOT EXISTS request_traces_conv_idx
     ON request_traces (conversation_id, created_at DESC);
+
+-- ── 双轨记忆：Track 1 — 用户画像表 ─────────────────────────────────────────
+-- 每个会话维护一份结构化 JSON 用户档案，由 LLM 在每轮对话后增量提取更新。
+-- 存储的信息举例：称呼、主诉问题、已尝试的方法、偏好/禁忌、重要事件。
+-- 相比"摘要压缩"，画像保留了用户陈述的原始细节，不会被 LLM 二次解读失真。
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id              SERIAL PRIMARY KEY,
+    conversation_id VARCHAR(64) UNIQUE NOT NULL,  -- 与 chat_history 对应的会话 ID
+    profile         JSONB NOT NULL DEFAULT '{}',  -- 用户画像，见 db_memory.py 的结构说明
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS user_profiles_conv_idx
+    ON user_profiles (conversation_id);
+
+-- ── 双轨记忆：Track 2 — chat_history 增加向量列 ────────────────────────────
+-- 在原有 chat_history 表上新增 embedding 列，用于"语义相关历史检索"。
+-- 只对 role='user' 的消息做向量化（用户说的话是检索锚点）。
+-- 检索逻辑：当前问题向量 <=> 历史用户消息向量 → 召回语义相关的历史轮次，
+-- 而不是只取"最近 N 条"，解决"早期重要信息被滑动窗口截断"的问题。
+ALTER TABLE chat_history ADD COLUMN IF NOT EXISTS embedding vector(768);
+CREATE INDEX IF NOT EXISTS chat_history_embedding_idx
+    ON chat_history USING hnsw (embedding vector_cosine_ops)
+    WITH (m = 16, ef_construction = 64);
