@@ -2,8 +2,10 @@ import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Depends
+import json
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -56,6 +58,26 @@ class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
     user_id: Optional[str] = None
+
+
+@app.get("/api/chat/stream")
+async def chat_stream_stub(request: Request):
+    """no-ai 分支：立即返回提示，不发起任何外部请求。"""
+    conv_id = request.query_params.get("conversation_id", "")
+
+    async def _sse():
+        done_payload = json.dumps({
+            "thought": "当前运行环境无法连接 AI 服务（需要校园网）。",
+            "reply": "AI 智能疏导功能需要在校园网环境下使用，当前网络不可用。",
+            "conversation_id": conv_id,
+            "ttft_ms": 0,
+            "rag_ms": 0,
+            "retrieval_quality": 0,
+            "retry_count": 0,
+        }, ensure_ascii=False)
+        yield f"event: done\ndata: {done_payload}\n\n"
+
+    return StreamingResponse(_sse(), media_type="text/event-stream")
 
 
 @app.post("/api/chat")
