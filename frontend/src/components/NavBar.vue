@@ -8,7 +8,7 @@
           <div class="brand-divider"></div>
           <div class="brand-text">
             <div class="brand-main">大学生心理健康教育与咨询中心</div>
-            <div class="brand-sub">Mental Health Education &amp; Counseling Center · HITSZ</div>
+            <div class="brand-sub">CENTER OF PSYCHOLOGICAL HEALTH EDUCATION AND RESEARCH</div>
           </div>
         </router-link>
 
