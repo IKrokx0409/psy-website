@@ -12,8 +12,8 @@ env/
 
 node_modules/
 
-dist/
 dist-ssr/
+# frontend/dist 需要提交到 git，供服务器直接使用（服务器不装 Node.js）
 
 .DS_Store
 Thumbs.db

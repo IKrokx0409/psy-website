@@ -183,7 +183,7 @@ class DBMemoryTool:
             value = self._profile.get(field)
             if not value:
                 continue
-            if isinstance(value, list):
+            if isinstance(value, list): # 判断value是不是list
                 text_val = "、".join(str(v) for v in value if v)
             else:
                 text_val = str(value)
