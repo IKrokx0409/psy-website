@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from database import get_db
 from models import DiaryEntry
 from schemas import DiaryEntryCreate, DiaryEntryUpdate, DiaryEntryOut
-from hiagent_client import HiAgentClient
 from typing import List, Optional
 
 router = APIRouter(prefix="/api/diary", tags=["diary"])
@@ -44,43 +43,11 @@ def _format_week_diaries(entries: List[dict], today: str) -> str:
 
 @router.post("/ai-response")
 async def get_diary_ai_response(request: DiaryAIRequest, db: AsyncSession = Depends(get_db)):
-    week_str = _format_week_diaries(request.week_diaries, request.date)
-
-    inputs = {
-        "today_diary":      request.today_diary,
-        "today_mood_score": str(request.today_mood_score) if request.today_mood_score else "",
-        "today_mood_label": request.today_mood_label,
-        "today_emotions":   "、".join(request.today_emotions) if request.today_emotions else "无",
-        "date":             request.date,
-        "week_diaries":     week_str,
+    """no-ai 分支：直接返回占位文本，不发起任何外部请求。"""
+    return {
+        "emotional_response": "AI 反馈功能需要在校园网环境下使用，当前暂未接入。",
+        "weekly_summary": "AI 周报功能需要在校园网环境下使用，当前暂未接入。",
     }
-
-    api_key = os.getenv("HITSZ_DIARY_API_KEY") or os.getenv("HITSZ_API_KEY")
-    client = HiAgentClient(api_key=api_key)
-    result = client.run_workflow(inputs)
-
-    emotional = result.get("emotional_response", "").strip()
-    weekly    = result.get("weekly_summary", "").strip()
-    if not emotional and not weekly:
-        raise HTTPException(status_code=502, detail="AI 响应解析异常")
-
-    # 将两个输出缓存为 JSON 存入日记条目
-    if request.user_id and request.date:
-        res = await db.execute(
-            select(DiaryEntry).where(
-                and_(DiaryEntry.user_id == request.user_id, DiaryEntry.date == request.date)
-            )
-        )
-        entry = res.scalar_one_or_none()
-        if entry:
-            import json as _json
-            entry.ai_feedback = _json.dumps(
-                {"emotional_response": emotional, "weekly_summary": weekly},
-                ensure_ascii=False,
-            )
-            await db.commit()
-
-    return {"emotional_response": emotional, "weekly_summary": weekly}
 
 
 @router.post("/seed-mock/{user_id}", tags=["dev"])

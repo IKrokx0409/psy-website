@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from hiagent_client import HiAgentClient
 from database import engine, get_db
 from models import Base, ChatRecord
 from routers import announcements, treehole, admin, diary, resources, questionnaires, courses, stats, tips
@@ -51,9 +50,6 @@ _uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(_uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="uploads")
 
-client = HiAgentClient()
-
-
 class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
@@ -70,10 +66,7 @@ async def chat_stream_stub(request: Request):
             "thought": "当前运行环境无法连接 AI 服务（需要校园网）。",
             "reply": "AI 智能疏导功能需要在校园网环境下使用，当前网络不可用。",
             "conversation_id": conv_id,
-            "ttft_ms": 0,
-            "rag_ms": 0,
-            "retrieval_quality": 0,
-            "retry_count": 0,
+            "ttft_ms": 0, "rag_ms": 0, "retrieval_quality": 0, "retry_count": 0,
         }, ensure_ascii=False)
         yield f"event: done\ndata: {done_payload}\n\n"
 
@@ -81,17 +74,11 @@ async def chat_stream_stub(request: Request):
 
 
 @app.post("/api/chat")
-async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)):
-    try:
-        result = client.ask_ai(request.message, request.conversation_id)
-        if request.user_id:
-            db.add(ChatRecord(user_id=request.user_id))
-            await db.commit()
-        return {
-            "status": "success",
-            "conversation_id": result["conversation_id"],
-            "thought": result["thought"],
-            "reply": result["reply"],
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def chat_endpoint(request: ChatRequest):
+    """no-ai 分支：立即返回占位回复。"""
+    return {
+        "status": "success",
+        "conversation_id": request.conversation_id or "",
+        "thought": "",
+        "reply": "AI 智能疏导功能需要在校园网环境下使用，当前暂未接入。",
+    }
