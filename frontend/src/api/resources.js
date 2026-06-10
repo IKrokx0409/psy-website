@@ -19,3 +19,9 @@ export const updateResource = (id, data) =>
 
 export const deleteResource = (id) =>
   http.delete(`/api/resources/${id}`).then(r => r.data)
+
+export const uploadResource = (formData) =>
+  http.post('/api/resources/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
+
+export const replaceResourceFile = (id, formData) =>
+  http.patch(`/api/resources/${id}/file`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)

@@ -69,21 +69,9 @@
                 <span class="typing-dot"></span>
               </div>
               <template v-else>
-                <!-- 推理块（可折叠，含 TTFT 数据） -->
-                <details v-if="msg.thought" class="thought-block">
-                  <summary class="thought-summary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                      <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
-                    </svg>
-                    推理过程
-                    <span v-if="msg.ttft_ms" class="ttft-badge">TTFT {{ msg.ttft_ms }}ms</span>
-                  </summary>
-                  <div class="thought-content">{{ msg.thought }}</div>
-                </details>
-                <!-- 正式回复：流式时显示纯文本+光标，完成后渲染 Markdown -->
-                <div v-if="msg.isStreaming" class="reply-bubble streaming-bubble">
-                  {{ msg.reply }}<span class="stream-cursor">▌</span>
-                </div>
+                <!-- 正式回复：流式插光标，整理中显示脉冲点，完成态静态渲染 -->
+                <div v-if="msg.isStreaming" class="reply-bubble streaming-bubble markdown-body"
+                     v-html="renderMdStreaming(msg.reply)"></div>
                 <div v-else class="reply-bubble markdown-body" v-html="renderMd(msg.reply)"></div>
               </template>
             </div>
@@ -118,6 +106,10 @@
           </button>
         </div>
         <div class="input-hint">Enter 发送 · Shift+Enter 换行</div>
+        <div class="risk-notice">
+          ⚠️ 本 AI 仅供情绪疏导参考，<strong>不能替代专业心理咨询</strong>。如有紧急心理危机，请立即拨打学校心理咨询中心
+          <strong>0755-26400952</strong> 或前往 H401A。
+        </div>
       </div>
     </main>
   </div>
@@ -132,7 +124,7 @@ import http from '@/api/http'
 
 const userId = useUserId()
 const sidebarOpen = ref(false)
-const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
+const md = new MarkdownIt({ html: false, linkify: true, typographer: true, breaks: true })
 
 // DOM refs
 const messagesEl = ref(null)
@@ -165,9 +157,25 @@ const saveToStorage = () => {
   localStorage.setItem('wellbeing_conversations', JSON.stringify(conversationHistory.value))
 }
 
+// HiAgent 常用两个空格而非 \n 分隔列表项，统一转成段落换行
+const normalizeAiText = (text) => {
+  return text
+    .replace(/  +(\d+\.)/g, '\n\n$1')                         // "  1." → "\n\n1."
+    .replace(/  +([-*] )/g, '\n\n$1')                          // "  - " → "\n\n- "
+    .replace(/([一-龥～》】）]) ([一-龥《【（])/g, '$1\n$2') // 中文间单空格→换行
+    .replace(/\n{3,}/g, '\n\n')                                 // 折叠多余空行
+}
+
 const renderMd = (text) => {
   if (!text) return ''
-  return md.render(text)
+  return md.render(normalizeAiText(text))
+}
+
+// 流式渲染：在最后一个 </p> 前插入闪烁光标
+const renderMdStreaming = (text) => {
+  if (!text) return '<span class="stream-cursor">▌</span>'
+  const rendered = md.render(normalizeAiText(text))
+  return rendered.replace(/<\/p>(\s*)$/, '<span class="stream-cursor">▌</span></p>$1')
 }
 
 const scrollToBottom = async () => {
@@ -248,12 +256,14 @@ const parseSSEChunk = (raw) => {
   const blocks = raw.split('\n\n')
   for (const block of blocks) {
     if (!block.trim()) continue
-    let event = '', data = ''
+    let event = ''
+    const dataLines = []
     for (const line of block.split('\n')) {
       if (line.startsWith('event: ')) event = line.slice(7).trim()
-      else if (line.startsWith('data: ')) data = line.slice(6)
+      else if (line.startsWith('data: ')) dataLines.push(line.slice(6))
     }
-    if (event && data !== undefined) events.push({ event, data })
+    // 多行 data: 按 SSE 规范拼接（保留换行符）
+    if (event) events.push({ event, data: dataLines.join('\n') })
   }
   return events
 }
@@ -266,6 +276,7 @@ const sendMessage = async () => {
   inputText.value = ''
   resetTextarea()
   isSending.value = true
+  let streamEndReceived = false
 
   // 插入占位消息（thinking 阶段显示 loading 动画）
   const aiMsg = reactive({
@@ -282,6 +293,7 @@ const sendMessage = async () => {
     const params = new URLSearchParams({
       message: text,
       conversation_id: hiagentConvId.value || '',
+      user_id: userId,
     })
     const res = await fetch(`/api/chat/stream?${params}`, {
       headers: { 'Accept': 'text/event-stream' },
@@ -304,9 +316,10 @@ const sendMessage = async () => {
 
       for (const block of parts) {
         for (const { event, data } of parseSSEChunk(block + '\n\n')) {
-          if (event === 'thinking') {
-            // RAG 前处理阶段：保持 loading 动画，等待
-            aiMsg.isLoading = true
+          if (event === 'stream_end') {
+            aiMsg.isStreaming = false
+            streamEndReceived = true
+            isSending.value = false
           } else if (event === 'token') {
             // 首个 token 到达：切换为打字流状态
             aiMsg.isLoading = false
@@ -314,6 +327,7 @@ const sendMessage = async () => {
             aiMsg.reply += data
           } else if (event === 'done') {
             aiMsg.isStreaming = false
+
             aiMsg.isLoading = false
             try {
               const meta = JSON.parse(data)
@@ -352,7 +366,7 @@ const sendMessage = async () => {
     aiMsg.reply = '抱歉，我的思绪暂时飘远了（服务器连接断开），请检查后端是否在运行哦。'
     console.error(error)
   } finally {
-    isSending.value = false
+    if (!streamEndReceived) isSending.value = false
   }
 }
 </script>
@@ -558,41 +572,6 @@ const sendMessage = async () => {
 .user-content { align-items: flex-end; }
 
 /* ========== 推理块 ========== */
-.thought-block {
-  background: var(--c-beige);
-  border: 1px solid var(--c-beige-border);
-  border-radius: var(--r-md);
-  overflow: hidden;
-}
-.thought-summary {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #6b7280;
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-}
-.thought-summary::-webkit-details-marker { display: none; }
-.thought-summary::before {
-  content: '▶';
-  font-size: 9px;
-  color: #9ca3af;
-  transition: transform 0.2s;
-}
-details[open] .thought-summary::before { transform: rotate(90deg); }
-.thought-content {
-  padding: 10px 14px 14px;
-  font-size: 13px;
-  color: #6b7280;
-  font-style: italic;
-  line-height: 1.6;
-  border-top: 1px solid #e5e7eb;
-  white-space: pre-wrap;
-}
 
 /* ========== 气泡样式 ========== */
 .reply-bubble {
@@ -640,10 +619,8 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   40% { transform: translateY(-6px); opacity: 1; }
 }
 
-/* 流式打字气泡 */
-.streaming-bubble {
-  white-space: pre-wrap;
-}
+/* 流式打字气泡（使用 v-html 渲染 Markdown，不需要 pre-wrap） */
+.streaming-bubble {}
 .stream-cursor {
   display: inline-block;
   color: #5f9e75;
@@ -656,17 +633,6 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
 }
 
 /* TTFT 徽章 */
-.ttft-badge {
-  margin-left: auto;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #5f9e75;
-  background: #edf7f1;
-  border: 1px solid #b8e0c9;
-  border-radius: 20px;
-  padding: 1px 8px;
-  letter-spacing: 0.3px;
-}
 
 /* ========== 输入区 ========== */
 .input-wrapper {
@@ -732,6 +698,18 @@ details[open] .thought-summary::before { transform: rotate(90deg); }
   margin-left: auto;
   margin-right: auto;
 }
+
+.risk-notice {
+  text-align: center;
+  font-size: 11.5px;
+  color: #92580a;
+  margin-top: 6px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+.risk-notice strong { color: #7a4508; font-weight: 600; }
 
 /* ========== Markdown 内容样式 ========== */
 

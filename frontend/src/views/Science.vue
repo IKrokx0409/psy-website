@@ -51,10 +51,15 @@
           :to="`/resources/${r.id}`"
           class="res-card"
         >
-          <span class="res-cat-tag">{{ r.category }}</span>
+          <div class="res-card-top">
+            <span class="res-cat-tag">{{ r.category }}</span>
+            <span v-if="r.resource_type !== 'article'" :class="['res-type-badge', `res-type-${r.resource_type}`]">
+              {{ { video: '▶ 视频', audio: '♪ 音频', pdf: '📄 PDF' }[r.resource_type] }}
+            </span>
+          </div>
           <h3 class="res-title">{{ r.title }}</h3>
           <p class="res-summary">{{ r.summary || '暂无摘要' }}</p>
-          <span class="res-more">阅读全文 →</span>
+          <span class="res-more">{{ r.resource_type === 'article' ? '阅读全文 →' : '查看资源 →' }}</span>
         </router-link>
       </div>
     </div>
@@ -295,7 +300,12 @@ const exitQuiz  = () => { activeQuiz.value = null; quizDetail.value = null; quiz
   text-decoration: none; transition: border-color var(--t-base), box-shadow var(--t-base), transform var(--t-base);
 }
 .res-card:hover { border-color: #5f9e75; box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.res-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .res-cat-tag { font-size: 11.5px; color: #5f9e75; font-weight: 500; letter-spacing: 0.5px; }
+.res-type-badge { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); }
+.res-type-video { background: #dbeafe; color: #1d4ed8; }
+.res-type-audio { background: #fce7f3; color: #be185d; }
+.res-type-pdf   { background: #fee2e2; color: #b91c1c; }
 .res-title { font-family: 'SimSun','宋体',Georgia,serif; font-size: 16px; font-weight: 600; color: #1e1a14; margin: 0; line-height: 1.5; }
 .res-summary { font-size: 13.5px; color: #5a5040; line-height: 1.7; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .res-more { font-size: 12.5px; color: #5f9e75; font-weight: 500; margin-top: auto; }

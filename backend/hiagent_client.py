@@ -1,5 +1,7 @@
 import os
 import json
+import queue as _queue
+import threading
 import requests
 from dotenv import load_dotenv
 
@@ -52,9 +54,9 @@ class HiAgentClient:
         }
 
     # ── 对话型 Agent：创建会话 ─────────────────────────────────────────────────
-    def create_conversation(self, inputs: dict = None) -> str:
+    def create_conversation(self, inputs: dict = None, user_id: str = None) -> str:
         url = self.base_url + "create_conversation"
-        data = {"UserID": self.user_id, "Inputs": inputs or {}}
+        data = {"UserID": (user_id or self.user_id)[:20], "Inputs": inputs or {}}
         try:
             resp = requests.post(url, headers=self._get_headers(), json=data, timeout=10)
             if not resp.ok:
@@ -94,6 +96,94 @@ class HiAgentClient:
             return result
         except Exception as e:
             return {"thought": "", "reply": f"请求崩溃: {e}", "conversation_id": conv_id}
+
+    # ── 对话型 Agent：流式生成（yield SSE 事件） ──────────────────────────────
+    def stream_ask_ai(self, prompt: str, conversation_id: str = None, user_id: str = None):
+        """Yield (event_type, data_str) pairs from HiAgent SSE stream."""
+        uid = (user_id or self.user_id)[:20]  # HiAgent 限制 1-20 字符
+        conv_id = conversation_id or self.create_conversation(user_id=uid)
+        if not conv_id:
+            yield ("error", json.dumps({"error": "系统初始化失败"}))
+            return
+
+        url = self.base_url + "chat_query_v2"
+        payload = {
+            "UserID": uid,
+            "AppConversationID": conv_id,
+            "Query": prompt,
+            "ResponseMode": "streaming",
+        }
+
+        line_queue = _queue.Queue()
+
+        def _reader():
+            try:
+                resp = requests.post(
+                    url, headers=self._get_headers(is_chat=True),
+                    json=payload, stream=True, timeout=60
+                )
+                for line in resp.iter_lines():
+                    line_queue.put(line)
+            except Exception as exc:
+                line_queue.put(exc)
+            finally:
+                line_queue.put(None)
+
+        threading.Thread(target=_reader, daemon=True).start()
+
+        thought_acc = ""
+        seen_message = False
+        stream_end_sent = False
+
+        while True:
+            # token 流结束后用短超时：静默超过 2.5s 立即发 stream_end
+            wait = 2.5 if (seen_message and not stream_end_sent) else 60.0
+            try:
+                item = line_queue.get(timeout=wait)
+            except _queue.Empty:
+                if seen_message and not stream_end_sent:
+                    stream_end_sent = True
+                    yield ("stream_end", "")
+                continue  # 继续等待 think_message / [DONE]
+
+            if item is None:
+                break
+            if isinstance(item, Exception):
+                if seen_message:
+                    if not stream_end_sent:
+                        yield ("stream_end", "")
+                    yield ("done", json.dumps({"thought": thought_acc.strip(), "conversation_id": conv_id}))
+                else:
+                    yield ("error", json.dumps({"error": str(item)}))
+                return
+
+            decoded = item.decode("utf-8").strip() if isinstance(item, bytes) else item.strip()
+            if not decoded.startswith("data:"):
+                continue
+            json_str = decoded[5:].strip()
+            if json_str == "[DONE]":
+                break
+            try:
+                d = json.loads(json_str)
+                event = d.get("event", "")
+                content = d.get("answer", "")
+                if event == "message":
+                    seen_message = True
+                    yield ("token", content)
+                elif event == "think_message":
+                    if seen_message and not stream_end_sent:
+                        stream_end_sent = True
+                        yield ("stream_end", "")
+                    thought_acc += content
+            except (json.JSONDecodeError, IndexError):
+                continue
+
+        if seen_message and not stream_end_sent:
+            yield ("stream_end", "")
+        yield ("done", json.dumps({
+            "thought": thought_acc.strip(),
+            "conversation_id": conv_id,
+        }))
 
     # ── 纯工作流 Agent：sync_run_app_workflow ─────────────────────────────────
     def run_workflow(self, inputs: dict) -> dict:

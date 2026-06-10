@@ -6,11 +6,11 @@
         <div class="footer-col brand-col">
           <div class="footer-brand">
             <BrainCircuit :size="18" :stroke-width="1.5" />
-            大学生心理健康教育与咨询中心
+            大学生心理健康支持平台
           </div>
           <p class="footer-intro">
-            哈尔滨工业大学（深圳）大学生心理健康教育与咨询中心，
-            致力于为全校师生提供专业、温暖的心理健康服务。
+            哈尔滨工业大学（深圳）大学生心理健康自助支持平台，
+            提供心理资源、情绪疏导与预约咨询服务，与同学们共同守护心理健康。
           </p>
           <div class="footer-tags">
             <span>专业</span>
@@ -27,7 +27,6 @@
             <li><router-link to="/science">心理科普</router-link></li>
             <li><router-link to="/chat">AI 智能疏导</router-link></li>
             <li><router-link to="/diary">情绪日记</router-link></li>
-            <li><router-link to="/treehouse">校园树洞</router-link></li>
             <li><router-link to="/appointment">预约咨询</router-link></li>
             <li><router-link to="/about">关于我们</router-link></li>
           </ul>
@@ -48,11 +47,9 @@
         <!-- 关注我们 -->
         <div class="footer-col">
           <div class="col-title">关注我们</div>
-          <div class="qr-placeholder">
-            <div class="qr-box">
-              <Smartphone :size="28" :stroke-width="1.5" class="qr-icon" />
-              <div class="qr-label">微信公众号<br>小嗨森</div>
-            </div>
+          <div class="qr-block">
+            <img src="/wechat-qr.png" alt="小嗨森微信公众号二维码" class="qr-img" />
+            <div class="qr-label">扫码关注 · 小嗨森</div>
           </div>
           <div class="hotline">
             <div class="hotline-label">预约咨询电话</div>
@@ -64,7 +61,7 @@
 
     <div class="footer-bottom">
       <div class="inner bottom-inner">
-        <span>© 2026 哈尔滨工业大学（深圳）大学生心理健康教育与咨询中心</span>
+        <span>© 2026 HITSZ 大学生心理健康支持平台</span>
         <span>粤ICP备XXXXXXXX号</span>
       </div>
     </div>
@@ -72,7 +69,7 @@
 </template>
 
 <script setup>
-import { BrainCircuit, Smartphone } from 'lucide-vue-next'
+import { BrainCircuit } from 'lucide-vue-next'
 </script>
 
 <style scoped>
@@ -161,22 +158,22 @@ import { BrainCircuit, Smartphone } from 'lucide-vue-next'
 .footer-links a:hover { color: rgba(255,255,255,0.85); }
 
 /* QR 占位 */
-.qr-placeholder { margin-bottom: var(--sp-4); }
-.qr-box {
-  display: inline-flex;
+.qr-block {
+  display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--sp-2);
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--r-lg);
-  padding: var(--sp-4) var(--sp-5);
+  margin-bottom: var(--sp-4);
 }
-.qr-icon { color: rgba(255,255,255,0.5); }
+.qr-img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--r-sm);
+  display: block;
+}
 .qr-label {
   font-size: 11px;
   color: rgba(255,255,255,0.45);
-  text-align: center;
   line-height: 1.6;
 }
 

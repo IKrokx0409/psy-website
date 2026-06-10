@@ -112,22 +112,28 @@ RESOURCE_CATEGORIES = {"情绪管理", "压力应对", "人际关系", "睡眠�
 class ResourceCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     category: str
+    resource_type: str = 'article'
     summary: Optional[str] = Field(None, max_length=500)
     content: Optional[str] = None
+    file_path: Optional[str] = None
     is_published: bool = True
 
 class ResourceUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     category: Optional[str] = None
+    resource_type: Optional[str] = None
     summary: Optional[str] = Field(None, max_length=500)
     content: Optional[str] = None
+    file_path: Optional[str] = None
     is_published: Optional[bool] = None
 
 class ResourceListItem(BaseModel):
     id: int
     title: str
     category: str
+    resource_type: str = 'article'
     summary: Optional[str] = None
+    file_path: Optional[str] = None
     is_published: bool
     created_at: datetime
     model_config = {"from_attributes": True}
@@ -136,8 +142,10 @@ class ResourceOut(BaseModel):
     id: int
     title: str
     category: str
+    resource_type: str = 'article'
     summary: Optional[str] = None
     content: Optional[str] = None
+    file_path: Optional[str] = None
     is_published: bool
     created_at: datetime
     updated_at: Optional[datetime] = None

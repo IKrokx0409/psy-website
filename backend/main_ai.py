@@ -71,6 +71,19 @@ async def lifespan(app: FastAPI):
     await loop.run_in_executor(None, _reranker._ensure_loaded)
     print("✅ AI Engine 预热完成（Embedder + Reranker 已加载）")
 
+    # 3. 数据留存清理：删除 90 天前的对话记录和链路追踪
+    async with engine.begin() as conn:
+        result = await conn.execute(text(
+            "DELETE FROM chat_history WHERE created_at < NOW() - INTERVAL '90 days'"
+        ))
+        deleted_chat = result.rowcount
+        result = await conn.execute(text(
+            "DELETE FROM request_traces WHERE created_at < NOW() - INTERVAL '90 days'"
+        ))
+        deleted_traces = result.rowcount
+        if deleted_chat or deleted_traces:
+            print(f"🧹 数据留存清理：chat_history -{deleted_chat} 条，request_traces -{deleted_traces} 条（>90天）")
+
     yield
 
 

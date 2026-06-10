@@ -38,8 +38,10 @@ class Resource(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200), nullable=False)
     category = Column(String(30), nullable=False)   # 情绪管理/压力应对/人际关系/睡眠健康/危机干预
+    resource_type = Column(String(20), nullable=False, default='article')  # article/video/audio/pdf
     summary = Column(String(500), nullable=True)
-    content = Column(Text, nullable=True)            # Markdown 正文
+    content = Column(Text, nullable=True)            # Markdown 正文（article 专用）
+    file_path = Column(String(500), nullable=True)   # 上传文件路径（video/audio/pdf 专用）
     is_published = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

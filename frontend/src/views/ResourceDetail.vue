@@ -29,10 +29,44 @@
       <!-- 正文 -->
       <div class="rd-body">
         <div class="rd-inner">
-          <div v-if="resource.content" class="rd-markdown" v-html="renderMd(resource.content)"></div>
-          <div v-else class="rd-no-content">
-            <FileText :size="36" :stroke-width="1" style="opacity:.3" /><span>暂无正文内容</span>
-          </div>
+
+          <!-- 视频 -->
+          <template v-if="resource.resource_type === 'video'">
+            <video v-if="resource.file_path" class="rd-media" controls preload="metadata">
+              <source :src="resource.file_path" />
+              你的浏览器不支持视频播放，请<a :href="resource.file_path" download>下载文件</a>。
+            </video>
+          </template>
+
+          <!-- 音频 -->
+          <template v-else-if="resource.resource_type === 'audio'">
+            <div v-if="resource.file_path" class="rd-audio-wrap">
+              <audio class="rd-audio" controls preload="metadata">
+                <source :src="resource.file_path" />
+                你的浏览器不支持音频播放，请<a :href="resource.file_path" download>下载文件</a>。
+              </audio>
+            </div>
+          </template>
+
+          <!-- PDF -->
+          <template v-else-if="resource.resource_type === 'pdf'">
+            <div v-if="resource.file_path" class="rd-pdf-wrap">
+              <iframe :src="resource.file_path" class="rd-pdf" frameborder="0"></iframe>
+              <a :href="resource.file_path" target="_blank" class="rd-pdf-fallback">在新标签页打开 PDF →</a>
+            </div>
+          </template>
+
+          <!-- 文章（默认） -->
+          <template v-else>
+            <div v-if="resource.content" class="rd-markdown" v-html="renderMd(resource.content)"></div>
+            <div v-else class="rd-no-content">
+              <FileText :size="36" :stroke-width="1" style="opacity:.3" /><span>暂无正文内容</span>
+            </div>
+          </template>
+
+          <!-- 正文补充（文章型可有文件附件；其余类型可有说明文字） -->
+          <div v-if="resource.content && resource.resource_type !== 'article'" class="rd-markdown rd-extra" v-html="renderMd(resource.content)"></div>
+
           <div class="rd-footer">
             <router-link to="/science" class="back-btn">
               <ChevronLeft :size="14" :stroke-width="2" /> 返回心理资源
@@ -111,6 +145,17 @@ onMounted(async () => {
 .rd-markdown :deep(img) { max-width: 100%; border-radius: 2px; margin: 12px 0; display: block; }
 
 .rd-no-content { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 0; color: #94a3b8; font-size: 14px; }
+
+.rd-media { width: 100%; max-height: 520px; border-radius: var(--r-lg); background: #000; display: block; margin-bottom: 24px; }
+
+.rd-audio-wrap { padding: 32px 0; }
+.rd-audio { width: 100%; }
+
+.rd-pdf-wrap { display: flex; flex-direction: column; gap: 10px; }
+.rd-pdf { width: 100%; height: 680px; border-radius: var(--r-lg); border: 1px solid #d8d2c8; }
+.rd-pdf-fallback { font-size: 13px; color: #5f9e75; text-align: right; }
+
+.rd-extra { margin-top: 32px; padding-top: 24px; border-top: 1px solid #d8d2c8; }
 
 .rd-footer { margin-top: 48px; padding-top: 28px; border-top: 1px solid #d8d2c8; }
 .back-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--c-beige); border: 1px solid var(--c-beige-border); color: var(--c-text-body); padding: 10px 22px; border-radius: var(--r-sm); text-decoration: none; font-size: 13.5px; font-weight: 500; transition: background var(--t-base), border-color var(--t-base); }

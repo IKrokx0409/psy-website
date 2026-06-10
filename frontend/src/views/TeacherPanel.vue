@@ -256,6 +256,15 @@
                 <option v-for="c in RES_CATEGORIES" :key="c" :value="c">{{ c }}</option>
               </select>
             </div>
+            <div class="tp-form-group" style="flex:1">
+              <label class="tp-label">资源类型</label>
+              <select v-model="resFormData.resource_type" class="tp-select" :disabled="!!resFormData.id">
+                <option value="article">📝 文章</option>
+                <option value="video">▶ 视频</option>
+                <option value="audio">♪ 音频</option>
+                <option value="pdf">📄 PDF</option>
+              </select>
+            </div>
             <div class="tp-form-group tp-form-group--inline" style="flex-shrink:0;align-self:flex-end;padding-bottom:18px">
               <label class="tp-label" style="margin:0">立即发布</label>
               <label class="tp-toggle">
@@ -266,15 +275,39 @@
           </div>
           <div class="tp-form-group">
             <label class="tp-label">摘要 <span class="tp-optional">（选填，显示在卡片上）</span></label>
-            <textarea v-model="resFormData.summary" class="tp-textarea" rows="2" maxlength="500" placeholder="简短描述文章内容…"></textarea>
+            <textarea v-model="resFormData.summary" class="tp-textarea" rows="2" maxlength="500" placeholder="简短描述内容…"></textarea>
           </div>
-          <div class="tp-form-group">
-            <div class="tp-body-label-row">
-              <label class="tp-label">正文 <span class="tp-optional">（Markdown 格式）</span></label>
-              <button class="tp-preview-toggle" type="button" @click="resBodyPreview = !resBodyPreview">{{ resBodyPreview ? '编辑' : '预览' }}</button>
+
+          <!-- 文件上传（video / audio / pdf） -->
+          <div v-if="resFormData.resource_type !== 'article'" class="tp-form-group">
+            <label class="tp-label">
+              上传文件
+              <span class="tp-optional">
+                {{ resFormData.resource_type === 'video' ? '（mp4 / webm，≤200MB）'
+                   : resFormData.resource_type === 'audio' ? '（mp3 / wav / m4a，≤200MB）'
+                   : '（PDF，≤200MB）' }}
+              </span>
+            </label>
+            <div v-if="resFormData.file_path && !resNewFile" class="res-current-file">
+              <span>当前文件：{{ resFormData.file_path.split('/').pop() }}</span>
+              <button type="button" class="tp-preview-toggle" @click="resNewFile = '__replace__'">更换文件</button>
             </div>
-            <div v-if="resBodyPreview" class="tp-body-preview" v-html="renderResPreview"></div>
-            <textarea v-else v-model="resFormData.content" class="tp-textarea" rows="12" placeholder="Markdown 正文…"></textarea>
+            <input v-if="!resFormData.file_path || resNewFile" type="file"
+              class="tp-file-input"
+              :accept="resFormData.resource_type === 'video' ? 'video/*'
+                       : resFormData.resource_type === 'audio' ? 'audio/*' : 'application/pdf'"
+              @change="e => resNewFile = e.target.files[0]" />
+          </div>
+
+          <!-- Markdown 正文（article，或媒体资源的补充说明） -->
+          <div class="tp-form-group">
+            <label class="tp-label">
+              {{ resFormData.resource_type === 'article' ? '正文' : '补充说明' }}
+              <span class="tp-optional">（Markdown 格式，选填）</span>
+            </label>
+            <MarkdownEditor v-model="resFormData.content"
+              :rows="resFormData.resource_type === 'article' ? 12 : 4"
+              placeholder="Markdown 正文…" />
           </div>
           <p v-if="resFormError" class="tp-form-error">{{ resFormError }}</p>
           <div class="tp-modal-foot">
@@ -468,23 +501,10 @@
           </div>
 
           <div class="tp-form-group">
-            <div class="tp-body-label-row">
-              <label class="tp-label">正文 <span class="tp-optional">（Markdown 格式）</span></label>
-              <button
-                class="tp-preview-toggle"
-                type="button"
-                @click="bodyPreview = !bodyPreview"
-              >{{ bodyPreview ? '编辑' : '预览' }}</button>
-            </div>
-            <div v-if="bodyPreview" class="tp-body-preview" v-html="renderBodyPreview"></div>
-            <textarea
-              v-else
-              v-model="annFormData.body"
-              class="tp-textarea"
-              rows="10"
-              placeholder="支持 Markdown：**加粗**、## 标题、- 列表、| 表格 |、![图片](url)……"
-            ></textarea>
-            <div class="tp-char-count">{{ annFormData.body?.length || 0 }} 字</div>
+            <label class="tp-label">正文 <span class="tp-optional">（Markdown 格式）</span></label>
+            <MarkdownEditor v-model="annFormData.body" :rows="10"
+              placeholder="支持 Markdown：**加粗**、## 标题、- 列表、![图片](url)……"
+              :show-count="true" />
           </div>
 
           <div class="tp-form-group tp-form-group--inline">
@@ -523,12 +543,14 @@ import {
   MessageSquare, Plus, X, Save, Library, ClipboardList, Trash2, Lightbulb,
 } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
+import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import {
   adminGetPosts, reviewPost, adminDeletePost,
   adminGetAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement,
 } from '@/api/admin'
 import {
   getAdminResources, createResource, updateResource, deleteResource,
+  uploadResource, replaceResourceFile,
 } from '@/api/resources'
 import {
   getAdminQuestionnaires, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire,
@@ -650,7 +672,6 @@ const doDeleteAnn = async (ann) => {
 const annFormVisible = ref(false)
 const annFormSaving  = ref(false)
 const annFormError   = ref('')
-const bodyPreview    = ref(false)
 const annFormData    = reactive({
   id: null,
   title: '',
@@ -661,11 +682,8 @@ const annFormData    = reactive({
   cover_image: '',
 })
 
-const renderBodyPreview = computed(() => md.render(annFormData.body || ''))
-
 const openAnnForm = (ann) => {
   annFormError.value = ''
-  bodyPreview.value = false
   if (ann) {
     Object.assign(annFormData, {
       id: ann.id,
@@ -742,29 +760,61 @@ const loadResources = async () => {
 const resFormVisible = ref(false)
 const resFormSaving  = ref(false)
 const resFormError   = ref('')
-const resBodyPreview = ref(false)
-const resFormData    = reactive({ id: null, title: '', category: '情绪管理', summary: '', content: '', is_published: true })
+const resNewFile     = ref(null)  // File object or '__replace__' sentinel
+const resFormData    = reactive({ id: null, title: '', category: '情绪管理', resource_type: 'article', summary: '', content: '', file_path: null, is_published: true })
 const RES_CATEGORIES = ['情绪管理', '压力应对', '人际关系', '睡眠健康', '危机干预']
-const renderResPreview = computed(() => md.render(resFormData.content || ''))
-
 const openResForm = (r) => {
-  resFormError.value = ''; resBodyPreview.value = false
+  resFormError.value = ''; resNewFile.value = null
   Object.assign(resFormData, r
-    ? { id: r.id, title: r.title, category: r.category, summary: r.summary || '', content: r.content || '', is_published: r.is_published }
-    : { id: null, title: '', category: '情绪管理', summary: '', content: '', is_published: true })
+    ? { id: r.id, title: r.title, category: r.category, resource_type: r.resource_type || 'article', summary: r.summary || '', content: r.content || '', file_path: r.file_path || null, is_published: r.is_published }
+    : { id: null, title: '', category: '情绪管理', resource_type: 'article', summary: '', content: '', file_path: null, is_published: true })
   resFormVisible.value = true
 }
 
 const saveRes = async () => {
   resFormError.value = ''; resFormSaving.value = true
-  const payload = { title: resFormData.title.trim(), category: resFormData.category, summary: resFormData.summary || null, content: resFormData.content || null, is_published: resFormData.is_published }
   try {
-    if (resFormData.id) {
-      const u = await updateResource(resFormData.id, payload)
-      const i = resList.value.findIndex(r => r.id === resFormData.id)
-      if (i !== -1) resList.value[i] = u
+    let saved
+    if (resFormData.resource_type !== 'article') {
+      // 文件型资源
+      if (!resFormData.id) {
+        // 新建：必须上传文件
+        if (!resNewFile.value || resNewFile.value === '__replace__') {
+          resFormError.value = '请选择要上传的文件'; resFormSaving.value = false; return
+        }
+        const fd = new FormData()
+        fd.append('title', resFormData.title.trim())
+        fd.append('category', resFormData.category)
+        fd.append('resource_type', resFormData.resource_type)
+        fd.append('is_published', resFormData.is_published)
+        if (resFormData.summary) fd.append('summary', resFormData.summary)
+        fd.append('file', resNewFile.value)
+        saved = await uploadResource(fd)
+        resList.value.unshift(saved)
+      } else {
+        // 编辑：先更新元数据
+        const meta = { title: resFormData.title.trim(), category: resFormData.category, summary: resFormData.summary || null, content: resFormData.content || null, is_published: resFormData.is_published }
+        saved = await updateResource(resFormData.id, meta)
+        // 如果选了新文件则替换
+        if (resNewFile.value && resNewFile.value !== '__replace__') {
+          const fd = new FormData()
+          fd.append('resource_type', resFormData.resource_type)
+          fd.append('file', resNewFile.value)
+          saved = await replaceResourceFile(resFormData.id, fd)
+        }
+        const i = resList.value.findIndex(r => r.id === resFormData.id)
+        if (i !== -1) resList.value[i] = saved
+      }
     } else {
-      resList.value.unshift(await createResource(payload))
+      // 文章型资源
+      const payload = { title: resFormData.title.trim(), category: resFormData.category, resource_type: 'article', summary: resFormData.summary || null, content: resFormData.content || null, is_published: resFormData.is_published }
+      if (resFormData.id) {
+        saved = await updateResource(resFormData.id, payload)
+        const i = resList.value.findIndex(r => r.id === resFormData.id)
+        if (i !== -1) resList.value[i] = saved
+      } else {
+        resList.value.unshift(await createResource(payload))
+      }
     }
     resFormVisible.value = false
   } catch (e) { resFormError.value = e?.response?.data?.detail || '保存失败' }
@@ -1269,6 +1319,8 @@ onMounted(() => {
 .tp-body-preview :deep(td) { padding: 7px 10px; border: 1px solid #e0f0e8; }
 .tp-body-preview :deep(blockquote) { border-left: 3px solid #5f9e75; padding: 8px 12px; background: #f0f9f4; color: #4d8764; margin: 0 0 0.8em; border-radius: 0 var(--r-sm) var(--r-sm) 0; }
 .tp-form-error { font-size: 12.5px; color: #e53e3e; margin: 0 0 12px; }
+.tp-file-input { display: block; width: 100%; font-size: 13px; color: var(--c-text-body); cursor: pointer; }
+.res-current-file { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--c-text-muted); padding: 8px 0; }
 
 .tp-modal-foot {
   display: flex;

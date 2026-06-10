@@ -7,8 +7,8 @@
           <img src="/logos/logo-white.png" alt="哈工大深圳" class="nav-logo" />
           <div class="brand-divider"></div>
           <div class="brand-text">
-            <div class="brand-main">大学生心理健康教育与咨询中心</div>
-            <div class="brand-sub">CENTER OF PSYCHOLOGICAL HEALTH EDUCATION AND RESEARCH</div>
+            <div class="brand-main">大学生心理健康支持平台</div>
+            <div class="brand-sub">STUDENT PSYCHOLOGICAL WELLBEING SUPPORT · HITSZ</div>
           </div>
         </router-link>
 

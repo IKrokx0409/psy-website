@@ -1,12 +1,17 @@
+import asyncio
+import json as _json
 import os
+import threading
 from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from hiagent_client import HiAgentClient
@@ -19,9 +24,15 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """启动时自动建表（表已存在则跳过）"""
+    """启动时自动建表（表已存在则跳过），并迁移新增列"""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text(
+            "ALTER TABLE resources ADD COLUMN IF NOT EXISTS resource_type VARCHAR(20) NOT NULL DEFAULT 'article'"
+        ))
+        await conn.execute(text(
+            "ALTER TABLE resources ADD COLUMN IF NOT EXISTS file_path VARCHAR(500)"
+        ))
     yield
 
 
@@ -73,3 +84,42 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/chat/stream")
+async def chat_stream_endpoint(message: str, conversation_id: str = "", user_id: str = ""):
+    loop = asyncio.get_running_loop()
+    q: asyncio.Queue = asyncio.Queue()
+
+    def _sse(event_type: str, data: str) -> str:
+        # SSE 规范：多行内容每行都需要 "data: " 前缀，否则换行会丢失
+        data_lines = '\n'.join(f'data: {line}' for line in data.split('\n'))
+        return f"event: {event_type}\n{data_lines}\n\n"
+
+    def producer():
+        try:
+            for event_type, data in client.stream_ask_ai(message, conversation_id or None, user_id or None):
+                asyncio.run_coroutine_threadsafe(
+                    q.put(_sse(event_type, data)), loop
+                )
+        except Exception as e:
+            asyncio.run_coroutine_threadsafe(
+                q.put(f"event: error\ndata: {_json.dumps({'error': str(e)})}\n\n"), loop
+            )
+        finally:
+            asyncio.run_coroutine_threadsafe(q.put(None), loop)
+
+    threading.Thread(target=producer, daemon=True).start()
+
+    async def generate():
+        while True:
+            chunk = await q.get()
+            if chunk is None:
+                break
+            yield chunk
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

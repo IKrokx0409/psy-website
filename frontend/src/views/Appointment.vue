@@ -74,12 +74,6 @@
           </div>
         </div>
 
-        <!-- 建设中提示 -->
-        <div class="building-notice">
-          <Construction :size="18" :stroke-width="1.5" />
-          <span>在线预约系统正在建设中，敬请期待</span>
-        </div>
-
         <div class="appt-footer">
           <router-link to="/" class="back-btn">
             <ChevronLeft :size="14" :stroke-width="2" /> 返回首页
@@ -93,7 +87,7 @@
 </template>
 
 <script setup>
-import { CalendarDays, Phone, Clock, MapPin, ChevronLeft, Construction } from 'lucide-vue-next'
+import { CalendarDays, Phone, Clock, MapPin, ChevronLeft } from 'lucide-vue-next'
 
 const steps = [
   { name: '电话或到访预约', desc: '拨打预约电话或直接前往咨询中心说明来访意图' },
@@ -214,20 +208,6 @@ const steps = [
 }
 .step-name { font-size: 14px; font-weight: 600; color: var(--c-text-dark); margin-bottom: 3px; }
 .step-desc { font-size: 13px; color: var(--c-text-muted); line-height: 1.65; }
-
-/* ── 建设中提示 */
-.building-notice {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  background: var(--c-gold-pale);
-  border: 1px solid rgba(201,169,110,0.3);
-  border-radius: var(--r-lg);
-  padding: var(--sp-3) var(--sp-5);
-  font-size: 13.5px;
-  color: #8a6030;
-  margin-bottom: var(--sp-8);
-}
 
 /* ── 底部 */
 .appt-footer { padding-top: var(--sp-5); border-top: 1px solid var(--c-beige-border); }
