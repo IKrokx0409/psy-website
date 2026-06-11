@@ -79,8 +79,7 @@ else
         "$HIAGENT_CONDA" create -n "$CONDA_ENV" python=3.8 -y
     fi
     CONDA_PIP="/home/shenyurou/miniconda3/envs/$CONDA_ENV/bin/pip"
-    "$CONDA_PIP" install -q --upgrade pip -i http://mirrors.hit.edu.cn/pypi/simple/ --trusted-host mirrors.hit.edu.cn
-    "$CONDA_PIP" install -q -r "$PROJECT_DIR/backend/requirements.txt" -i http://mirrors.hit.edu.cn/pypi/simple/ --trusted-host mirrors.hit.edu.cn
+    "$CONDA_PIP" install -q -r "$PROJECT_DIR/backend/requirements.txt" --no-index --find-links /tmp/pip_packages
 fi
 
 echo "=== [5/8] 构建前端 ==="
