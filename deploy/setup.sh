@@ -13,7 +13,14 @@ SERVICE_MODE="${1:-hiagent}"  # 参数: hiagent 或 ai
 
 echo "=== [1/8] 安装系统依赖 ==="
 apt-get update -qq
-apt-get install -y -qq nginx postgresql postgresql-contrib nodejs npm
+apt-get install -y -qq nginx postgresql postgresql-contrib python3.8 python3.8-venv python3.8-dev
+
+# ── Node.js 18（Ubuntu 18.04 apt 自带版本过旧，需从 NodeSource 安装）──────────
+if ! node --version 2>/dev/null | grep -qE '^v(1[6-9]|[2-9][0-9])'; then
+    echo "  安装 Node.js 18..."
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt-get install -y -qq nodejs
+fi
 
 # ── pgvector 扩展（需从源码编译或包管理器安装）──────────────────────────────
 if ! sudo -u postgres psql -c "SELECT 1 FROM pg_extension WHERE extname='vector'" 2>/dev/null | grep -q 1; then
@@ -64,7 +71,8 @@ if [ "$SERVICE_MODE" = "ai" ]; then
     echo "  psy_agent conda 环境准备完成"
 else
     echo "  HiAgent 模式 — 使用 Python venv"
-    python3 -m venv "$PROJECT_DIR/.venv"
+    python3.8 -m venv "$PROJECT_DIR/.venv"
+    "$PROJECT_DIR/.venv/bin/pip" install -q --upgrade pip
     "$PROJECT_DIR/.venv/bin/pip" install -q -r "$PROJECT_DIR/backend/requirements.txt"
 fi
 
