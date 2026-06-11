@@ -73,10 +73,16 @@ if [ "$SERVICE_MODE" = "ai" ]; then
     echo "  psy_agent conda 环境准备完成"
 else
     echo "  HiAgent 模式 — 使用 Python venv"
-    PIP_MIRROR="http://mirrors.hit.edu.cn/pypi/simple/ --trusted-host mirrors.hit.edu.cn"
     python3.8 -m venv "$PROJECT_DIR/.venv"
-    "$PROJECT_DIR/.venv/bin/pip" install -q --upgrade pip -i $PIP_MIRROR
-    "$PROJECT_DIR/.venv/bin/pip" install -q -r "$PROJECT_DIR/backend/requirements.txt" -i $PIP_MIRROR
+    mkdir -p "$PROJECT_DIR/.venv/pip"
+    cat > "$PROJECT_DIR/.venv/pip.conf" << 'PIPEOF'
+[global]
+index-url = http://mirrors.hit.edu.cn/pypi/simple/
+trusted-host = mirrors.hit.edu.cn
+PIPEOF
+    PIP="$PROJECT_DIR/.venv/bin/pip"
+    PIP_CONFIG_FILE="$PROJECT_DIR/.venv/pip.conf" "$PIP" install -q --upgrade pip
+    PIP_CONFIG_FILE="$PROJECT_DIR/.venv/pip.conf" "$PIP" install -q -r "$PROJECT_DIR/backend/requirements.txt"
 fi
 
 echo "=== [5/8] 构建前端 ==="
