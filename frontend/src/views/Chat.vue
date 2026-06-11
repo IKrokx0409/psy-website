@@ -668,6 +668,7 @@ const sendMessage = async () => {
   outline: none;
   max-height: 200px;
   overflow-y: auto;
+  padding: 6px 0;
 }
 .input-box textarea::placeholder { color: #9ca3af; }
 .input-box textarea:disabled { opacity: 0.6; }
