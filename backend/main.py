@@ -56,7 +56,7 @@ app.include_router(stats.router)
 app.include_router(tips.router)
 
 import os
-_uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+_uploads_dir = os.environ.get("UPLOAD_DIR", os.path.join(os.path.dirname(__file__), "uploads"))
 os.makedirs(_uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="uploads")
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 # 服务器初始化脚本 — psy_website
 # 使用前确认：
-#   1. 已将项目克隆/上传到 /opt/psy_website
+#   1. 已将项目克隆/上传到 /home/shenyurou/psy_website
 #   2. 已复制 backend/.env.example -> backend/.env 并填写所有密钥
 #   3. 以 root 或 sudo 权限运行此脚本
 set -e
@@ -11,7 +11,7 @@ PROJECT_DIR="$(dirname "$DEPLOY_DIR")"
 CONDA_DIR="/opt/miniconda3"
 SERVICE_MODE="${1:-hiagent}"  # 参数: hiagent 或 ai
 
-echo "=== [1/7] 安装系统依赖 ==="
+echo "=== [1/8] 安装系统依赖 ==="
 apt-get update -qq
 apt-get install -y -qq nginx postgresql postgresql-contrib nodejs npm
 
@@ -25,7 +25,17 @@ if ! sudo -u postgres psql -c "SELECT 1 FROM pg_extension WHERE extname='vector'
     rm -rf "$PGVECTOR_TMP"
 fi
 
-echo "=== [2/7] 初始化 PostgreSQL 数据库 ==="
+echo "=== [2/8] 创建数据目录（与代码目录分离） ==="
+DATA_DIR="/data/shenyurou"
+mkdir -p "$DATA_DIR/uploads"
+chown -R www-data:www-data "$DATA_DIR"
+# 如果 .env 尚未包含 UPLOAD_DIR，追加写入
+if ! grep -q "^UPLOAD_DIR=" "$PROJECT_DIR/backend/.env" 2>/dev/null; then
+    echo "UPLOAD_DIR=$DATA_DIR/uploads" >> "$PROJECT_DIR/backend/.env"
+fi
+echo "  数据目录：$DATA_DIR/uploads"
+
+echo "=== [3/8] 初始化 PostgreSQL 数据库 ==="
 DB_NAME="psy_db"
 DB_USER="psy_user"
 DB_PASS=$(grep DATABASE_URL "$PROJECT_DIR/backend/.env" | sed 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/')
@@ -38,7 +48,7 @@ sudo -u postgres psql -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS vector;"
 sudo -u postgres psql -d "$DB_NAME" -U postgres -f "$PROJECT_DIR/backend/ai_engine/knowledge_base/migration.sql"
 echo "  数据库和表结构初始化完成"
 
-echo "=== [3/7] 安装 / 更新 Conda 环境（仅 AI 模式需要）==="
+echo "=== [4/8] 安装 / 更新 Conda 环境（仅 AI 模式需要）==="
 if [ "$SERVICE_MODE" = "ai" ]; then
     if [ ! -f "$CONDA_DIR/bin/conda" ]; then
         echo "  下载 Miniconda..."
@@ -58,20 +68,20 @@ else
     "$PROJECT_DIR/.venv/bin/pip" install -q -r "$PROJECT_DIR/backend/requirements.txt"
 fi
 
-echo "=== [4/7] 构建前端 ==="
+echo "=== [5/8] 构建前端 ==="
 cd "$PROJECT_DIR/frontend"
 npm ci --silent
 npm run build
 echo "  前端构建完成 -> frontend/dist/"
 
-echo "=== [5/7] 配置 nginx ==="
+echo "=== [6/8] 配置 nginx ==="
 cp "$DEPLOY_DIR/nginx.conf" /etc/nginx/sites-available/psy_website
 ln -sf /etc/nginx/sites-available/psy_website /etc/nginx/sites-enabled/psy_website
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 echo "  nginx 配置完成"
 
-echo "=== [6/7] 安装 systemd 服务 ==="
+echo "=== [7/8] 安装 systemd 服务 ==="
 chown -R www-data:www-data "$PROJECT_DIR"
 
 if [ "$SERVICE_MODE" = "ai" ]; then
@@ -88,7 +98,7 @@ systemctl enable "$SERVICE_NAME"
 systemctl restart "$SERVICE_NAME"
 echo "  服务 $SERVICE_NAME 已启动"
 
-echo "=== [7/7] 检查服务状态 ==="
+echo "=== [8/8] 检查服务状态 ==="
 systemctl --no-pager status "$SERVICE_NAME"
 nginx -t
 

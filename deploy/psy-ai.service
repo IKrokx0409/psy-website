@@ -6,7 +6,7 @@ After=network.target postgresql.service
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=/opt/psy_website/backend
+WorkingDirectory=/home/shenyurou/psy_website/backend
 
 # conda 激活需要通过 conda run 或直接用绝对路径调用 conda 环境的 uvicorn
 # 方法 A（推荐）：直接用 conda 环境内的绝对路径，不依赖 shell init
@@ -15,7 +15,7 @@ ExecStart=/opt/miniconda3/envs/psy_agent/bin/uvicorn main_ai:app --host 127.0.0.
 # 方法 B：如果 conda 装在其他路径，或需要 conda run，改为：
 # ExecStart=/opt/miniconda3/bin/conda run -n psy_agent uvicorn main_ai:app --host 127.0.0.1 --port 8000 --workers 1
 
-EnvironmentFile=/opt/psy_website/backend/.env
+EnvironmentFile=/home/shenyurou/psy_website/backend/.env
 
 # AI 引擎模型加载较慢，给足启动超时
 TimeoutStartSec=120
