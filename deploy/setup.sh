@@ -35,7 +35,7 @@ fi
 echo "=== [2/8] 创建数据目录（与代码目录分离） ==="
 DATA_DIR="/data/shenyurou"
 mkdir -p "$DATA_DIR/uploads"
-chown -R www-data:www-data "$DATA_DIR"
+chown www-data:www-data "$DATA_DIR/uploads"
 # 如果 .env 尚未包含 UPLOAD_DIR，追加写入
 if ! grep -q "^UPLOAD_DIR=" "$PROJECT_DIR/backend/.env" 2>/dev/null; then
     echo "UPLOAD_DIR=$DATA_DIR/uploads" >> "$PROJECT_DIR/backend/.env"
