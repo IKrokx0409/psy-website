@@ -20,14 +20,16 @@ if ! node --version 2>/dev/null | grep -q '^v'; then
     apt-get install -y -qq nodejs npm
 fi
 
-# ── pgvector 扩展（需从源码编译或包管理器安装）──────────────────────────────
-if ! sudo -u postgres psql -c "SELECT 1 FROM pg_extension WHERE extname='vector'" 2>/dev/null | grep -q 1; then
-    echo "  安装 pgvector..."
-    apt-get install -y -qq postgresql-server-dev-all build-essential git
-    PGVECTOR_TMP=$(mktemp -d)
-    git clone --depth 1 https://github.com/pgvector/pgvector.git "$PGVECTOR_TMP"
-    make -C "$PGVECTOR_TMP" && make -C "$PGVECTOR_TMP" install
-    rm -rf "$PGVECTOR_TMP"
+# ── pgvector 扩展（仅 AI 模式需要）─────────────────────────────────────────
+if [ "$SERVICE_MODE" = "ai" ]; then
+    if ! sudo -u postgres psql -c "SELECT 1 FROM pg_extension WHERE extname='vector'" 2>/dev/null | grep -q 1; then
+        echo "  安装 pgvector..."
+        apt-get install -y -qq postgresql-server-dev-all build-essential git
+        PGVECTOR_TMP=$(mktemp -d)
+        git clone --depth 1 https://github.com/pgvector/pgvector.git "$PGVECTOR_TMP"
+        make -C "$PGVECTOR_TMP" && make -C "$PGVECTOR_TMP" install
+        rm -rf "$PGVECTOR_TMP"
+    fi
 fi
 
 echo "=== [2/8] 创建数据目录（与代码目录分离） ==="
@@ -49,8 +51,10 @@ sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | gr
     sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';"
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" | grep -q 1 || \
     sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
-sudo -u postgres psql -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS vector;"
-sudo -u postgres psql -d "$DB_NAME" -U postgres -f "$PROJECT_DIR/backend/ai_engine/knowledge_base/migration.sql"
+if [ "$SERVICE_MODE" = "ai" ]; then
+    sudo -u postgres psql -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS vector;"
+    sudo -u postgres psql -d "$DB_NAME" -U postgres -f "$PROJECT_DIR/backend/ai_engine/knowledge_base/migration.sql"
+fi
 echo "  数据库和表结构初始化完成"
 
 echo "=== [4/8] 安装 / 更新 Conda 环境（仅 AI 模式需要）==="
@@ -75,10 +79,14 @@ else
 fi
 
 echo "=== [5/8] 构建前端 ==="
-cd "$PROJECT_DIR/frontend"
-npm ci --silent
-npm run build
-echo "  前端构建完成 -> frontend/dist/"
+if [ ! -d "$PROJECT_DIR/frontend/dist" ]; then
+    cd "$PROJECT_DIR/frontend"
+    npm ci --silent
+    npm run build
+    echo "  前端构建完成 -> frontend/dist/"
+else
+    echo "  frontend/dist 已存在，跳过构建"
+fi
 
 echo "=== [6/8] 配置 nginx ==="
 cp "$DEPLOY_DIR/nginx.conf" /etc/nginx/sites-available/psy_website
