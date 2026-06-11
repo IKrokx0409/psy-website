@@ -15,11 +15,9 @@ echo "=== [1/8] 安装系统依赖 ==="
 apt-get update -qq
 apt-get install -y -qq nginx postgresql postgresql-contrib python3.8 python3.8-venv python3.8-dev
 
-# ── Node.js 18（Ubuntu 18.04 apt 自带版本过旧，需从 NodeSource 安装）──────────
-if ! node --version 2>/dev/null | grep -qE '^v(1[6-9]|[2-9][0-9])'; then
-    echo "  安装 Node.js 18..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-    apt-get install -y -qq nodejs
+# ── Node.js（优先用已安装版本，否则从 apt 安装）────────────────────────────────
+if ! node --version 2>/dev/null | grep -q '^v'; then
+    apt-get install -y -qq nodejs npm
 fi
 
 # ── pgvector 扩展（需从源码编译或包管理器安装）──────────────────────────────
