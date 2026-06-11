@@ -74,15 +74,11 @@ if [ "$SERVICE_MODE" = "ai" ]; then
 else
     echo "  HiAgent 模式 — 使用 Python venv"
     python3.8 -m venv "$PROJECT_DIR/.venv"
-    mkdir -p "$PROJECT_DIR/.venv/pip"
-    cat > "$PROJECT_DIR/.venv/pip.conf" << 'PIPEOF'
-[global]
-index-url = http://mirrors.hit.edu.cn/pypi/simple/
-trusted-host = mirrors.hit.edu.cn
-PIPEOF
     PIP="$PROJECT_DIR/.venv/bin/pip"
-    PIP_CONFIG_FILE="$PROJECT_DIR/.venv/pip.conf" "$PIP" install -q --upgrade pip
-    PIP_CONFIG_FILE="$PROJECT_DIR/.venv/pip.conf" "$PIP" install -q -r "$PROJECT_DIR/backend/requirements.txt"
+    export PIP_INDEX_URL="http://mirrors.hit.edu.cn/pypi/simple/"
+    export PIP_TRUSTED_HOST="mirrors.hit.edu.cn"
+    "$PIP" install -q --upgrade pip
+    "$PIP" install -q -r "$PROJECT_DIR/backend/requirements.txt"
 fi
 
 echo "=== [5/8] 构建前端 ==="
