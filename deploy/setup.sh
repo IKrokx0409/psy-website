@@ -35,7 +35,7 @@ fi
 echo "=== [2/8] 创建数据目录（与代码目录分离） ==="
 DATA_DIR="/data/shenyurou"
 mkdir -p "$DATA_DIR/uploads"
-chown www-data:www-data "$DATA_DIR/uploads"
+chown shenyurou:shenyurou "$DATA_DIR/uploads"
 # 如果 .env 尚未包含 UPLOAD_DIR，追加写入
 if ! grep -q "^UPLOAD_DIR=" "$PROJECT_DIR/backend/.env" 2>/dev/null; then
     echo "UPLOAD_DIR=$DATA_DIR/uploads" >> "$PROJECT_DIR/backend/.env"
@@ -72,11 +72,15 @@ if [ "$SERVICE_MODE" = "ai" ]; then
     "$CONDA_DIR/envs/psy_agent/bin/pip" install torch --index-url https://download.pytorch.org/whl/cpu --upgrade -q
     echo "  psy_agent conda 环境准备完成"
 else
-    echo "  HiAgent 模式 — 使用 Python venv"
-    python3.8 -m venv "$PROJECT_DIR/.venv"
-    PIP="$PROJECT_DIR/.venv/bin/pip"
-    "$PIP" install -q --upgrade pip
-    "$PIP" install -q -r "$PROJECT_DIR/backend/requirements.txt"
+    echo "  HiAgent 模式 — 使用 conda 虚拟环境"
+    HIAGENT_CONDA="/home/shenyurou/miniconda3/bin/conda"
+    CONDA_ENV="psy"
+    if ! "$HIAGENT_CONDA" env list | grep -q "^$CONDA_ENV "; then
+        "$HIAGENT_CONDA" create -n "$CONDA_ENV" python=3.8 -y
+    fi
+    CONDA_PIP="/home/shenyurou/miniconda3/envs/$CONDA_ENV/bin/pip"
+    "$CONDA_PIP" install -q --upgrade pip -i http://mirrors.hit.edu.cn/pypi/simple/ --trusted-host mirrors.hit.edu.cn
+    "$CONDA_PIP" install -q -r "$PROJECT_DIR/backend/requirements.txt" -i http://mirrors.hit.edu.cn/pypi/simple/ --trusted-host mirrors.hit.edu.cn
 fi
 
 echo "=== [5/8] 构建前端 ==="
@@ -97,7 +101,7 @@ nginx -t && systemctl reload nginx
 echo "  nginx 配置完成"
 
 echo "=== [7/8] 安装 systemd 服务 ==="
-chown -R www-data:www-data "$PROJECT_DIR"
+chown -R shenyurou:shenyurou "$PROJECT_DIR"
 
 if [ "$SERVICE_MODE" = "ai" ]; then
     SERVICE_FILE="psy-ai.service"
