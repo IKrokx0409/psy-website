@@ -73,13 +73,6 @@ if [ "$SERVICE_MODE" = "ai" ]; then
     echo "  psy_agent conda 环境准备完成"
 else
     echo "  HiAgent 模式 — 使用 Python venv"
-    # 写入 root 用户级 pip 配置，覆盖 /etc/pip.conf 中的 BFSU 镜像
-    mkdir -p /root/.config/pip
-    cat > /root/.config/pip/pip.conf << 'PIPEOF'
-[global]
-index-url = http://mirrors.hit.edu.cn/pypi/simple/
-trusted-host = mirrors.hit.edu.cn
-PIPEOF
     python3.8 -m venv "$PROJECT_DIR/.venv"
     PIP="$PROJECT_DIR/.venv/bin/pip"
     "$PIP" install -q --upgrade pip
