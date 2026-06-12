@@ -72,7 +72,7 @@ class ChatRequest(BaseModel):
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     try:
-        result = client.ask_ai(request.message, request.conversation_id)
+        result = await asyncio.to_thread(client.ask_ai, request.message, request.conversation_id)
         if request.user_id:
             db.add(ChatRecord(user_id=request.user_id))
             await db.commit()
