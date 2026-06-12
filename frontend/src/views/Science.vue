@@ -118,7 +118,7 @@
           <!-- 答题表单 -->
           <div v-else-if="quizDetail" class="quiz-form">
             <h2 class="quiz-form-title">{{ quizDetail.title }}</h2>
-            <p v-if="quizDetail.description" class="quiz-form-desc">{{ quizDetail.description }}</p>
+            <div v-if="quizDetail.description" class="quiz-form-desc" v-html="renderMd(quizDetail.description)"></div>
 
             <div
               v-for="(q, qi) in parsedQuestions" :key="q.id"
@@ -148,11 +148,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   ChevronLeft, BookOpen, ClipboardList, Loader2, AlertCircle, CheckCircle2,
 } from 'lucide-vue-next'
+import MarkdownIt from 'markdown-it'
 import { getResources } from '@/api/resources'
 import { getQuestionnaires, getQuestionnaire } from '@/api/questionnaires'
+
+const md = new MarkdownIt({ html: false, linkify: false, typographer: true })
+const renderMd = (src) => md.render(src || '')
 
 const TABS = [
   { key: 'library', label: '知识库',   icon: BookOpen      },
@@ -160,7 +165,9 @@ const TABS = [
 ]
 const CATEGORIES = ['全部', '情绪管理', '压力应对', '人际关系', '睡眠健康', '危机干预']
 
-const activeTab = ref('library')
+const route = useRoute()
+const validTabs = new Set(TABS.map(t => t.key))
+const activeTab = ref(validTabs.has(route.query.tab) ? route.query.tab : 'library')
 
 // ── 知识库 ────────────────────────────────────────────────────────────────
 const resources  = ref([])
@@ -187,6 +194,13 @@ onMounted(async () => {
   try { questionnaires.value = await getQuestionnaires() }
   catch { qError.value = true }
   finally { qLoading.value = false }
+
+  // 支持 ?quiz={id} 直接打开指定量表
+  const quizId = parseInt(route.query.quiz)
+  if (quizId) {
+    activeTab.value = 'quiz'
+    startQuiz(quizId)
+  }
 })
 
 // ── 答题状态 ──────────────────────────────────────────────────────────────
@@ -329,6 +343,9 @@ const exitQuiz  = () => { activeQuiz.value = null; quizDetail.value = null; quiz
 .quiz-form { background: white; border: 1px solid #d8d2c8; padding: 36px 40px; border-radius: var(--r-lg); }
 .quiz-form-title { font-family: 'SimSun','宋体',Georgia,serif; font-size: 22px; font-weight: 700; color: #1e1a14; margin: 0 0 10px; letter-spacing: 1px; }
 .quiz-form-desc { font-size: 14px; color: #7a6e5a; line-height: 1.7; margin: 0 0 28px; }
+.quiz-form-desc :deep(p) { margin: 0 0 8px; }
+.quiz-form-desc :deep(strong) { color: #3d5a45; font-weight: 600; }
+.quiz-form-desc :deep(p:last-child) { margin-bottom: 0; }
 
 .q-block { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid #ece8e0; }
 .q-block:last-of-type { border-bottom: none; }

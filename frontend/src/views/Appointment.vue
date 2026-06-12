@@ -38,7 +38,7 @@
             </div>
             <div class="contact-card-label">电话预约</div>
             <div class="contact-card-value">0755-26400952</div>
-            <div class="contact-card-hint">工作时间内拨打</div>
+            <div class="contact-card-hint">感到难过，随时联系</div>
           </div>
 
           <div class="contact-card">

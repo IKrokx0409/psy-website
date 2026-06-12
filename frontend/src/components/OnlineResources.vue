@@ -10,7 +10,7 @@
       <div class="resources-grid">
         <router-link
           v-for="r in resources" :key="r.name"
-          to="/science"
+          :to="r.to"
           class="resource-card"
         >
           <div class="card-icon" :style="{ background: r.bg }">
@@ -44,14 +44,14 @@ import {
 } from 'lucide-vue-next'
 
 const resources = [
-  { icon: ClipboardList, name: 'PHQ-9 抑郁自测量表',   desc: '基于国际标准的抑郁症状评估问卷，约 2 分钟完成。', tag: '情绪评估', bg: '#eef6ff', color: '#3b82f6', tagBg: '#dbeafe' },
-  { icon: Activity,      name: 'GAD-7 焦虑自测量表',   desc: '广泛性焦虑障碍评估，了解你的焦虑程度。',           tag: '情绪评估', bg: '#fff7ed', color: '#f97316', tagBg: '#ffedd5' },
-  { icon: Leaf,          name: '正念冥想引导音频',       desc: '10 分钟身体扫描冥想，帮助平静思绪、回到当下。',   tag: '放松减压', bg: '#f0fdf4', color: '#22c55e', tagBg: '#dcfce7' },
-  { icon: Wind,          name: '4-7-8 呼吸练习',        desc: '经科学验证的呼吸技术，快速缓解急性焦虑与紧张。', tag: '放松减压', bg: '#f0f9ff', color: '#0ea5e9', tagBg: '#e0f2fe' },
-  { icon: BookOpen,      name: '心理健康科普文章库',     desc: '涵盖情绪、人际、睡眠、学业压力等主题的专业文章。', tag: '知识学习', bg: '#fdf4ff', color: '#a855f7', tagBg: '#f3e8ff' },
-  { icon: Headphones,    name: '睡眠放松白噪声',         desc: '雨声、森林、海浪等环境音，助你进入深度放松状态。', tag: '睡眠辅助', bg: '#fff1f2', color: '#f43f5e', tagBg: '#ffe4e6' },
-  { icon: HeartPulse,    name: '压力自评工具',           desc: 'PSS 感知压力量表，帮助了解近期生活中的压力水平。', tag: '情绪评估', bg: '#fff7ed', color: '#ea580c', tagBg: '#ffedd5' },
-  { icon: BookOpen,      name: '人际关系小册子',         desc: '宿舍相处、恋爱沟通、家庭压力——来自咨询师的建议。', tag: '知识学习', bg: '#f0fdf4', color: '#16a34a', tagBg: '#dcfce7' },
+  { to: '/science?tab=quiz&quiz=2', icon: ClipboardList, name: 'PHQ-9 抑郁自测量表',   desc: '基于国际标准的抑郁症状评估问卷，约 2 分钟完成。', tag: '情绪评估', bg: '#eef6ff', color: '#3b82f6', tagBg: '#dbeafe' },
+  { to: '/science?tab=quiz&quiz=3', icon: Activity,      name: 'GAD-7 焦虑自测量表',   desc: '广泛性焦虑障碍评估，了解你的焦虑程度。',           tag: '情绪评估', bg: '#fff7ed', color: '#f97316', tagBg: '#ffedd5' },
+  { to: '/resources/5',             icon: Wind,          name: '腹式呼吸 · 4-7-8练习', desc: '经科学验证的呼吸技术，快速激活副交感神经，缓解急性焦虑。', tag: '放松减压', bg: '#f0f9ff', color: '#0ea5e9', tagBg: '#e0f2fe' },
+  { to: '/science?tab=quiz&quiz=4', icon: HeartPulse,    name: '压力知觉量表（PSS-10）', desc: 'PSS-10 感知压力量表，帮助了解近期生活中的压力水平。', tag: '情绪评估', bg: '#fff7ed', color: '#ea580c', tagBg: '#ffedd5' },
+  { to: '/science?tab=quiz&quiz=5', icon: Leaf,          name: '失眠严重程度自评（ISI）', desc: '7道题评估你的失眠严重程度，并给出改善建议。',      tag: '睡眠辅助', bg: '#f0fdf4', color: '#22c55e', tagBg: '#dcfce7' },
+  { to: '/resources/8',             icon: Headphones,    name: '大学生睡眠健康指南',    desc: '昼夜节律、睡眠压力、CBT-I——搞懂为什么你总睡不好。',  tag: '睡眠辅助', bg: '#fff1f2', color: '#f43f5e', tagBg: '#ffe4e6' },
+  { to: '/resources/7',             icon: BookOpen,      name: '非暴力沟通基础',        desc: '4步框架让对话从对抗变为连接，适用于宿舍、恋爱、家庭。', tag: '知识学习', bg: '#fdf4ff', color: '#a855f7', tagBg: '#f3e8ff' },
+  { to: '/science',                 icon: BookOpen,      name: '心理健康科普文章库',    desc: '涵盖情绪、人际、睡眠、学业压力等主题的专业文章。',    tag: '知识学习', bg: '#f0fdf4', color: '#16a34a', tagBg: '#dcfce7' },
 ]
 </script>
 

@@ -28,8 +28,8 @@ import { Bot, BookMarked, Library, ClipboardList, ArrowRight } from 'lucide-vue-
 const entries = [
   { to: '/chat',        icon: Bot,           title: 'AI 智能疏导', desc: '随时倾诉，智能陪伴' },
   { to: '/diary',       icon: BookMarked,    title: '情绪日记',    desc: '记录情绪，洞察自己' },
-  { to: '/#resources',  icon: Library,       title: '心理资源',    desc: '专业资源，随时获取' },
-  { to: '/science',     icon: ClipboardList, title: '心理测评',    desc: '专业量表，了解自我' },
+  { to: '/science',          icon: Library,       title: '心理资源',    desc: '专业资源，随时获取' },
+  { to: '/science?tab=quiz', icon: ClipboardList, title: '心理测评',    desc: '专业量表，了解自我' },
 ]
 </script>
 
