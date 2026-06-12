@@ -207,4 +207,14 @@ const contacts = [
   letter-spacing: 0.3px;
 }
 .appt-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
+
+@media (max-width: 900px) {
+  .contact-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .contact-grid { grid-template-columns: 1fr; }
+  .banner-content { flex-direction: column; align-items: flex-start; gap: var(--sp-4); }
+  .contact-section { padding: var(--sp-10) 0; }
+}
 </style>

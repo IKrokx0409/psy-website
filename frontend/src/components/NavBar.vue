@@ -12,6 +12,12 @@
           </div>
         </router-link>
 
+        <!-- 汉堡按钮（仅移动端显示） -->
+        <button class="hamburger-btn" @click="menuOpen = !menuOpen" :aria-label="menuOpen ? '关闭菜单' : '打开菜单'">
+          <X v-if="menuOpen" :size="22" :stroke-width="2" />
+          <Menu v-else :size="22" :stroke-width="2" />
+        </button>
+
         <!-- 右侧：导航链接 -->
         <div class="nav-links" :class="{ 'nav-links--dark': isTreehouse }">
           <router-link to="/">首页</router-link>
@@ -43,13 +49,40 @@
         </div>
       </div>
     </nav>
+
+    <!-- 移动端菜单抽屉 -->
+    <div class="mobile-nav" :class="{ 'mobile-nav--treehouse': isTreehouse }" v-show="menuOpen">
+      <router-link to="/" class="mobile-link" @click="menuOpen = false">首页</router-link>
+      <router-link to="/course" class="mobile-link" @click="menuOpen = false">心理课</router-link>
+      <router-link to="/science" class="mobile-link" @click="menuOpen = false">心理资源</router-link>
+      <router-link to="/chat" class="mobile-link" @click="menuOpen = false">AI 智能疏导</router-link>
+      <router-link to="/diary" class="mobile-link" @click="menuOpen = false">情绪日记</router-link>
+      <router-link to="/appointment" class="mobile-link" @click="menuOpen = false">预约咨询</router-link>
+      <router-link to="/about" class="mobile-link" @click="menuOpen = false">关于我们</router-link>
+      <router-link v-if="isTeacher" to="/teacher" class="mobile-link" @click="menuOpen = false">
+        <ShieldCheck :size="14" :stroke-width="1.5" /> 管理后台
+      </router-link>
+      <div class="mobile-auth">
+        <div v-if="isLoggedIn" class="mobile-role-row">
+          <component :is="isTeacher ? UserCog : GraduationCap" :size="15" :stroke-width="1.5" />
+          <span>{{ isTeacher ? '教师身份' : '学生身份' }}</span>
+          <button class="mobile-logout-btn" @click="switchRole">
+            <LogOut :size="13" :stroke-width="1.5" /> 退出
+          </button>
+        </div>
+        <router-link v-else to="/login" class="mobile-link mobile-link--login" @click="menuOpen = false">
+          <LogIn :size="14" :stroke-width="1.5" /> 登录
+        </router-link>
+      </div>
+    </div>
+    <div class="mobile-overlay" v-show="menuOpen" @click="menuOpen = false"></div>
   </header>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { GraduationCap, UserCog, LogOut, LogIn, ShieldCheck } from 'lucide-vue-next'
+import { GraduationCap, UserCog, LogOut, LogIn, ShieldCheck, Menu, X } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
@@ -58,6 +91,9 @@ const { isTeacher, isLoggedIn, clearRole } = useAuth()
 
 const isTreehouse = computed(() => route.path === '/treehouse')
 const isScrolled  = ref(false)
+const menuOpen    = ref(false)
+
+watch(() => route.path, () => { menuOpen.value = false })
 
 let pageContent = null
 
@@ -265,5 +301,114 @@ const switchRole = () => {
   border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
   font-size: 13px !important;
+}
+
+/* ── 汉堡按钮 ──────────────────────────────────────────── */
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: white;
+  border-radius: var(--r-sm);
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  transition: background var(--t-base);
+  flex-shrink: 0;
+}
+.hamburger-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ── 移动端抽屉菜单 ──────────────────────────────────────── */
+.mobile-nav {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  background: linear-gradient(180deg, rgba(37,78,56,0.98) 0%, rgba(55,100,75,0.98) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 200;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  max-height: calc(100dvh - 60px);
+  overflow-y: auto;
+}
+.mobile-nav--treehouse {
+  background: linear-gradient(180deg, rgba(28,51,88,0.98) 0%, rgba(37,61,96,0.98) 100%);
+}
+
+.mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  color: rgba(255,255,255,0.82);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.mobile-link:hover { background: rgba(255,255,255,0.08); color: white; }
+.mobile-link.router-link-active { color: white; background: rgba(0,0,0,0.1); font-weight: 600; }
+.mobile-link.router-link-active::after { display: none; }
+.mobile-link--login {
+  color: white;
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.mobile-auth {
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.mobile-role-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+}
+.mobile-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.mobile-logout-btn:hover { background: rgba(255,255,255,0.22); }
+
+/* ── 遮罩 ──────────────────────────────────────────────── */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(0,0,0,0.3);
+}
+
+/* ── 移动端断点 ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .nav-inner { height: 60px; padding: 0 16px; }
+  .nav-links { display: none; }
+  .hamburger-btn { display: flex; }
+  .brand-sub { display: none; }
+  .brand-main { font-size: 14px; letter-spacing: 1.5px; }
+  .nav-logo { height: 36px; }
+  .brand-divider { height: 26px; }
+  .mobile-nav { display: flex; }
+  .mobile-overlay { display: block; top: 60px; }
+  .navbar { position: relative; z-index: 201; }
 }
 </style>

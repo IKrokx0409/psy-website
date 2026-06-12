@@ -1374,4 +1374,12 @@ onUnmounted(() => { resizeObserver?.disconnect(); resizeObserver = null; stopThi
   .chart-strip  { grid-column: 1; grid-row: auto; }
   .diary-page   { overflow: auto; }
 }
+
+@media (max-width: 480px) {
+  .diary-inner { padding: 8px 12px 20px; gap: 10px; }
+  .editor-header { flex-wrap: wrap; gap: 8px; }
+  .date-day-num { font-size: 36px; }
+  .mood-display-row { flex-direction: column; gap: 12px; }
+  .mood-score-block { width: auto; min-width: 80px; }
+}
 </style>

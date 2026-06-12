@@ -319,4 +319,11 @@ const login = (role) => {
   margin: 0;
   text-align: center;
 }
+
+@media (max-width: 768px) {
+  .login-page { flex-direction: column; min-height: 100dvh; }
+  .login-deco { flex: none; padding: var(--sp-8) var(--sp-6); min-height: 220px; }
+  .deco-title { font-size: 22px; }
+  .login-panel { width: 100%; padding: var(--sp-8) var(--sp-5); }
+}
 </style>

@@ -216,4 +216,13 @@ const currentList = computed(() =>
   color: #94a3b8;
   text-align: center;
 }
+
+@media (max-width: 480px) {
+  .board-header { flex-wrap: wrap; gap: var(--sp-2); padding: var(--sp-2) var(--sp-4); }
+  .tabs { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { white-space: nowrap; padding: 5px 10px; }
+  .news-title { font-size: 13px; }
+  .news-date { font-size: 11px; }
+}
 </style>

@@ -384,5 +384,12 @@ const exitQuiz  = () => { activeQuiz.value = null; quizDetail.value = null; quiz
   .sci-body { padding: 24px 16px 60px; }
   .quiz-form { padding: 24px 20px; }
   .quiz-card { flex-wrap: wrap; }
+  .sci-header { padding: 40px 20px 32px; }
+  .sci-title { font-size: 28px; letter-spacing: 4px; }
+  .sci-tabs { padding: 0 16px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .sci-tabs::-webkit-scrollbar { display: none; }
+  .sci-tab { white-space: nowrap; padding: 14px 16px; font-size: 13px; }
+  .result-actions { flex-direction: column; }
+  .quiz-form-title { font-size: 18px; }
 }
 </style>

@@ -114,4 +114,18 @@ const entries = [
   opacity: 1;
   transform: translateX(0);
 }
+
+@media (max-width: 768px) {
+  .inner { grid-template-columns: repeat(2, 1fr); }
+  .entry-card { border-right: none; border-bottom: none; }
+  .entry-card:nth-child(odd) { border-right: 1px solid var(--c-beige-border); }
+  .entry-card:nth-child(-n+2) { border-bottom: 1px solid var(--c-beige-border); }
+}
+
+@media (max-width: 480px) {
+  .entry-card { padding: 14px var(--sp-4); }
+  .entry-icon-wrap { width: 40px; height: 40px; }
+  .entry-title { font-size: 13.5px; }
+  .entry-desc { display: none; }
+}
 </style>

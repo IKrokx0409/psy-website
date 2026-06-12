@@ -201,4 +201,15 @@ import { BrainCircuit } from 'lucide-vue-next'
   grid-template-columns: unset;
   gap: 0;
 }
+
+@media (max-width: 900px) {
+  .inner { grid-template-columns: 1fr 1fr; gap: var(--sp-8); }
+}
+
+@media (max-width: 600px) {
+  .inner { grid-template-columns: 1fr; gap: var(--sp-6); }
+  .footer-main { padding: var(--sp-10) 0 var(--sp-6); }
+  .qr-block { flex-direction: row; align-items: center; }
+  .bottom-inner { flex-direction: column; gap: var(--sp-2); text-align: center; }
+}
 </style>

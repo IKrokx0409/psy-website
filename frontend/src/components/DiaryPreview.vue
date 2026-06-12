@@ -381,4 +381,19 @@ const legend = [
   letter-spacing: 0.3px;
 }
 .diary-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(0,0,0,0.25); }
+
+@media (max-width: 768px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: var(--sp-8);
+    padding: 0 var(--sp-5);
+  }
+  .feature-title { font-size: 28px; }
+  .diary-preview { padding: var(--sp-10) 0; }
+}
+
+@media (max-width: 480px) {
+  .feature-title { font-size: 24px; }
+  .feature-points li { font-size: 13px; }
+}
 </style>

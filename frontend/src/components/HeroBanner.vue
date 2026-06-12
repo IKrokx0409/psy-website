@@ -316,4 +316,28 @@ onUnmounted(() => clearInterval(timer))
 /* 过渡动画 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.55s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* ── 移动端适配 ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero { height: 380px; }
+  .slide { height: 380px; }
+  .slide-title { font-size: 32px; letter-spacing: 2px; }
+  .slide-desc { font-size: 13.5px; margin-bottom: var(--sp-6); }
+  .slide-tag { font-size: 11px; }
+  .slide-inner { padding: 0 var(--sp-5); }
+  .deco-wrap { width: 340px; height: 340px; right: -80px; opacity: 0.5; }
+  .arrow-prev { left: 12px; }
+  .arrow-next { right: 12px; }
+  .arrow { width: 36px; height: 36px; }
+}
+
+@media (max-width: 480px) {
+  .hero { height: 320px; }
+  .slide { height: 320px; }
+  .slide-title { font-size: 26px; letter-spacing: 1.5px; }
+  .slide-actions { flex-direction: column; align-items: flex-start; gap: var(--sp-3); }
+  .deco-wrap { display: none; }
+  .btn-primary { padding: 11px 22px; font-size: 13px; }
+  .btn-outline { padding: 10px 20px; font-size: 13px; }
+}
 </style>
